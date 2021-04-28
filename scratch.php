@@ -6,27 +6,27 @@ ob_end_flush();
 echo '<pre>';
 
 
-include 'api.php';
+include 'include';
 
 $runtime = -microtime(true);
 echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 
-// update_definitions();
+// definitions::update();
 
-// $result = api('/App/FirstParty/');
-// $result = api('/User/SearchUsers/?q=solid+kalium');
-// $result = api('/User/GetBungieNetUserById/31110/');
-// $result = api('/User/GetMembershipsById/31110/-1/');
-// $result = api('/GroupV2/Search/', json_encode(array('name' => "\u{03bb}nomaly", 'groupType' => 1))); // this only returns one result?
-// $result = api("/GroupV2/Name/\u{03bb}nomaly/1/"); // 0 general, 1 clan // also just one result
-// $result = api('/GroupV2/4331943/');
-// $result = api('/GroupV2/4331943/Members/');
-$result = api('/Settings/'); // destiny2CoreSettings has useful top-level hashes
-# $result = api('/UserSystemOverrides/');
-# $result = api('/GlobalAlerts/');
-// $result = api('/Trending/Categories/'); // news
-// $result = api('/Destiny2/Milestones/'); // general milestone list
-// $result = api('/Destiny2/SearchDestinyPlayer/-1/SolidKalium/');
+// $result = bungie_api::api('/App/FirstParty/');
+// $result = bungie_api::api('/User/SearchUsers/?q=solid+kalium');
+// $result = bungie_api::api('/User/GetBungieNetUserById/31110/');
+// $result = bungie_api::api('/User/GetMembershipsById/31110/-1/');
+// $result = bungie_api::api('/GroupV2/Search/', json_encode(array('name' => "\u{03bb}nomaly", 'groupType' => 1))); // this only returns one result?
+// $result = bungie_api::api("/GroupV2/Name/\u{03bb}nomaly/1/"); // 0 general, 1 clan // also just one result
+// $result = bungie_api::api('/GroupV2/4331943/');
+$result = bungie_api::api('/GroupV2/4331943/Members/');
+// $result = bungie_api::api('/Settings/'); // destiny2CoreSettings has useful top-level hashes
+// $result = bungie_api::api('/UserSystemOverrides/');
+// $result = bungie_api::api('/GlobalAlerts/');
+// $result = bungie_api::api('/Trending/Categories/'); // news
+// $result = bungie_api::api('/Destiny2/Milestones/'); // general milestone list
+// $result = bungie_api::api('/Destiny2/SearchDestinyPlayer/-1/SolidKalium/');
 
 $components = array(
   'None' => 0,
@@ -64,14 +64,14 @@ $components = array(
 	// "Transitory" => 1000, // currently empty
 	// "Metrics" => 1100,
 );
-// $result = api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components)));
+// $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components)));
 
 echo_pretty_json($result);
 
 
-// $records = get_definitions('Record');
-// $objectives = get_definitions('Objective');
-// $nodes = get_definitions('PresentationNode');
+// $records = definitions::get('Record');
+// $objectives = definitions::get('Objective');
+// $nodes = definitions::get('PresentationNode');
 // echo_pretty_json($records);
 
 $hashes = array(

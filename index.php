@@ -1,18 +1,35 @@
 <?php
 
-include 'api.php';
+ob_end_flush();
+include 'include.php';
 
 echo '<link rel="stylesheet" type="text/css" href="/tracker.css" media="screen">';
 echo '<pre>';
 
-// $records = get_definitions('Record');
-// $objectives = get_definitions('Objective');
-// $nodes = get_definitions('PresentationNode');
+
+// $records = definitions::get('Record');
+// $objectives = definitions::get('Objective');
+// $nodes = definitions::get('PresentationNode');
 
 // cache results for all views?
 
 // TODO router
-list_pages();
+// list_pages();
+
+
+// $manifest = bungie_api::get_manifest();
+// echo_pretty_json($manifest);
+$members = bungie_api::get_group_members(4331943); // Anomaly
+// echo_pretty_json($members);
+// $member = end($members);
+// echo_pretty_json($member);
+// $profile = bungie_api::get_profile($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
+// $profile = profiles::get($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
+// echo_pretty_json($profile);
+foreach ($members as $member) {
+  echo 'fetch ' . profiles::normalize_name($member['destinyUserInfo']['displayName']) . PHP_EOL;
+  $profile = profiles::get($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
+}
 
 
 function get_page_definitions() {
@@ -204,10 +221,11 @@ function get_page_definitions() {
 
 function list_pages() {
   // NOTE: could use more div containers for styling.
+  // TODO also have links for raid gear, have maps for the encounter it drops from?
 
   $pages = get_page_definitions();
-  $nodes = get_definitions('PresentationNode');
-  $records = get_definitions('Record');
+  $nodes = definitions::get('PresentationNode');
+  $records = definitions::get('Record');
   // echo_pretty_json($nodes);
 
   $page_index = array();
