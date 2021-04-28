@@ -1,0 +1,24 @@
+--- Implement
+Find API page: https://bungie-net.github.io/multi/index.html
+Run php locally
+Setup database ? just use a file for now
+Setup on remote server
+rewrite front end to provide better realtime info in browser? (use js)
+
+--- Features
+Automatically reload users once per day
+  Get all clan members
+  Iterate over them to get their triumph data
+Allow reloading individual users
+One page per raid/seal
+Icons for triumphs/seals?
+
+Color per triumph: red/yellow/light green/green
+Separate triumphs needed for seal
+track historical triumph values?
+sortable by column (how to handle multiple encounters?)
+pin a user to top?
+prefer to show stadia name, else bnet name
+
+--- Other project ideas
+Charlemagne calendar link?
