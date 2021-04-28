@@ -8,8 +8,10 @@ echo '<pre>';
 
 include 'api.php';
 
-
+$runtime = -microtime(true);
 echo "SCRIPT START" . PHP_EOL . PHP_EOL;
+
+// update_definitions();
 
 // $result = api('/App/FirstParty/');
 // $result = api('/User/SearchUsers/?q=solid+kalium');
@@ -20,35 +22,33 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // $result = api('/GroupV2/4331943/');
 // $result = api('/GroupV2/4331943/Members/');
 
-// $result = api('/Destiny2/Manifest/'); // gets a bunch of urls
-// /common/destiny2_content/sqlite/en/world_sql_content_29858a4550682a0d514f89f4897be0ff.content // binary data
-// /common/destiny2_content/json/en/aggregate-a1065791-e29c-4e23-9dc7-d88310a12936.json // massive, use smaller pieces
-// /common/destiny2_content/json/en/DestinyUnlockDefinition-a1065791-e29c-4e23-9dc7-d88310a12936.json // almost none of these have names
-// /common/destiny2_content/json/en/DestinyProgressionMappingDefinition-a1065791-e29c-4e23-9dc7-d88310a12936.json // valor/glory/etc
-
-
 // echo_pretty_json($result);
 
 
-// $text = file_get_contents("definitions/DestinyRecordDefinition-a1065791-e29c-4e23-9dc7-d88310a12936.json");
-// $records = json_decode($text, true);
+$records = get_definitions('Record');
+$objectives = get_definitions('Objective');
+$nodes = get_definitions('PresentationNode');
 // echo_pretty_json($records);
 
 $hashes = array(
   "GoS_all" => "615240848", // parent node for Garden of Salvation raid (includes stasis and flawless)
   "GoS_seal" => "1827854727", // parent node for Garden of Salvation seal (includes collection badge)
   "LW_all" => "1525933460", // includes stasis
-  "LW_seal" => "1486062207", // includes collection badge. The title is on 1384029371, with objective 1299971712.
+  "LW_seal" => "1486062207", // includes collection badge. The title is on 1384029371, with objective 1299971712. PresentationNodeDefinition has a hash of the parent node and CompletionRecordHash of the title.
   "DSC_all" => "1726708384", // includes first 24 hours
   "DSC_seal" => "2960810718", // includes collection badge
   // "VoG_seal" => "",
+  // "VoG_all" => "",
+  "Beyond_Light_seal" => "79180995",
+  "Dredgen_seal" => "3665267419",
   "Conqueror_seal" => "3776992251", // currently includes season of the chosen guilding
   "MMXIX_seal" => "1194128730",
   "MMXX_seal" => "1210906310", // parent node for MMXX seal
   // "MMXXI_seal" => "",
+  // Seasonal challenges?
 );
+// I'll eventually want short names for the triumph tables
 
-// 
 
 // foreach ($records as $hash => $record) {
 //   if (array_intersect(array($hashes["GoS_all"], $hashes['GoS_seal']), $record["parentNodeHashes"])) {
@@ -64,10 +64,18 @@ $hashes = array(
 // The record icons are mostly generic. All non-collection GoS triumphs have the same icon. iconSequences has larger icons and variants for completed and not completed.
 // I haven't seen how to tell a triumph should be hidden or is earnable only during one season. (e.g. guilding or first 24 hours)
 
+// PresentationNode is the display category.
+// PN.hash = 616318467 is the parent node for all earnable seals. It has no parent. It's presentationNode children are the seals.
+// PN.completionRecordHash = record.hash for a seal.
+// PN.hash = record.parentNodeHash for a triumph in a seal. The records are also listed as children of the PN.
+// PN.hash = 1881970629 is the parent node for all legacy seals.
+// Other top-level PNs include: seasonal challenges, various metrics, items, various seasonal collection sets, badges, etc.
+
 // $text = file_get_contents("definitions/DestinyObjectiveDefinition-a1065791-e29c-4e23-9dc7-d88310a12936.json");
 // $objectives = json_decode($text, true);
 // echo_pretty_json($objectives);
 
 // TODO get a player's details
 
-echo "SCRIPT END";
+$runtime += microtime(true);
+echo "SCRIPT END after " . number_format($runtime, 3) . " seconds";
