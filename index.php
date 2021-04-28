@@ -1,81 +1,262 @@
 <?php
 
-// testing and development page
-
-ob_end_flush();
-echo '<pre>';
-
-
 include 'api.php';
 
-$runtime = -microtime(true);
-echo "SCRIPT START" . PHP_EOL . PHP_EOL;
+echo '<link rel="stylesheet" type="text/css" href="/tracker.css" media="screen">';
+echo '<pre>';
 
-// update_definitions();
+// $records = get_definitions('Record');
+// $objectives = get_definitions('Objective');
+// $nodes = get_definitions('PresentationNode');
 
-// $result = api('/App/FirstParty/');
-// $result = api('/User/SearchUsers/?q=solid+kalium');
-// $result = api('/User/GetBungieNetUserById/31110/');
-// $result = api('/User/GetMembershipsById/31110/-1/');
-// $result = api('/GroupV2/Search/', json_encode(array('name' => "\u{03bb}nomaly", 'groupType' => 1))); // this only returns one result?
-// $result = api("/GroupV2/Name/\u{03bb}nomaly/1/"); // 0 general, 1 clan // also just one result
-// $result = api('/GroupV2/4331943/');
-// $result = api('/GroupV2/4331943/Members/');
+// cache results for all views?
 
-// echo_pretty_json($result);
+// TODO router
+list_pages();
 
 
-$records = get_definitions('Record');
-$objectives = get_definitions('Objective');
-$nodes = get_definitions('PresentationNode');
-// echo_pretty_json($records);
+function get_page_definitions() {
+  $pages = array(
+    array(
+      'name' => 'Last Wish',
+      'category' => 'Seals',
+      'subcategory' => 'Raid',
+      'seal_node_hash' => 1486062207,
+      'other_nodes' => array(1525933460),
+      'records' => array(
 
-$hashes = array(
-  "GoS_all" => "615240848", // parent node for Garden of Salvation raid (includes stasis and flawless)
-  "GoS_seal" => "1827854727", // parent node for Garden of Salvation seal (includes collection badge)
-  "LW_all" => "1525933460", // includes stasis
-  "LW_seal" => "1486062207", // includes collection badge. The title is on 1384029371, with objective 1299971712. PresentationNodeDefinition has a hash of the parent node and CompletionRecordHash of the title.
-  "DSC_all" => "1726708384", // includes first 24 hours
-  "DSC_seal" => "2960810718", // includes collection badge
-  // "VoG_seal" => "",
-  // "VoG_all" => "",
-  "Beyond_Light_seal" => "79180995",
-  "Dredgen_seal" => "3665267419",
-  "Conqueror_seal" => "3776992251", // currently includes season of the chosen guilding
-  "MMXIX_seal" => "1194128730",
-  "MMXX_seal" => "1210906310", // parent node for MMXX seal
-  // "MMXXI_seal" => "",
-  // Seasonal challenges?
-);
-// I'll eventually want short names for the triumph tables
+      ),
+    ),
+    array(
+      'name' => 'Garden of Salvation',
+      'category' => 'Seals',
+      'subcategory' => 'Raid',
+      'seal_node_hash' => 1827854727,
+      'other_nodes' => array(615240848),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Deep Stone Crypt',
+      'category' => 'Seals',
+      'subcategory' => 'Raid',
+      'seal_node_hash' => 2960810718,
+      'other_nodes' => array(1726708384),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Vault of Glass',
+      'category' => 'Seals',
+      'subcategory' => 'Raid',
+      'disable_reason' => 'not yet available',
+    ),
+    array(
+      'name' => 'Crucible',
+      'category' => 'Seals',
+      'subcategory' => 'Activity',
+      'seal_node_hash' => 2107507397,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Gambit',
+      'category' => 'Seals',
+      'subcategory' => 'Activity',
+      'seal_node_hash' => 3665267419,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Trials of Osiris',
+      'category' => 'Seals',
+      'subcategory' => 'Activity',
+      'seal_node_hash' => 1733555826,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Strikes',
+      'category' => 'Seals',
+      'subcategory' => 'Activity',
+      'seal_node_hash' => 3776992251,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Shadowkeep',
+      'category' => 'Seals',
+      'subcategory' => 'Seasonal',
+      'seal_node_hash' => 379405979,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Beyond Light',
+      'category' => 'Seals',
+      'subcategory' => 'Seasonal',
+      'seal_node_hash' => 79180995,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Season of the Hunt',
+      'category' => 'Seals',
+      'subcategory' => 'Seasonal',
+      'seal_node_hash' => 1321008463,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Season of the Chosen',
+      'category' => 'Seals',
+      'subcategory' => 'Seasonal',
+      'seal_node_hash' => 1321008462,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'MMXI',
+      'category' => 'Seals',
+      'subcategory' => 'Seasonal',
+      'disable_reason' => 'not yet available',
+    ),
+    array(
+      'name' => 'Dreaming City',
+      'category' => 'Seals',
+      'subcategory' => 'Destination',
+      'seal_node_hash' => 560097044,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Corrupted Eggs',
+      'category' => 'Checklists',
+      'subcategory' => null,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Ahamkara Bones',
+      'category' => 'Checklists',
+      'subcategory' => null,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Glykon Clues',
+      'category' => 'Checklists',
+      'subcategory' => null,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Catalysts',
+      'category' => 'Other',
+      'subcategory' => null,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+    array(
+      'name' => 'Seasonal Challenges',
+      'category' => 'Other',
+      'subcategory' => null,
+      'other_nodes' => array(),
+      'records' => array(
+
+      ),
+    ),
+  );
+
+  // if a record is in the records list, it should be displayed even if not part of a relevant node.
+  // if a record is suppressed, don't show it
+
+  return $pages;
+}
+
+function list_pages() {
+  // NOTE: could use more div containers for styling.
+
+  $pages = get_page_definitions();
+  $nodes = get_definitions('PresentationNode');
+  $records = get_definitions('Record');
+  // echo_pretty_json($nodes);
+
+  $page_index = array();
+  foreach ($pages as $page) {
+    $page_index[$page['category']][$page['subcategory']][] = $page;
+  }
+
+  foreach ($page_index as $category => $category_info) {
+    echo '<h2>' . $category . '</h2>';
+
+    foreach ($category_info as $subcategory => $subcategory_info) {
+      echo '<h3>' . $subcategory . '</h3>';
+
+      echo '<ul>';
+      foreach ($subcategory_info as $page) {
+        // TODO handle non-seals
+        echo '<li' . (empty($page['disable_reason']) ? '' :  ' disabled=1') . '>';
+        echo $page['name']; // TODO links
+        if (!empty($page['seal_node_hash'])) {
+          $seal_node = $nodes[$page['seal_node_hash']];
+          $seal_record = $records[$seal_node['completionRecordHash']];
+          echo ' (' . reset($seal_record['titleInfo']['titlesByGender']) . ')';
+        }
+        if (!empty($page['disable_reason'])) {
+          echo ' (' . $page['disable_reason'] . ')';
+        }
+        echo '</li>';
+      }
+      echo '</ul>';
+    }
+  }
+  
+
+  // $root_seal_node = $nodes['616318467'];
+  // // echo_pretty_json($root_seal_node);
+  // foreach ($root_seal_node['children']['presentationNodes'] as $node) {
+  //   $seal_node = $nodes[$node['presentationNodeHash']];
+  //   $seal_record = $records[$seal_node['completionRecordHash']];
+  //   echo 'node ' . $seal_node['hash'] . ' record ' . $seal_record['hash'] . ' ' . $seal_node['displayProperties']['name'] . ' ' . reset($seal_record['titleInfo']['titlesByGender']) . PHP_EOL;
+  //   // echo_pretty_json($node);
+  // }
+}
+
+function show_page() {
+  // main table
+  // separate list for people who've hidden their triumphs?
+  // show other details when clicking a column header or a cell? or on hover?
+  // add sort capability
+  // auto-sort complete to bottom. what is complete? closest to complete at the top
+}
 
 
-// foreach ($records as $hash => $record) {
-//   if (array_intersect(array($hashes["GoS_all"], $hashes['GoS_seal']), $record["parentNodeHashes"])) {
-//     if (count($record["objectiveHashes"]) === 1) {continue;}
-//     echo_pretty_json($record);
-//   }
-// }
-
-// objective hashes list the objectives per triumph. For solar/arc/etc, these indicate the different encounters+condition. The objectives have generic names describing the encounters. It will be better to just infer that the 4 parts are in order. completionValue is the number needed.
-// presentationNodeType: 1 Category, 2 Collectibles, 3 Record. Note: The triumph for the GoS seal for completing the badge is of type record.
-// toastStyle: 1 Record, 3 Badge, 4 MetaRecord, 7 GildedTitleComplete
-// featuredPriority tends to be min or max 32 bit signed int
-// The record icons are mostly generic. All non-collection GoS triumphs have the same icon. iconSequences has larger icons and variants for completed and not completed.
-// I haven't seen how to tell a triumph should be hidden or is earnable only during one season. (e.g. guilding or first 24 hours)
-
-// PresentationNode is the display category.
-// PN.hash = 616318467 is the parent node for all earnable seals. It has no parent. It's presentationNode children are the seals.
-// PN.completionRecordHash = record.hash for a seal.
-// PN.hash = record.parentNodeHash for a triumph in a seal. The records are also listed as children of the PN.
-// PN.hash = 1881970629 is the parent node for all legacy seals.
-// Other top-level PNs include: seasonal challenges, various metrics, items, various seasonal collection sets, badges, etc.
-
-// $text = file_get_contents("definitions/DestinyObjectiveDefinition-a1065791-e29c-4e23-9dc7-d88310a12936.json");
-// $objectives = json_decode($text, true);
-// echo_pretty_json($objectives);
-
-// TODO get a player's details
-
-$runtime += microtime(true);
-echo "SCRIPT END after " . number_format($runtime, 3) . " seconds";

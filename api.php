@@ -1,6 +1,7 @@
 <?php
 
 // TODO wrap in a class
+// This file currently covers both api access and convenience functions
 
 
 ///// PUBLIC API FUNCTIONS
@@ -142,7 +143,7 @@ function api($path, $post = false) {
 
   $curl_opts = array(
     CURLOPT_HTTPHEADER => array(
-      'X-API-Key: ' . file_get_contents("apikey.txt"),
+      'X-API-Key: ' . file_get_contents("secret.key"),
     ),
     CURLOPT_URL => $base . $path,
   );
@@ -168,6 +169,7 @@ function api($path, $post = false) {
   );
   foreach ($expected as $key => $value) {
     if ($result[$key] !== $value) {
+      echo_pretty_json($result);
       throw new Exception("Expected " . $key . " => " . json_encode($value) . ", but received " . json_encode($result[$key]));
     }
   }
@@ -300,4 +302,5 @@ function get_definitions($type) { // TODO memoize?
   return $data;
 }
 
+// TODO cache player data
 

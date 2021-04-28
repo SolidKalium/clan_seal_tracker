@@ -1,0 +1,12 @@
+
+h3 {
+  margin-left: 24px;
+}
+
+ul {
+  margin-left: 24px;
+}
+
+li[disabled="1"] {
+  color: grey;
+}
