@@ -9,6 +9,16 @@ class bungie_api {
     return self::api('/Destiny2/Manifest/');
   }
 
+  public static function get_memberships($membership_id, $membership_type = '-1') {
+    // This works with any kind of membership id.
+    // Type -1 means the type doesn't need to be specified
+
+    $membership_id = (int) $membership_id;
+    $membership_type = (int) $membership_type;
+
+    return bungie_api::api('/User/GetMembershipsById/' . $membership_id . '/' . $membership_type . '/');
+  }
+
   public static function get_group_members($group_id) {
     $group_id = (int) $group_id;
 
@@ -19,6 +29,7 @@ class bungie_api {
   }
 
   public static function get_profile($membership_type, $membership_id, $components = array(100)) {
+    // Needs to be called with the primary destiny membership details
     $map = array(
       'None' => 0,
       'Profiles' => 100,
@@ -68,6 +79,8 @@ class bungie_api {
 
     return self::api('/Destiny2/' . $membership_type . '/Profile/' . $membership_id. '/?components=' . implode(',', $components));
   }
+
+
 
   /** TODO function for each api call?
     // App

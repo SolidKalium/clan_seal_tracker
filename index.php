@@ -8,6 +8,7 @@ echo '<pre>';
 
 
 route();
+// TODO make a page that can select users?
 
 
 // $manifest = bungie_api::get_manifest();
@@ -339,6 +340,7 @@ function show_page($page_name, $type = null) {
 
   $headings[] = array(
     'name' => 'Player',
+    'description' => 'Name in Destiny',
   );
 
   foreach ($seal_node['children']['records'] as $record_skeleton) { // move the insides of this loop to a function?
@@ -349,9 +351,12 @@ function show_page($page_name, $type = null) {
       'description' => $record['displayProperties']['description'],
       'icon' => $record['displayProperties']['icon'],
       'objectives' => array(),
+      'interval_objectives' => array(),
+      'scope' => $record['scope'], // 0 account, 1 character
     ) + ($page['records'][$record['hash']] ?? array());
-    // echo_pretty_json($record);
-    // echo "record {$record['hash']} {$record['displayProperties']['name']}" . PHP_EOL;
+    if ($record['scope'] === 1) {
+      continue; // TODO don't skip character triumphs
+    }
     foreach ($record['objectiveHashes'] as $hash) {
       $objective = $objectives[$hash]; // completion value, progress description
       $heading['objectives'][] = array(
@@ -359,9 +364,19 @@ function show_page($page_name, $type = null) {
         'name' => $objective['progressDescription'],
         'completionValue' => $objective['completionValue'],
       );
-      // echo "\tobjective {$objective['hash']} {$objective['progressDescription']}" . PHP_EOL;
-      // echo_pretty_json($objective);
     }
+    if (!empty($record['intervalInfo']['intervalObjectives'])) {
+      foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
+        // $interval_objective is just intervalValueScore and hash
+        $objective = $objectives[$interval_objective['intervalObjectiveHash']];
+        $heading['interval_objectives'][] = array(
+          'hash' => $objective['hash'],
+          'name' => $objective['progressDescription'],
+          'completionValue' => $objective['completionValue'],
+        );
+      }
+    }
+    
 
     $headings[] = $heading;
   }
@@ -373,10 +388,10 @@ function show_page($page_name, $type = null) {
   foreach ($headings as $heading) {
     $column_name = $heading['column_name'] ?? $heading['name'];
     if (empty($heading['objectives']) || count($heading['objectives']) === 1) {
-      $th1 .= "<th rowspan='2'>{$column_name}</th>";
+      $th1 .= "<th rowspan='2' title='{$heading['description']}''>{$column_name}</th>";
     } else {
       $count = count($heading['objectives']);
-      $th1 .= "<th colspan='$count'>{$column_name}</th>";
+      $th1 .= "<th colspan='$count' title='{$heading['description']}'>{$column_name}</th>";
       foreach ($heading['objectives'] as $key => $objective) {
         $subcolumn_name = !empty($heading['number_objectives']) ? $key + 1 : $objective['name'];
         $th2 .= "<th>$subcolumn_name</th>";
@@ -394,7 +409,7 @@ function show_page($page_name, $type = null) {
       continue;
     }
     $player_data = array(
-      'name' => profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']),
+      'name' => profiles::get_display_name($profile),
       'total_completion' => 0,
       'records' => array(),
     );
@@ -403,6 +418,10 @@ function show_page($page_name, $type = null) {
         continue;
       }
 
+      if (empty($profile['profileRecords']['data']['records'][$heading['record_hash']])) { // TODO handle character scope
+        echo_pretty_json($heading);
+        echo_pretty_json($profile);
+      }
       $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
       $player_data['records'][$heading['record_hash']] = $profile_record;
       $player_data['total_completion'] += estimate_player_record_progress($profile_record);
@@ -427,23 +446,32 @@ function show_page($page_name, $type = null) {
       }
 
       $player_record = $player_data['records'][$heading['record_hash']];
-      // echo_pretty_json($player_record);
-      foreach ($heading['objectives'] as $key => $objective) {
-        // echo_pretty_json($objective);
-        $player_objective = $player_record['objectives'][$key];
-        if ($player_objective['objectiveHash'] !== $objective['hash']) { // ensure the order is constant
-          throw new Exception("hashes don't match. {$player_objective['objectiveHash']} !== {$objective['hash']}");
+      if (!empty($heading['objectives'])) {
+        foreach ($heading['objectives'] as $key => $objective) {
+          $player_objective = $player_record['objectives'][$key];
+          if ($player_objective['objectiveHash'] !== $objective['hash']) { // ensure the order is constant
+            throw new Exception("hashes don't match. {$player_objective['objectiveHash']} !== {$objective['hash']}");
+          }
+          $progress = $player_objective['progress'];
+          if ($progress === 0 || $progress === $objective['completionValue']) {
+            $progress = '';
+          }
+          $recordState = get_player_objective_state($player_record, $key);
+          $table .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$objective['completionValue']}'>$progress</td>";
         }
-        // echo_pretty_json($player_objective);
+      } else if (!empty($heading['interval_objectives'])) {
+        $key = count($heading['interval_objectives']) - 1; // assume last one is the highest. They should all have progress up to their cap
+        $player_objective = $player_record['intervalObjectives'][$key];
         $progress = $player_objective['progress'];
-        if ($progress === 0 || $progress === $objective['completionValue']) {
+        if ($progress === 0 || $progress === $player_objective['completionValue']) {
           $progress = '';
         }
         $recordState = get_player_objective_state($player_record, $key);
-        $table .= "<td recordState='$recordState'>$progress</td>"; // TODO tooltip showing min/max
+        $table .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$player_objective['completionValue']}'>$progress</td>";
       }
+        
     }
-    $table .= "</tr>";
+    $table .= "</tr>"; //break;
   }
 
   $table .= '</table>';
@@ -452,32 +480,45 @@ function show_page($page_name, $type = null) {
   // get seal triumphs
   // if all, add other cateogry triumphs
 
+  // TODO list
+  // support non-seal pages (all raid triumphs, gear, checklists, catalysts, challenges)
+  // highlight row and column on hover? (without bumping elements around)
   // make header float?
   // show other details when clicking a column header or a cell? or on hover?
   // add sort capability on columns?
-  // auto-sort complete to bottom. what is complete? closest to complete at the top
   // put clan name and icon somewhere? Show seal icon if relevant?
   // handle gilding?
+  // indicate triumphs with a reward remaining?
   // distinguish groups of columns?
 }
 
-// TODO force stadia name?
-// TODO highlight row and column on hover? (without bumping elements around)
-
 function estimate_player_record_progress($record) {
   $progress = 0;
-  foreach ($record['objectives'] as $objective) {
-    $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator?
+  $count = null;
+
+  if (!empty($record['objectives'])) {
+    $count = count($record['objectives']);
+    foreach ($record['objectives'] as $objective) {
+      $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator
+    }
+  } else if (!empty($record['intervalObjectives'])) {
+    $count = 1;
+    $objective = end($record['intervalObjectives']);
+    $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator
+  } else {
+    echo_pretty_json($record);
+    throw new Exception('No objectives found');
   }
-  return $progress / count($record['objectives']);
+
+  return $progress / $count;
 }
 
-function get_player_objective_state($record, $key) {
+function get_player_objective_state($record, $key) { // TODO switch this to space separated enums
   if ($record['state'] === 0) {
     return 0; // not yet redeemed
   }
 
-  $objective = $record['objectives'][$key];
+  $objective = $record['objectives'][$key] ?? $record['intervalObjectives'][$key];
   if ($objective['complete']) {
     return 1; // "redeemed"
   }

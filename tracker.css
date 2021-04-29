@@ -43,22 +43,39 @@ td[recordState="p"] { /*partial (not part of api)*/
   color: lightgrey;
 }
 
-td[recordState="2"] { /*reward unavailable. not yet seen*/
-  background-color: darkred;
+td[recordState="2"], td[recordState="6"] { /*reward unavailable*/
+  background-color: red;
+}
+td[recordState="2"]:after, td[recordState="6"]:after {
+  content: "reward";
+  color: pink;
 }
 
 td[recordState="4"] { /*objective not complete*/
   background-color: red;
 }
 
-td[recordState="8"] { /*obscured. not yet seen*/
-  background-color: grey;
+td[recordState="8"], td[recordState="12"] { /*obscured*/
+  background-color: lightgrey;
+}
+td[recordState="8"]:after, td[recordState="12"]:after {
+  content: "obscured";
+  color: white;
 }
 
-td[recordState="32"] { /*invisible. not yet seen*/
-  background-color: grey;
+td[recordState="16"], td[recordState="20"] { /*invisible*/
+  background-color: lightgrey;
+}
+td[recordState="16"]:after, td[recordState="20"]:after {
+  content: "invisible";
+  color: white;
 }
 
-td[recordState="64"] { /*content not owned. not yet seen*/
-  background-color: grey;
+td[recordState="32"], td[recordState="36"], td[recordState="38"], td[recordState="44"] { /*content not owned*/
+  background-color: lightgrey;
 }
+td[recordState="32"]:after, td[recordState="36"]:after, td[recordState="38"]:after, td[recordState="44"]:after {
+  content: "unowned";
+  color: white;
+}
+

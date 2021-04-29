@@ -1,12 +1,12 @@
 <?php
 
 // testing and development page
+include 'include.php';
 
-ob_end_flush();
+enable_implicit_flush();
 echo '<pre>';
 
 
-include 'include';
 
 $runtime = -microtime(true);
 echo "SCRIPT START" . PHP_EOL . PHP_EOL;
@@ -16,11 +16,11 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // $result = bungie_api::api('/App/FirstParty/');
 // $result = bungie_api::api('/User/SearchUsers/?q=solid+kalium');
 // $result = bungie_api::api('/User/GetBungieNetUserById/31110/');
-// $result = bungie_api::api('/User/GetMembershipsById/31110/-1/');
+// $result = bungie_api::api('/User/GetMembershipsById/4611686018433304729/-1/'); // 31110 kalium
 // $result = bungie_api::api('/GroupV2/Search/', json_encode(array('name' => "\u{03bb}nomaly", 'groupType' => 1))); // this only returns one result?
 // $result = bungie_api::api("/GroupV2/Name/\u{03bb}nomaly/1/"); // 0 general, 1 clan // also just one result
 // $result = bungie_api::api('/GroupV2/4331943/');
-$result = bungie_api::api('/GroupV2/4331943/Members/');
+// $result = bungie_api::api('/GroupV2/4331943/Members/');
 // $result = bungie_api::api('/Settings/'); // destiny2CoreSettings has useful top-level hashes
 // $result = bungie_api::api('/UserSystemOverrides/');
 // $result = bungie_api::api('/GlobalAlerts/');
@@ -64,7 +64,8 @@ $components = array(
 	// "Transitory" => 1000, // currently empty
 	// "Metrics" => 1100,
 );
-// $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components)));
+// $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components))); // kalium
+// $result = bungie_api::api('/Destiny2/3/Profile/4611686018490731084/?components=' . implode(',', array_values($components))); // scorpin
 
 echo_pretty_json($result);
 

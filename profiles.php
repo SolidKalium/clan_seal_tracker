@@ -36,7 +36,8 @@ class profiles {
     }
 
     $profile = bungie_api::get_profile($membership_type, $membership_id, self::$components);
-    file_put_contents($path, json_encode($profile));
+    $memberships = bungie_api::get_memberships($membership_id, $membership_type);
+    file_put_contents($path, json_encode($profile + $memberships));
     // self::$memo[$key] = $profile;
     return $profile;
   }
@@ -96,7 +97,8 @@ class profiles {
 
   public static function normalize_name($name) {
     // could also pass in the membership type or the whole profile. This is good enough for now.
-    // membership lists don't have all of the names, nor does profile by default
+    // membership lists don't have all of the names, nor does profile.
+    // The only way to get it all is from getting the membership list
 
     if (substr($name, -2) === '#0') {
       return $name . '000'; // all stadia names get 4 digits.
@@ -113,6 +115,18 @@ class profiles {
       return true;
     }
     return false;
+  }
+
+  public static function get_display_name($profile_data, $type = 5) {
+    if (!empty($profile_data['destinyMemberships'])) {
+      foreach ($profile_data['destinyMemberships'] as $membership) {
+        if ($membership['membershipType'] === $type) {
+          return self::normalize_name($membership['displayName']);
+        }
+      }
+    }
+
+    return self::normalize_name($profile_data['profile']['data']['userInfo']['displayName']);
   }
 
 }
