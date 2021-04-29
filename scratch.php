@@ -13,6 +13,9 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 
 // definitions::update();
 
+// $result = bungie_api::get_manifest();
+// $result = bungie_api::get_group_members(4331943); // Anomaly
+
 // $result = bungie_api::api('/App/FirstParty/');
 // $result = bungie_api::api('/User/SearchUsers/?q=solid+kalium');
 // $result = bungie_api::api('/User/GetBungieNetUserById/31110/');

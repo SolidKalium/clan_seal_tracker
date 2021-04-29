@@ -8,25 +8,20 @@ echo '<pre>';
 
 
 route();
-// TODO make a page that can select users?
 
-
-// $manifest = bungie_api::get_manifest();
-// echo_pretty_json($manifest);
-// $members = bungie_api::get_group_members(4331943); // Anomaly
-// echo_pretty_json($members);
-// // $member = end($members);
-// // echo_pretty_json($member);
-// // $profile = bungie_api::get_profile($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
-// // $profile = profiles::get($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
-// // echo_pretty_json($profile);
-// foreach ($members as $member) {
-//   echo 'fetch ' . profiles::normalize_name($member['destinyUserInfo']['displayName']) . PHP_EOL;
-//   $profile = profiles::get($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
-//   if (count($profile['profileRecords']) === 1) {
-//     echo '  high privacy' . PHP_EOL;
-//   }
-// }
+// TODO list
+  // support non-seal pages (all raid triumphs, gear, checklists, catalysts, challenges, weekly milestones?)
+  // highlight row and column on hover? (without bumping elements around)
+  // make header float?
+  // show other details when clicking a column header or a cell? or on hover?
+  // add sort capability on columns? (for sorting columns after load)
+  // put clan name and icon somewhere? Show seal icon if relevant?
+  // handle gilding? highlight borders with gold?
+  // indicate triumphs with a reward remaining?
+  // distinguish groups of columns?
+  // make a page that can select users?
+  // column order (before load)
+  // when to update definitions?
 
 
 function route() {
@@ -48,16 +43,17 @@ function get_page_definitions() {
       'seal_node_hash' => 1486062207,
       'other_nodes' => array(1525933460),
       'records' => array(
-         2756328801 => array('column_name' => 'Badge',),
-         3000516033 => array('column_name' => 'Arc', 'number_objectives' => true),
-         4078980921 => array('column_name' => 'Clan',),
-         342038729  => array('column_name' => 'Class', 'number_objectives' => true),
-         3448775736 => array('column_name' => 'Raid',),
-         623283604  => array('column_name' => 'Solar', 'number_objectives' => true),
-         2826160801 => array('column_name' => 'Void', 'number_objectives' => true),
-         717856991  => array('column_name' => 'Wishes',),
-         1359055399 => array('column_name' => 'Raid banners',),
-         628370196  => array('column_name' => 'Chests',),
+         2756328801 => array('column_name' => 'Badge', 'order' => 1),
+         3448775736 => array('column_name' => 'Raid', 'order' => 2),
+         4078980921 => array('column_name' => 'Clan', 'order' => 3),
+         3000516033 => array('column_name' => 'Arc', 'number_objectives' => true, 'order' => 4),
+         623283604  => array('column_name' => 'Solar', 'number_objectives' => true, 'order' => 5),
+         2826160801 => array('column_name' => 'Void', 'number_objectives' => true, 'order' => 6),
+         342038729  => array('column_name' => 'Class', 'number_objectives' => true, 'order' => 7),
+         717856991  => array('column_name' => 'Wishes', 'order' => -4),
+         1359055399 => array('column_name' => 'Raid banners', 'order' => -3),
+         628370196  => array('column_name' => 'Chests', 'order' => -2),
+         380332968  => array('column_name' => "Petra's Run", 'order' => -1),
       ),
     ),
     array(
@@ -325,63 +321,11 @@ function show_page($page_name, $type = null) {
     throw new Exception('Page not found');
   }
 
-  $nodes = definitions::get('PresentationNode');
-  $records = definitions::get('Record');
-  $objectives = definitions::get('Objective');
+  $players = profiles::get_cached_players(); // TODO flag for using cache vs current roster
+  // $players = bungie_api::get_group_members(4331943); // Anomaly
 
-  $seal_node = $nodes[$page['seal_node_hash']];
-  $seal_record = $records[$seal_node['completionRecordHash']]; // has title. ignore objective
-
-  // echo_pretty_json($seal_node);
-  // echo_pretty_json($seal_record);
-
-  $headings = array();
-  $rows = array();
-
-  $headings[] = array(
-    'name' => 'Player',
-    'description' => 'Name in Destiny',
-  );
-
-  foreach ($seal_node['children']['records'] as $record_skeleton) { // move the insides of this loop to a function?
-    $record = $records[$record_skeleton['recordHash']];
-    $heading = array(
-      'record_hash' => $record['hash'],
-      'name' => $record['displayProperties']['name'],
-      'description' => $record['displayProperties']['description'] .
-        ($record['expirationInfo']['description'] ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
-        ($record['requirements']['entitlementUnavailableMessage'] ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
-      'icon' => $record['displayProperties']['icon'],
-      'objectives' => array(),
-      'interval_objectives' => array(),
-      'scope' => $record['scope'], // 0 account, 1 character
-      // not handling rewards and interval rewards
-      // not handling ScoreValue and intervalScoreValues
-    ) + ($page['records'][$record['hash']] ?? array());
-
-    foreach ($record['objectiveHashes'] as $hash) {
-      $objective = $objectives[$hash]; // completion value, progress description
-      $heading['objectives'][] = array(
-        'hash' => $hash,
-        'name' => $objective['progressDescription'],
-        'completionValue' => $objective['completionValue'],
-      );
-    }
-    if (!empty($record['intervalInfo']['intervalObjectives'])) {
-      foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
-        // $interval_objective is just intervalValueScore and hash
-        $objective = $objectives[$interval_objective['intervalObjectiveHash']];
-        $heading['interval_objectives'][] = array(
-          'hash' => $objective['hash'],
-          'name' => $objective['progressDescription'],
-          'completionValue' => $objective['completionValue'],
-        );
-      }
-    }
-
-    $headings[] = $heading;
-  }
-  // echo_pretty_json($headings);
+  $headings = get_headings($page);
+  $rows = get_rows($headings, $players);
 
   
   $th1 = '';
@@ -402,45 +346,6 @@ function show_page($page_name, $type = null) {
 
   $table = "<table><tr>$th1</tr><tr>$th2</tr>";
 
-  $players = profiles::get_cached_players(); // TODO flag for using cache vs current roster
-  foreach ($players as $player) {
-    $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId']);
-    if (empty($profile['profileRecords']['data'])) {
-      // echo profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']) . ' is hidding' . PHP_EOL;
-      continue;
-    }
-    $player_data = array(
-      'name' => profiles::get_display_name($profile),
-      'total_completion' => 0,
-      'records' => array(),
-    );
-    foreach ($headings as $heading) {
-      if ($heading['name'] === 'Player') {
-        continue;
-      }
-
-      if ($heading['scope'] === 0) { // account scope
-        $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
-        $player_data['records'][$heading['record_hash']] = $profile_record;
-        $player_data['total_completion'] += estimate_player_record_progress($profile_record);
-      } else if ($heading['scope'] === 1) { // character scope
-        foreach ($profile['characterRecords']['data'] as $character_hash => $character_records) {
-          $character_record = $character_records['records'][$heading['record_hash']];
-          $temp[] = $character_record;
-          $player_data['records'][$heading['record_hash']] = $character_record;
-          $player_data['total_completion'] += estimate_player_record_progress($character_record);
-          break;
-        }
-        // if (count(array_unique(array_map('json_encode', $temp))) > 1) { echo_pretty_json($temp); exit(); } // so far the records are identical
-      } else {
-        throw new Exception('scope ' . $heading['scope'] . ' not handled');
-      }
-    }
-    $rows[] = $player_data;
-  }
-
-  $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
-  usort($rows, build_sorter($max_completion));
 
   foreach ($rows as $player_data) {
     $table .= "<tr>";
@@ -486,20 +391,114 @@ function show_page($page_name, $type = null) {
 
   $table .= '</table>';
   echo $table;
+}
 
-  // get seal triumphs
-  // if all, add other cateogry triumphs
+function get_headings($page) {
+  $nodes = definitions::get('PresentationNode');
+  $records = definitions::get('Record');
+  $objectives = definitions::get('Objective');
 
-  // TODO list
-  // support non-seal pages (all raid triumphs, gear, checklists, catalysts, challenges)
-  // highlight row and column on hover? (without bumping elements around)
-  // make header float?
-  // show other details when clicking a column header or a cell? or on hover?
-  // add sort capability on columns?
-  // put clan name and icon somewhere? Show seal icon if relevant?
-  // handle gilding?
-  // indicate triumphs with a reward remaining?
-  // distinguish groups of columns?
+  $seal_node = $nodes[$page['seal_node_hash']];
+  $seal_record = $records[$seal_node['completionRecordHash']]; // has title. ignore objective
+
+  // echo_pretty_json($seal_node);
+  // echo_pretty_json($seal_record);
+
+  $headings[] = array(
+    'name' => 'Player',
+    'description' => 'Name in Destiny',
+    'order' => 0,
+  );
+
+  $add_index = 0;
+
+  foreach ($seal_node['children']['records'] as $record_skeleton) {
+    $record = $records[$record_skeleton['recordHash']];
+    $heading = array(
+      'record_hash' => $record['hash'],
+      'name' => $record['displayProperties']['name'],
+      'description' => $record['displayProperties']['description'] .
+        ($record['expirationInfo']['description'] ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
+        ($record['requirements']['entitlementUnavailableMessage'] ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
+      'icon' => $record['displayProperties']['icon'],
+      'objectives' => array(),
+      'interval_objectives' => array(),
+      'scope' => $record['scope'], // 0 account, 1 character
+      'order' => $page['records'][$record['hash']]['order'] ?? (100 + $add_index++),
+      // not handling rewards and interval rewards
+      // not handling ScoreValue and intervalScoreValues
+    ) + ($page['records'][$record['hash']] ?? array());
+
+    foreach ($record['objectiveHashes'] as $hash) {
+      $objective = $objectives[$hash]; // completion value, progress description
+      $heading['objectives'][] = array(
+        'hash' => $hash,
+        'name' => $objective['progressDescription'],
+        'completionValue' => $objective['completionValue'],
+      );
+    }
+    if (!empty($record['intervalInfo']['intervalObjectives'])) {
+      foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
+        // $interval_objective is just intervalValueScore and hash
+        $objective = $objectives[$interval_objective['intervalObjectiveHash']];
+        $heading['interval_objectives'][] = array(
+          'hash' => $objective['hash'],
+          'name' => $objective['progressDescription'],
+          'completionValue' => $objective['completionValue'],
+        );
+      }
+    }
+
+    $headings[] = $heading;
+  }
+
+  usort($headings, 'column_sorter');
+  // echo_pretty_json($headings);
+  return $headings;
+}
+function get_rows($headings, $players) {
+  $rows = array();
+
+  foreach ($players as $player) {
+    $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId']);
+    if (empty($profile['profileRecords']['data'])) {
+      // echo profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']) . ' is hidding' . PHP_EOL;
+      continue;
+    }
+    $player_data = array(
+      'name' => profiles::get_display_name($profile),
+      'total_completion' => 0,
+      'records' => array(),
+    );
+    foreach ($headings as $heading) {
+      if ($heading['name'] === 'Player') {
+        continue;
+      }
+
+      if ($heading['scope'] === 0) { // account scope
+        $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
+        $player_data['records'][$heading['record_hash']] = $profile_record;
+        $player_data['total_completion'] += estimate_player_record_progress($profile_record);
+      } else if ($heading['scope'] === 1) { // character scope
+        foreach ($profile['characterRecords']['data'] as $character_hash => $character_records) {
+          $character_record = $character_records['records'][$heading['record_hash']];
+          $temp[] = $character_record;
+          $player_data['records'][$heading['record_hash']] = $character_record;
+          $player_data['total_completion'] += estimate_player_record_progress($character_record);
+          break;
+        }
+        // if (count(array_unique(array_map('json_encode', $temp))) > 1) { echo_pretty_json($temp); exit(); } // so far the records are identical
+      } else {
+        throw new Exception('scope ' . $heading['scope'] . ' not handled');
+      }
+    }
+    $rows[] = $player_data;
+  }
+
+  $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
+  usort($rows, get_row_sorter($max_completion));
+
+  return $rows;
 }
 
 function estimate_player_record_progress($record) {
@@ -523,22 +522,32 @@ function estimate_player_record_progress($record) {
   return $progress / $count;
 }
 
-function get_player_objective_state($record, $key) { // TODO switch this to space separated enums
+function get_player_objective_state($record, $key) {
+  // Combines objective progress with overall record state
+
   if ($record['state'] === 0) {
-    return 0; // not yet redeemed
+    return ''; // not yet redeemed
   }
 
   $objective = $record['objectives'][$key] ?? $record['intervalObjectives'][$key];
-  if ($objective['complete']) {
-    return 1; // "redeemed"
-  }
-  if ($objective['progress'] > 0) {
-    return 'p';
-  }
-  return $record['state'];
+
+  $complete = ($record['state'] & 1) || $objective['complete'];
+
+  $enums = array(
+    'complete' => $complete, // this state technically means "redeemed"
+    'reward' => ($record['state'] & 2) && !$complete,
+    'incomplete' => ($record['state'] & 4) && (!$objective['complete']),
+    'obscured' => $record['state'] & 8,
+    'hidden' => $record['state'] & 16,
+    'unowned' => $record['state'] & 32,
+    // 'title' => $record['state'] & 64,
+    'progress' => !$complete && ($objective['progress'] > 0),
+  );
+
+  return implode(' ', array_keys(array_filter($enums)));
 }
 
-function build_sorter($max_completion) {
+function get_row_sorter($max_completion) {
     return function ($a, $b) use ($max_completion) {
         // return value is cast to int, so returning a float less than 1 may cause incorrect sort order.
         if ($a['total_completion'] === $b['total_completion']) {
@@ -555,6 +564,24 @@ function build_sorter($max_completion) {
         }
         return 1;
     };
+}
+
+function column_sorter($a, $b) {
+  // This is not a stable sort. Provide default values to columns to guarantee an order.
+
+  // order
+  $ao = $a['order'] ?? null;
+  $bo = $b['order'] ?? null;
+
+  // group
+  // 0 player name, 1 positive, 2 null/unsorted, 3 negative
+  $ag = $ao === 0 ? 0 : ($ao > 0 ? 1 : ($ao === null ? 2 : 3));
+  $bg = $bo === 0 ? 0 : ($bo > 0 ? 1 : ($bo === null ? 2 : 3));
+
+  if ($ag !== $bg) {
+    return $ag - $bg;
+  }
+  return $ao - $bo;
 }
 
 

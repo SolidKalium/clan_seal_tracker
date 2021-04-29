@@ -29,53 +29,53 @@ td[recordState] { /*All data cells, but not player column*/
   text-align: center;
 }
 
-td[recordState="0"] { /*could be redeemed*/
+td[recordState=""] { /*could be redeemed*/
   background-color: lightgreen;
   color: white;
 }
 
-td[recordState="1"] { /*redeemed*/
+td[recordState~="complete"] {
   background-color: green;
   color: lightgrey;
 }
 
-td[recordState="p"] { /*partial (not part of api)*/
-  background-color: yellow;
-  color: lightgrey;
-}
-
-td[recordState="2"], td[recordState="6"] { /*reward unavailable*/
+td[recordState~="reward"] { /*reward unavailable*/
   background-color: red;
 }
-td[recordState="2"]:after, td[recordState="6"]:after {
+td[recordState~="reward"]:after {
   content: "reward";
   color: pink;
 }
 
-td[recordState="4"] { /*objective not complete*/
+td[recordState~="incomplete"] {
   background-color: red;
 }
 
-td[recordState="8"], td[recordState="12"] { /*obscured*/
+td[recordState~="progress"] { /*not part of api*/
+  background-color: yellow;
+  color: lightgrey;
+}
+
+td[recordState~="obscured"] {
   background-color: lightgrey;
 }
-td[recordState="8"]:after, td[recordState="12"]:after {
+td[recordState~="obscured"]:after {
   content: "obscured";
   color: white;
 }
 
-td[recordState="16"], td[recordState="20"] { /*invisible*/
+td[recordState~="hidden"] {
   background-color: lightgrey;
 }
-td[recordState="16"]:after, td[recordState="20"]:after {
+td[recordState~="hidden"]:after {
   content: "hidden";
   color: white;
 }
 
-td[recordState="32"], td[recordState="36"], td[recordState="38"], td[recordState="44"] { /*content not owned*/
+td[recordState~="unowned"] { /*content not owned*/
   background-color: lightgrey;
 }
-td[recordState="32"]:after, td[recordState="36"]:after, td[recordState="38"]:after, td[recordState="44"]:after {
+td[recordState~="unowned"]:after {
   content: "unowned";
   color: white;
 }
