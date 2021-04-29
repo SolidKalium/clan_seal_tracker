@@ -85,7 +85,7 @@ $hashes = array(
   // "VoG_all" => "",
   "Beyond_Light_seal" => "79180995",
   "Dredgen_seal" => "3665267419",
-  "Conqueror_seal" => "3776992251", // currently includes season of the chosen guilding
+  "Conqueror_seal" => "3776992251", // currently includes season of the chosen gilding
   "MMXIX_seal" => "1194128730",
   "MMXX_seal" => "1210906310", // parent node for MMXX seal
   // "MMXXI_seal" => "",
@@ -113,7 +113,7 @@ $hashes = array(
 // objective hashes list the objectives per triumph. For solar/arc/etc, these indicate the different encounters+condition. The objectives have generic names describing the encounters. It will be better to just infer that the 4 parts are in order. completionValue is the number needed.
 // featuredPriority tends to be min or max 32 bit signed int
 // The record icons are mostly generic. All non-collection GoS triumphs have the same icon. iconSequences has larger icons and variants for completed and not completed.
-// I haven't seen how to tell a triumph should be hidden or is earnable only during one season. (e.g. guilding or first 24 hours)
+// I haven't seen how to tell a triumph should be hidden or is earnable only during one season. (e.g. gilding or first 24 hours)
 // destiny and bungie membershipIDs are not the same
 // DestinyUnlockValueUIStyle controls how the unlock value "should" be displayed
 

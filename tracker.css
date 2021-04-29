@@ -10,3 +10,55 @@ ul {
 li[disabled="1"] {
   color: grey;
 }
+
+th {
+  border: 1px solid black;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+span.name-number {
+  color: lightgrey;
+}
+
+td:not([recordState]) {
+  border-bottom: 1px solid #ddd;
+}
+
+td[recordState] { /*All data cells, but not player column*/
+  text-align: center;
+}
+
+td[recordState="0"] { /*could be redeemed*/
+  background-color: lightgreen;
+}
+
+td[recordState="1"] { /*redeemed*/
+  background-color: green;
+  color: lightgrey;
+}
+
+td[recordState="p"] { /*partial (not part of api)*/
+  background-color: yellow;
+  color: lightgrey;
+}
+
+td[recordState="2"] { /*reward unavailable. not yet seen*/
+  background-color: darkred;
+}
+
+td[recordState="4"] { /*objective not complete*/
+  background-color: red;
+}
+
+td[recordState="8"] { /*obscured. not yet seen*/
+  background-color: grey;
+}
+
+td[recordState="32"] { /*invisible. not yet seen*/
+  background-color: grey;
+}
+
+td[recordState="64"] { /*content not owned. not yet seen*/
+  background-color: grey;
+}
