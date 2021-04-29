@@ -47,7 +47,16 @@ function get_page_definitions() {
       'seal_node_hash' => 1486062207,
       'other_nodes' => array(1525933460),
       'records' => array(
-
+         2756328801 => array('column_name' => 'Badge',),
+         3000516033 => array('column_name' => 'Arc', 'number_objectives' => true),
+         4078980921 => array('column_name' => 'Clan',),
+         342038729  => array('column_name' => 'Class', 'number_objectives' => true),
+         3448775736 => array('column_name' => 'Raid',),
+         623283604  => array('column_name' => 'Solar', 'number_objectives' => true),
+         2826160801 => array('column_name' => 'Void', 'number_objectives' => true),
+         717856991  => array('column_name' => 'Wishes',),
+         1359055399 => array('column_name' => 'Raid banners',),
+         628370196  => array('column_name' => 'Chests',),
       ),
     ),
     array(
@@ -61,12 +70,12 @@ function get_page_definitions() {
         3804486505 => array('column_name' => 'Raid',),
         1221037312 => array('column_name' => 'Clan',),
         3427328428 => array('column_name' => 'Arc', 'number_objectives' => true),
-        277137394 => array('column_name' => 'Void', 'number_objectives' => true),
+        277137394  => array('column_name' => 'Void', 'number_objectives' => true),
         2571794337 => array('column_name' => 'Solar', 'number_objectives' => true),
          // => array('column_name' => 'Stasis', 'number_objectives' => true),
          // => array('column_name' => 'Class', 'number_objectives' => true),
         1922270325 => array('column_name' => 'Chests',),
-        521675034 => array('column_name' => 'Divinity',),
+        521675034  => array('column_name' => 'Divinity',),
       ),
     ),
     array(
@@ -76,7 +85,16 @@ function get_page_definitions() {
       'seal_node_hash' => 2960810718,
       'other_nodes' => array(1726708384),
       'records' => array(
-
+        3504856768 => array('column_name' => 'Badge',),
+        3185876102 => array('column_name' => 'Raid',),
+        518342793  => array('column_name' => 'Clan',),
+        564366615  => array('column_name' => 'Class', 'number_objectives' => true),
+        3834307795 => array('column_name' => 'Arc', 'number_objectives' => true),
+        3200831458 => array('column_name' => 'Solar', 'number_objectives' => true),
+        513707022  => array('column_name' => 'Stasis', 'number_objectives' => true),
+        3875695735 => array('column_name' => 'Void', 'number_objectives' => true),
+        992355976  => array('column_name' => 'Chests', 'number_objectives' => true),
+        3323713181 => array('column_name' => 'Exo Logs', 'number_objectives' => true),
       ),
     ),
     array(
