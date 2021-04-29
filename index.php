@@ -348,15 +348,17 @@ function show_page($page_name, $type = null) {
     $heading = array(
       'record_hash' => $record['hash'],
       'name' => $record['displayProperties']['name'],
-      'description' => $record['displayProperties']['description'],
+      'description' => $record['displayProperties']['description'] .
+        ($record['expirationInfo']['description'] ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
+        ($record['requirements']['entitlementUnavailableMessage'] ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
       'icon' => $record['displayProperties']['icon'],
       'objectives' => array(),
       'interval_objectives' => array(),
       'scope' => $record['scope'], // 0 account, 1 character
+      // not handling rewards and interval rewards
+      // not handling ScoreValue and intervalScoreValues
     ) + ($page['records'][$record['hash']] ?? array());
-    if ($record['scope'] === 1) {
-      continue; // TODO don't skip character triumphs
-    }
+
     foreach ($record['objectiveHashes'] as $hash) {
       $objective = $objectives[$hash]; // completion value, progress description
       $heading['objectives'][] = array(
@@ -376,7 +378,6 @@ function show_page($page_name, $type = null) {
         );
       }
     }
-    
 
     $headings[] = $heading;
   }
@@ -418,16 +419,25 @@ function show_page($page_name, $type = null) {
         continue;
       }
 
-      if (empty($profile['profileRecords']['data']['records'][$heading['record_hash']])) { // TODO handle character scope
-        echo_pretty_json($heading);
-        echo_pretty_json($profile);
+      if ($heading['scope'] === 0) { // account scope
+        $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
+        $player_data['records'][$heading['record_hash']] = $profile_record;
+        $player_data['total_completion'] += estimate_player_record_progress($profile_record);
+      } else if ($heading['scope'] === 1) { // character scope
+        foreach ($profile['characterRecords']['data'] as $character_hash => $character_records) {
+          $character_record = $character_records['records'][$heading['record_hash']];
+          $temp[] = $character_record;
+          $player_data['records'][$heading['record_hash']] = $character_record;
+          $player_data['total_completion'] += estimate_player_record_progress($character_record);
+          break;
+        }
+        // if (count(array_unique(array_map('json_encode', $temp))) > 1) { echo_pretty_json($temp); exit(); } // so far the records are identical
+      } else {
+        throw new Exception('scope ' . $heading['scope'] . ' not handled');
       }
-      $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
-      $player_data['records'][$heading['record_hash']] = $profile_record;
-      $player_data['total_completion'] += estimate_player_record_progress($profile_record);
     }
     $rows[] = $player_data;
-  }  
+  }
 
   $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
   usort($rows, build_sorter($max_completion));

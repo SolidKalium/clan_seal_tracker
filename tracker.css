@@ -31,6 +31,7 @@ td[recordState] { /*All data cells, but not player column*/
 
 td[recordState="0"] { /*could be redeemed*/
   background-color: lightgreen;
+  color: white;
 }
 
 td[recordState="1"] { /*redeemed*/
@@ -67,7 +68,7 @@ td[recordState="16"], td[recordState="20"] { /*invisible*/
   background-color: lightgrey;
 }
 td[recordState="16"]:after, td[recordState="20"]:after {
-  content: "invisible";
+  content: "hidden";
   color: white;
 }
 

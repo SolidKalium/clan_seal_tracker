@@ -129,7 +129,6 @@ $hashes = array(
 // $objectives = json_decode($text, true);
 // echo_pretty_json($objectives);
 
-// TODO get a player's details
 
 $runtime += microtime(true);
 echo "SCRIPT END after " . number_format($runtime, 3) . " seconds";
