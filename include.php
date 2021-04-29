@@ -7,9 +7,9 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
 set_error_handler("exception_error_handler");
 
 
-include_once 'bungie_api.php';
-include_once 'definitions.php';
-include_once 'profiles.php';
+include_once 'library/bungie_api.php';
+include_once 'library/definitions.php';
+include_once 'library/profiles.php';
 
 
 function echo_pretty_json($json) {

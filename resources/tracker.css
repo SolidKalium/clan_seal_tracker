@@ -1,0 +1,160 @@
+
+
+/* PAGE LISTING */
+
+h2 {
+  margin-bottom: 0px;
+}
+
+h3 {
+  margin-left: 24px;
+  margin-bottom: 6px;
+}
+
+ul {
+  margin-top: 0px;
+  margin-left: 24px;
+}
+
+li[disabled="1"] {
+  color: grey;
+}
+
+
+/* GENERAL */
+
+span.name-number {
+  color: lightgrey;
+}
+
+
+/* TABLE */
+
+th {
+  border: 1px solid black;
+  background-color: white;
+  /*padding-left: 2px;
+  padding-right: 2px;*/
+}
+
+thead {
+  background-color: white;
+}
+tr.first th {
+  position: sticky;
+  top: 0;
+}
+tr.second th {
+  position: sticky;
+  /*top defined in js */
+}
+
+th[gild] {
+  background-color: gold;
+}
+
+th td {
+  padding: 0px;
+}
+
+td {
+  border: 2px solid white;
+}
+
+tr:hover td {
+  border: 2px solid black;
+}
+
+td:not([recordState]) {
+  border-bottom: 1px solid #ddd;
+}
+
+td[recordState] { /*All data cells, but not player column*/
+  text-align: center;
+}
+
+td[recordState=""] { /*could be redeemed*/
+  background-color: var(--lime);
+  border-color: var(--lime);
+  color: grey;
+}
+
+td[recordState~="complete"] {
+  background-color: green;
+  border-color: green;
+  color: lightgrey;
+}
+
+td[recordState~="reward"] /*reward unavailable*/, td[recordState~="incomplete"] {
+  background-color: var(--red);
+  border-color: var(--red);
+  color: var(--red-text);
+}
+td[recordState~="reward"]:after {
+  content: "reward";
+}
+
+td[recordState~="progress"] { /*not part of api*/
+  background-color: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--yellow-text);
+}
+
+td[recordState~="obscured"], td[recordState~="hidden"], td[recordState~="unowned"] {
+  background-color: var(--silver);
+  border-color: var(--silver);
+  color: white;
+}
+td[recordState~="obscured"]:after {
+  content: "obscured";
+}
+td[recordState~="hidden"]:after {
+  content: "hidden";
+}
+td[recordState~="unowned"]:after {
+  content: "unowned";
+}
+
+
+/* 
+  colors from https://clrs.cc/
+  contrast is too high for some of these, especially for unimportant things like why a cell is grey
+*/
+* {
+  --navy: #001f3f;
+  --navy-text: hsla(210, 100%, 75%, 1.0);
+  --blue: #0074D9;
+  --blue-text: hsla(208, 100%, 85%, 1.0);
+  --aqua: #7FDBFF;
+  --aqua-text: hsla(197, 100%, 20%, 1.0);
+  --teal: #39CCCC;
+  --teal-text: black;
+  --olive: #3D9970;
+  --olive-text: hsla(153, 43%, 15%, 1.0);
+  --green: #2ECC40;
+  --green-text: hsla(127, 63%, 15%, 1.0);
+  --lime: #01FF70;
+  --lime-text: hsla(146, 100%, 20%, 1.0);
+  --yellow: #FFDC00;
+  --yellow-text: hsla(52, 100%, 20%, 1.0);
+
+  --orange: #FF851B;
+  --orange-text: hsla(28, 100%, 20%, 1.0);
+  --red: #FF4136;
+  --red-text: hsla(3, 100%, 25%, 1.0);
+  --maroon: #85144b;
+  --maroon-text: hsla(331, 74%, 70%, 1.0);
+  --fuchsia: #F012BE;
+  --fuchsia-text: hsla(314, 88%, 21%, 1.0);
+  --purple: #B10DC9;
+  --purple-text: hsla(292, 88%, 82%, 1.0);
+  --black: #111111;
+  --black-text: var(--silver);
+  --grey: #AAAAAA;
+  --grey-text: black;
+  --silver: #DDDDDD;
+  --silver-text: black;
+
+  --white: #ffffff;
+  --white-text: #444;
+}
