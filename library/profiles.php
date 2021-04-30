@@ -36,8 +36,8 @@ class profiles {
     }
 
     $profile = bungie_api::get_profile($membership_type, $membership_id, self::$components);
-    $memberships = bungie_api::get_memberships($membership_id, $membership_type);
-    file_put_contents($path, json_encode($profile + $memberships));
+    $profile += bungie_api::get_memberships($membership_id, $membership_type);
+    file_put_contents($path, json_encode($profile));
     // self::$memo[$key] = $profile;
     return $profile;
   }

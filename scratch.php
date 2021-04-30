@@ -15,8 +15,8 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
-display_node_hierarchy(3443694067, true); // TODO previous challenges? 3759694843
-
+display_node_hierarchy(1866538467, true); // TODO previous challenges? 3759694843
+// display_hash_info(3364492516);
 
 
 // $result = bungie_api::get_manifest();
@@ -31,8 +31,8 @@ display_node_hierarchy(3443694067, true); // TODO previous challenges? 375969484
 // $result = bungie_api::api('/GroupV2/4331943/');
 // $result = bungie_api::api('/GroupV2/4331943/Members/');
 // $result = bungie_api::api('/Settings/'); // destiny2CoreSettings has useful top-level hashes
-# $result = bungie_api::api('/UserSystemOverrides/');
-# $result = bungie_api::api('/GlobalAlerts/');
+// $result = bungie_api::api('/UserSystemOverrides/');
+// $result = bungie_api::api('/GlobalAlerts/');
 // $result = bungie_api::api('/Trending/Categories/'); // news
 // $result = bungie_api::api('/Destiny2/Milestones/'); // general milestone list
 // $result = bungie_api::api('/Destiny2/SearchDestinyPlayer/-1/SolidKalium/');
@@ -189,6 +189,20 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $s
   }
 } 
 
+function display_hash_info($hash) {
+  $types = array('PresentationNode', 'Record', 'Objective');
+
+  foreach ($types as $type) {
+    $definitions = definitions::get($type);
+    if (!empty($definitions[$hash])) {
+      echo $type . ' ' . $hash;
+      echo_pretty_json($definitions[$hash]);
+      return;
+    }
+  }
+
+  echo 'hash not found: ' . $hash . PHP_EOL;
+}
 
 
 

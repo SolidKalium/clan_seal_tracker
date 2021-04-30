@@ -12,8 +12,10 @@ include_once 'library/definitions.php';
 include_once 'library/profiles.php';
 
 
-function echo_pretty_json($json) {
-  echo '<pre>' . htmlspecialchars(json_encode($json, JSON_PRETTY_PRINT)) . PHP_EOL . PHP_EOL . '</pre>';
+function echo_pretty_json(...$jsons) {
+  foreach ($jsons as $json) {
+    echo '<pre>' . htmlspecialchars(json_encode($json, JSON_PRETTY_PRINT)) . PHP_EOL . PHP_EOL . '</pre>';
+  }
 }
 
 function display_table($rows) {

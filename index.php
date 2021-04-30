@@ -21,14 +21,18 @@ route();
   // put clan name and icon somewhere? Show seal icon if relevant?
   // distinguish groups of columns?
   // make a page that can select users?
-  // column order (before load)
+  // pin one or more users to the top?
+  // support multiple clans or default clusters of users? maybe use cookies and a selector page.
+  // column order (before load) (optional: columns that are completed the most are on the left)
   // when to update definitions from manifest?
   // how to tell which season a gilding triumph is for? I don't think this is in the api yet
-  // the names/descriptions/etc from Bungie need to be html escaped in some places before displaying them. e.g. eriana's vow catalyst. chrome figures it out but drops some text
+  // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now
   // link user names to a relevant d2 checklist page?
   // ability to highlight users with overlap in missing requiements. Compare just to one missing thing or rank by similarity? or both?
-  // support multiple clans or default clusters of users? maybe use cookies and a selector page.
-  // TODO how to save large webpage as image?
+  // harbinger - lost now more can have progress and be obscured. just show as progress?
+  // distinguish between unclaimed interval objectives and unclaimed but full-completed records?
+  // "progress" status might not be displaying in some cases (example: nightfall scores (interval objectives), edz lost sectors)
+  // third header for which node it came from?
 
 // Assumptions
   // interval objectives are always of the same kind.
@@ -116,14 +120,16 @@ function get_page_definitions() {
       'subcategory' => 'Raid',
       'disable_reason' => 'not yet available',
     ),
+
     'crucible' => array(
       'name' => 'Crucible',
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 2107507397,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        3973313476 /* account crucible */,
+        339137305 /* chosen/13 crucible */,
+        1667143694 /* hunt/12 crucible */,
       ),
     ),
     'gambit' => array(
@@ -131,9 +137,10 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 3665267419,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        97371225 /* account gambit */,
+        22122108 /* chosen/13 gambit */,
+        3758722403 /* hunt/12 gambit */,
       ),
     ),
     'trials' => array(
@@ -141,9 +148,10 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 1733555826,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        2739258696 /* account trials */,
+        2463489289 /* chosen/13 trials */,
+        3813527194 /* hunt/12 trials */,
       ),
     ),
     'strikes' => array(
@@ -151,19 +159,31 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 3776992251,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        1954283988 /* account nightfalls */,
+        1990811028 /* account strikes */,
+        636644708 /* chosen/13 strikes */,
+        2675905563 /* hunt/12 strikes */,
+        4285884347 /* dreaming city strikes */,
+        1427965125 /* tangled shore strikes */,
+        69244313 /*  nessus strikes */,
+        245634203 /* edz strikes */,
+        2973304209 /* cosmodrome strikes */,
       ),
     ),
+
     'shadowkeep' => array(
-      'name' => 'Shadowkeep',
+      'name' => 'Shadowkeep', // seal name is harbinger, not to be confused with the harbinger exotic quest
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 379405979,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        1172527717 /* shadowkeep */,
+        3580665945 /* nightmares */,
+        2130735626 /* nightmare time trials */,
+        1325869705 /* altar of sorrows */,
+        2832559544 /* exploration */,
+        1676236275 /* world */,
       ),
     ),
     'beyond_light' => array(
@@ -171,9 +191,11 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 79180995,
-      'other_node_hashes' => array(), // TODO
-      'records' => array(
-
+      'other_node_hashes' => array(
+        135736218 /* house salvation */,
+        3692479600 /* exploration */,
+        148653552 /* quests */,
+        2322553724 /* secrets */,
       ),
     ),
     'season_12' => array(
@@ -181,9 +203,11 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 1321008463,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        3669331558 /* quests */,
+        3937870096 /* activities */,
+        2802812434 /* gear */,
+        1808459779 /* general */,
       ),
     ),
     'season_13' => array(
@@ -191,9 +215,11 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 1321008462,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        643487148 /* quests */,
+        1071337794 /* activities */,
+        121075568 /* gear */,
+        3006777794 /* general */,
       ),
     ),
     'mmxxi' => array(
@@ -202,16 +228,51 @@ function get_page_definitions() {
       'subcategory' => 'Seasonal',
       'disable_reason' => 'not yet available',
     ),
+
     'dreaming_city' => array(
       'name' => 'Dreaming City',
       'category' => 'Seals',
       'subcategory' => 'Destination',
       'seal_node_hash' => 560097044,
-      'other_node_hashes' => array(),
-      'records' => array(
-
+      'other_node_hashes' => array(
+        1318886167 /* missions */,
+        3424890260 /* ascendant challenges */,
+        2983489279 /* exploration */,
+        3593914021 /* public events */,
+        1995542897 /* bounties */,
+        302201398 /* the curse */,
       ),
     ),
+    'tangled_shore' => array(
+      'name' => 'Tangled Shore',
+      'category' => 'Seals',
+      'subcategory' => 'Destination',
+      'other_node_hashes' => array(
+        1128540555 /* baron hunts */,
+        1764843934 /* challenges */,
+        4294103237 /* exploration */,
+        1876261587 /* public events */,
+      ),
+    ),
+    'nessus' => array(
+      'name' => 'Nessus',
+      'category' => 'Seals',
+      'subcategory' => 'Destination',
+      'other_node_hashes' => array(
+        1663192739 /* world */,
+        4161172201 /* exploration */,
+      ),
+    ),
+    'edz' => array(
+      'name' => 'European Dead Zone',
+      'category' => 'Seals',
+      'subcategory' => 'Destination',
+      'other_node_hashes' => array(
+        748764525 /* world */,
+        2074120351 /* exploration */,
+      ),
+    ),
+
     // Lost Sectors
     // Region Chests
     'corrupted_eggs' => array(
@@ -258,6 +319,39 @@ function get_page_definitions() {
       'subcategory' => null,
       'checklist_hash' => 3975225462,
     ),
+
+    'shattered_throne' => array(
+      'name' => 'Shattered Throne',
+      'category' => 'Dungeons',
+      'subcategory' => null,
+      'other_node_hashes' => array(1347078175),
+    ),
+    'pit_of_heresey' => array(
+      'name' => 'Pit of Heresy',
+      'category' => 'Dungeons',
+      'subcategory' => null,
+      'other_node_hashes' => array(2828966211),
+    ),
+    'prophecy' => array(
+      'name' => 'Prophecy',
+      'category' => 'Dungeons',
+      'subcategory' => null,
+      'other_node_hashes' => array(2228154284),
+    ),
+
+    'harbinger' => array(
+      'name' => 'Harbinger',
+      'category' => 'Quests',
+      'subcategory' => null,
+      'other_node_hashes' => array(1460167656),
+    ),
+    'presage' => array(
+      'name' => 'Presage',
+      'category' => 'Quests',
+      'subcategory' => null,
+      'other_node_hashes' => array(3108806378),
+    ),
+
     'milestones' => array(
       'name' => 'Milestones',
       'category' => 'Other',
@@ -288,6 +382,13 @@ function get_page_definitions() {
       ),
       'disable_reason' => 'in development', // TODO
     ),
+    'guardian_games' => array(
+      'name' => 'Guardian Games',
+      'category' => 'Other',
+      'subcategory' => null,
+      'other_node_hashes' => array(1965217294),
+    ),
+    // dawning
   );
 
   // other_node_hashes should only have nodes that are direct parents of records
@@ -383,9 +484,11 @@ function show_page($page_key, $type = null) {
   foreach ($headings as $heading) {
     $column_name = $heading['column_name'] ?? $heading['name'];
 
-    $heading_attributes = "title='{$heading['description']}'";
+    $heading_attributes = 'title="' . htmlspecialchars($heading['description']) . '"'; // first row
+    $heading_attributes_2 = ''; // second row / objectives
     if (!empty($heading['for_gilding'])) {
       $heading_attributes .= ' gild';
+      $heading_attributes_2 .= ' gild';
     }
     if (!empty($heading['record_hash'])) {
       $heading_attributes .= " record_hash='{$heading['record_hash']}'";
@@ -398,8 +501,8 @@ function show_page($page_key, $type = null) {
       $th1 .= "<th colspan='$count' $heading_attributes}'>{$column_name}</th>";
       foreach ($heading['objectives'] as $key => $objective) {
         $subcolumn_name = !empty($heading['number_objectives']) ? $key + 1 : $objective['name'];
-        $title = !empty($heading['number_objectives']) ? "title='{$objective['name']}'" : '';
-        $th2 .= "<th $title objective_hash='$key'>$subcolumn_name</th>";
+        $title = !empty($heading['number_objectives']) ? 'title="' . htmlspecialchars($objective['name']) . '"' : '';
+        $th2 .= "<th $title objective_hash='$key' $heading_attributes_2>$subcolumn_name</th>";
       }
     }
   }
@@ -466,6 +569,13 @@ function get_player_record_tds($player_data, $heading) {
     }
     $recordState = get_player_objective_state($player_record, $key);
     return "<td recordState='$recordState' title='{$player_objective['progress']}/{$player_objective['completionValue']}'>$progress</td>";
+  }
+
+  if (count($player_record) === 2 && !array_diff(array_keys($player_record), array('state', 'intervalsRedeemedCount'))) {
+    // certain unearnable triumphs only have state and intervalsRedeemedCount
+    // I haven't seen the state be zero, and it probably isn't possible to leave it unredeemed over seasons
+    $recordState = (($player_record['state'] === 0) || ($player_record['state'] & 1)) ? 'complete' : 'incomplete';
+    return "<td recordState='$recordState'></td>";
   }
 
   echo_pretty_json($heading);
@@ -596,9 +706,12 @@ function get_rows($headings, $players) {
       // echo profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']) . ' is hidding' . PHP_EOL;
       continue;
     }
+    $id = $player['destinyUserInfo']['membershipType'] . '_' . $player['destinyUserInfo']['membershipId'];
+    // if ($id !== '5_4611686018503337845') { continue; }
+    // if ($id !== '2_4611686018449964451') { continue; }
     $player_data = array(
       'name' => profiles::get_display_name($profile),
-      'id' => $player['destinyUserInfo']['membershipType'] . '_' . $player['destinyUserInfo']['membershipId'],
+      'id' => $id,
       'total_completion' => 0,
       'records' => array(),
       'checklist_entries' => array(),
@@ -686,12 +799,29 @@ function estimate_player_record_progress($record) {
   if (!empty($record['objectives'])) {
     $count = count($record['objectives']);
     foreach ($record['objectives'] as $objective) {
-      $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator
+      if ($objective['progress'] === 0 && $objective['complete']) {
+        // I don't know why progress is sometimes zero.
+        // Example: season 13 guardian games, one fell strike. Some players have the a real value and others don't.
+        //   D2checklist shows the correct value. reloading the data does not resolve
+        $progress += 1;
+      } else {
+        $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator
+      }
     }
   } else if (!empty($record['intervalObjectives'])) {
     $count = 1;
     $objective = end($record['intervalObjectives']);
     $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator
+  } else if (isset($record['state'])) {
+    // state is not normally on a record.
+    // example: season 12 trials confidence is high.
+
+    $count = 1;
+    if (($record['state'] === 0) || ($record['state'] & 1)) { // complete or just not redeemed yet
+      $progress = 1;
+    } else {
+      $progress = 0;
+    }
   } else {
     echo_pretty_json($record);
     throw new Exception('No objectives found');
