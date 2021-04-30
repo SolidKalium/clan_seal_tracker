@@ -60,6 +60,7 @@ th td {
 
 td {
   border: 2px solid white;
+  height: 21px; /* This is the default for cells with text in them. If no text in a row, it was defaulting to 20. Includes padding and margin. */
 }
 
 tr:hover td {

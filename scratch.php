@@ -11,8 +11,13 @@ echo '<pre>';
 $runtime = -microtime(true);
 echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 
+
 // definitions::update();
 // list_all_seals($active = false);
+// list_all_checklists($verbose = true);
+display_node_hierarchy(3443694067, true); // TODO previous challenges? 3759694843
+
+
 
 // $result = bungie_api::get_manifest();
 // $result = bungie_api::get_group_members(4331943); // Anomaly
@@ -26,8 +31,8 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // $result = bungie_api::api('/GroupV2/4331943/');
 // $result = bungie_api::api('/GroupV2/4331943/Members/');
 // $result = bungie_api::api('/Settings/'); // destiny2CoreSettings has useful top-level hashes
-// $result = bungie_api::api('/UserSystemOverrides/');
-// $result = bungie_api::api('/GlobalAlerts/');
+# $result = bungie_api::api('/UserSystemOverrides/');
+# $result = bungie_api::api('/GlobalAlerts/');
 // $result = bungie_api::api('/Trending/Categories/'); // news
 // $result = bungie_api::api('/Destiny2/Milestones/'); // general milestone list
 // $result = bungie_api::api('/Destiny2/SearchDestinyPlayer/-1/SolidKalium/');
@@ -71,42 +76,10 @@ $components = array(
 // $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components))); // kalium
 // $result = bungie_api::api('/Destiny2/3/Profile/4611686018490731084/?components=' . implode(',', array_values($components))); // scorpin
 
-// echo_pretty_json($result);
+if (!empty($result)) {
+  echo_pretty_json($result);
+}
 
-
-// $records = definitions::get('Record');
-// $objectives = definitions::get('Objective');
-// $nodes = definitions::get('PresentationNode');
-// echo_pretty_json($records);
-
-$hashes = array(
-  "GoS_all" => "615240848", // parent node for Garden of Salvation raid (includes stasis and flawless)
-  "GoS_seal" => "1827854727", // parent node for Garden of Salvation seal (includes collection badge)
-  "LW_all" => "1525933460", // includes stasis
-  "LW_seal" => "1486062207", // includes collection badge. The title is on 1384029371, with objective 1299971712. PresentationNodeDefinition has a hash of the parent node and CompletionRecordHash of the title.
-  "DSC_all" => "1726708384", // includes first 24 hours
-  "DSC_seal" => "2960810718", // includes collection badge
-  // "VoG_seal" => "",
-  // "VoG_all" => "",
-  "Beyond_Light_seal" => "79180995",
-  "Dredgen_seal" => "3665267419",
-  "Conqueror_seal" => "3776992251", // currently includes season of the chosen gilding
-  "MMXIX_seal" => "1194128730",
-  "MMXX_seal" => "1210906310", // parent node for MMXX seal
-  // "MMXXI_seal" => "",
-  // Seasonal challenges?
-  // Checklists?
-  // Catalysts?
-);
-// I'll eventually want short names for the triumph tables
-
-
-// foreach ($records as $hash => $record) {
-//   if (array_intersect(array($hashes["GoS_all"], $hashes['GoS_seal']), $record["parentNodeHashes"])) {
-//     if (count($record["objectiveHashes"]) === 1) {continue;}
-//     echo_pretty_json($record);
-//   }
-// }
 
 /** Quick dictionary reference 
  * presentationNodeType: 1 Category, 2 Collectibles, 3 Record. Note: The triumph for the GoS seal for completing the badge is of type record.
@@ -121,10 +94,6 @@ $hashes = array(
 // I haven't seen how to tell a triumph should be hidden or is earnable only during one season. (e.g. gilding or first 24 hours)
 // destiny and bungie membershipIDs are not the same
 // DestinyUnlockValueUIStyle controls how the unlock value "should" be displayed
-
-// $text = file_get_contents("definitions/DestinyObjectiveDefinition-a1065791-e29c-4e23-9dc7-d88310a12936.json");
-// $objectives = json_decode($text, true);
-// echo_pretty_json($objectives);
 
 
 $runtime += microtime(true);
@@ -151,6 +120,81 @@ function list_all_seals($active = true) {
   }
   echo PHP_EOL;
 }
+
+function list_all_checklists($verbose = false) {
+  $checklists = definitions::get('Checklist');
+
+  $checklist_data = array();
+  foreach ($checklists as $key => $checklist) {
+    $checklist_data[] = array(
+      'hash' => $key,
+      'scope' => $checklist['scope'],
+      'count' => count($checklist['entries']),
+      'name' => $checklist['displayProperties']['name'],
+      'description' => $checklist['displayProperties']['description'],
+      'has_icon' => $checklist['displayProperties']['hasIcon'] ? 'yes' : 'no',
+      'action_string' => $checklist['viewActionString'],
+      'redacted' => $checklist['redacted'] ? 'yes' : 'no',
+      'blacklisted' => $checklist['blacklisted'] ? 'yes' : 'no',
+    );
+
+    if ($verbose) {
+      echo '<h3>' . $checklist['displayProperties']['name'] . '</h3>';
+      display_table($checklist['entries']);
+    }
+  }
+
+  echo '<h3>All Checklists</h3>';
+  display_table($checklist_data);
+  echo PHP_EOL;
+}
+
+function display_node_hierarchy($root_hash = '1866538467' /* records root */, $show_non_node_children = false, $current_depth = 0) {
+  // "collectionRootNode": 3790247699,
+  // "badgesRootNode": 498211331,
+  // "metricsRootNode": 1074663644,
+  // "activeTriumphsRootNodeHash": 1866538467,
+  // "activeSealsRootNodeHash": 616318467,
+  // "legacyTriumphsRootNodeHash": 3215903653,
+  // "legacySealsRootNodeHash": 1881970629,
+  // "medalsRootNodeHash": 3901403713,
+  // "exoticCatalystsRootNodeHash": 511607103,
+  // "loreRootNodeHash": 1993337477,
+  // "seasonalChallengesPresentationNodeHash": 3443694067,
+
+  $nodes = definitions::get('PresentationNode');
+  $node = $nodes[$root_hash];
+
+  $padding = str_pad('', 2 * $current_depth);
+  echo $padding . "<span style='color:silver;'>" . str_pad($root_hash, 10) . "</span> {$node['displayProperties']['name']} <span style='color:silver;'>{$node['displayProperties']['description']}</span>" . PHP_EOL;
+
+  if ($show_non_node_children) {
+    if (!empty($node['children']['collectibles'])) {
+      echo $padding . '  has collectibles' . PHP_EOL; // could add display
+    }
+    if (!empty($node['children']['records'])) {
+      echo $padding . '  has records' . PHP_EOL; // could add display
+    }
+    if (!empty($node['children']['metrics'])) {
+      echo $padding . '  has metrics' . PHP_EOL; // could add display
+    }
+  }
+
+  foreach ($node['children']['presentationNodes'] as $child) {
+    display_node_hierarchy($child['presentationNodeHash'], $show_non_node_children, $current_depth + 1);
+  }
+
+  if (!$current_depth) {
+    echo PHP_EOL;
+  }
+} 
+
+
+
+
+
+
+
 
 
 

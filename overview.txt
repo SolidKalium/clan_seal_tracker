@@ -38,7 +38,8 @@ Some can have an associated record.
 These are things that can be completed, mainly triumphs and triumph-like things.
 A record has a list of objectives. The objectives are stored in two different places depending on whether they are listed in parallel or if there are multiple steps that must be earned in order.
 
-
+-- Destination
+A main area, like the EDZ. A location is more specific. I don't know what a bubble is, but they are on the moon ghost checklist.
 
 ////////// INTERNAL NOTES
 

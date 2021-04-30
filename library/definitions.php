@@ -16,6 +16,11 @@ class definitions {
       'DestinyRecordDefinition',
       'DestinyPresentationNodeDefinition',
       // 'DestinyMilestoneDefinition',
+      'DestinyChecklistDefinition',
+      // 'DestinyCollectibleDefinition',
+      // 'DestinyDestinationDefinition',
+      // 'DestinyLocationDefinition',
+      // 'DestinyPlaceDefinition',
     );
 
     $current_filenames = self::get_current_filenames();
@@ -25,18 +30,19 @@ class definitions {
 
     foreach ($definitions_to_update as $key) {
       $path = $definitions[$key];
-      $new_filename = end(explode('/', $path));
+      $path_parts = explode('/', $path);
+      $new_filename = end($path_parts);
       if (isset($current_filenames[$key])) {
         if ($current_filenames[$key] !== $new_filename) {
           // echo $key . ' file changed: ' . $new_filename . ' ' . $current_filenames[$key] . PHP_EOL;
-          file_put_contents(self::$dir . '/' . $new_filename, fetch_resource($path));
+          file_put_contents(self::$dir . '/' . $new_filename, bungie_api::fetch_resource($path));
           unlink(self::$dir . '/' . $current_filenames[$key]);
         } else {
           // echo $key . ' is up to date' . PHP_EOL;
         }
       } else {
         // echo $key . ' doesn\'t exist yet' . PHP_EOL;
-        file_put_contents(self::$dir . '/' . $new_filename, fetch_resource($path));
+        file_put_contents(self::$dir . '/' . $new_filename, bungie_api::fetch_resource($path));
       }
     }
 

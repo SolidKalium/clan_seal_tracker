@@ -12,9 +12,10 @@ echo '<pre>';
 route();
 
 // TODO list
-  // support non-seal pages (all raid triumphs, gear, checklists, catalysts, challenges, weekly milestones?)
+  // support more pages (raid gear (with mappings to encounters), badges (use a letter for every class collected?), catalysts, challenges, weekly milestones?)
   // highlight column on hover? (without bumping elements around. needs js)
   // fix gap in sticky header?
+  // make player column sticky when scrolling right?
   // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, etc)
   // add sort capability on columns? (for sorting columns after load)
   // put clan name and icon somewhere? Show seal icon if relevant?
@@ -23,7 +24,11 @@ route();
   // column order (before load)
   // when to update definitions from manifest?
   // how to tell which season a gilding triumph is for? I don't think this is in the api yet
-  // the names/descriptions/etc from Bungie might need to be html escaped in some places before displaying them. No obvious issues yet
+  // the names/descriptions/etc from Bungie need to be html escaped in some places before displaying them. e.g. eriana's vow catalyst. chrome figures it out but drops some text
+  // link user names to a relevant d2 checklist page?
+  // ability to highlight users with overlap in missing requiements. Compare just to one missing thing or rank by similarity? or both?
+  // support multiple clans or default clusters of users? maybe use cookies and a selector page.
+  // TODO how to save large webpage as image?
 
 // Assumptions
   // interval objectives are always of the same kind.
@@ -45,6 +50,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Raid',
       'seal_node_hash' => 1486062207,
+      'badge_node_hash' => 1086048586,
       'other_node_hashes' => array(1525933460),
       'records' => array(
          2756328801 => array('column_name' => 'Badge', 'order' => 1),
@@ -66,6 +72,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Raid',
       'seal_node_hash' => 1827854727,
+      'badge_node_hash' => 223465203, // TODO
       'other_node_hashes' => array(615240848),
       'records' => array(
         3866024089 => array('column_name' => 'Badge', 'order' => 1),
@@ -86,6 +93,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Raid',
       'seal_node_hash' => 2960810718,
+      'badge_node_hash' => 1235050036,
       'other_node_hashes' => array(1726708384),
       'records' => array(
         3504856768 => array('column_name' => 'Badge', 'order' => 1),
@@ -163,7 +171,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 79180995,
-      'other_node_hashes' => array(),
+      'other_node_hashes' => array(), // TODO
       'records' => array(
 
       ),
@@ -204,35 +212,51 @@ function get_page_definitions() {
 
       ),
     ),
+    // Lost Sectors
+    // Region Chests
     'corrupted_eggs' => array(
       'name' => 'Corrupted Eggs',
       'category' => 'Checklists',
       'subcategory' => null,
-      'other_node_hashes' => array(),
-      'records' => array(
-
-      ),
-      'disable_reason' => 'in development',
+      'checklist_hash' => 2609997025,
     ),
     'ahamkara_bones' => array(
       'name' => 'Ahamkara Bones',
       'category' => 'Checklists',
       'subcategory' => null,
-      'other_node_hashes' => array(),
-      'records' => array(
-
-      ),
-      'disable_reason' => 'in development',
+      'checklist_hash' => 1297424116,
+    ),
+    // Jade Rabbits
+    // Dead Ghosts
+    'cat_statues' => array(
+      'name' => 'Cat Statues',
+      'category' => 'Checklists',
+      'subcategory' => null,
+      'checklist_hash' => 2726513366,
+    ),
+    'penguins' => array(
+      'name' => 'Penguin Souvenirs',
+      'category' => 'Checklists',
+      'subcategory' => null,
+      'checklist_hash' => 817948795,
+    ),
+    'entropic_shards' => array(
+      'name' => 'Entropic Shards',
+      'category' => 'Checklists',
+      'subcategory' => null,
+      'checklist_hash' => 1885088224,
+    ),
+    'dead_exos' => array(
+      'name' => 'Dead Exos',
+      'category' => 'Checklists',
+      'subcategory' => null,
+      'checklist_hash' => 2568476210,
     ),
     'glykon_clues' => array(
       'name' => 'Glykon Clues',
       'category' => 'Checklists',
       'subcategory' => null,
-      'other_node_hashes' => array(),
-      'records' => array(
-
-      ),
-      'disable_reason' => 'in development',
+      'checklist_hash' => 3975225462,
     ),
     'milestones' => array(
       'name' => 'Milestones',
@@ -248,24 +272,25 @@ function get_page_definitions() {
       'name' => 'Catalysts',
       'category' => 'Other',
       'subcategory' => null,
-      'other_node_hashes' => array(),
+      'other_node_hashes' => array(2538646043, 185103480, 3788273704),
       'records' => array(
-
+        2660706768 => array('suppress' => true), // bastion
+        3068761227 => array('suppress' => true), // devil's ruin
       ),
-      'disable_reason' => 'in development',
     ),
     'seasonal_challenges' => array(
       'name' => 'Seasonal Challenges',
       'category' => 'Other',
       'subcategory' => null,
-      'other_node_hashes' => array(),
+      'other_node_hashes' => array(193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696),
       'records' => array(
 
       ),
-      'disable_reason' => 'in development',
+      'disable_reason' => 'in development', // TODO
     ),
   );
 
+  // other_node_hashes should only have nodes that are direct parents of records
   // if a record is in the records list, it should be displayed even if not part of a relevant node.
   // if a record is suppressed, don't show it
 
@@ -274,14 +299,12 @@ function get_page_definitions() {
 
 function list_pages() {
   // NOTE: could use more div containers for styling.
-  // TODO also have links for raid gear / collections, have maps for the encounter it drops from?
 
   echo "<title>D2 Clan Seal Tracker</title>";
 
   $pages = get_page_definitions();
   $nodes = definitions::get('PresentationNode');
   $records = definitions::get('Record');
-  // echo_pretty_json($nodes);
 
   $page_index = array();
   foreach ($pages as $key => $page) {
@@ -297,7 +320,6 @@ function list_pages() {
 
       echo '<ul>';
       foreach ($subcategory_info as $page) {
-        // TODO handle non-seals
         $disabled = !empty($page['disable_reason']);
         if ($disabled) {
           echo "<li disabled=1>{$page['name']} ({$page['disable_reason']})</li>";
@@ -305,7 +327,7 @@ function list_pages() {
           $seal_text = '';
           if (!empty($page['seal_node_hash'])) {
             $seal_node = $nodes[$page['seal_node_hash']];
-            $seal_record = $records[$seal_node['completionRecordHash']];
+            $seal_record = $records[$seal_node['completionRecordHash']];  // has title. ignore objective
             $seal_text = ' (<a href="?page=' . $page['key'] . '&type=seal">' . reset($seal_record['titleInfo']['titlesByGender']) . '</a>)';
           }
           echo "<li><a href='?page={$page['key']}'>{$page['name']}</a>$seal_text</li>";
@@ -353,6 +375,7 @@ function show_page($page_key, $type = null) {
 
   $headings = get_headings($page, $type);
   $rows = get_rows($headings, $players);
+  $max_completion = count($headings) - 1;
 
   
   $th1 = '';
@@ -388,38 +411,24 @@ function show_page($page_key, $type = null) {
     $table .= "<tr id='{$player_data['id']}'>";
     foreach ($headings as $heading) {
       if ($heading['name'] === 'Player') {
+        $completed = number_format($player_data['total_completion'], 2);
+        $title = "title='$completed/$max_completion'";
         if (profiles::is_stadia($player_data['name'])) {
           $name = explode('#', $player_data['name']);
-          $table .= "<td>{$name[0]}<span class=name-number>#{$name[1]}</span></td>";
+          $table .= "<td $title>{$name[0]}<span class=name-number>#{$name[1]}</span></td>";
         } else {
-          $table .= "<td>{$player_data['name']}</td>";
+          $table .= "<td $title>{$player_data['name']}</td>";
         }
         continue;
       }
 
-      $player_record = $player_data['records'][$heading['record_hash']];
-      if (!empty($heading['objectives'])) {
-        foreach ($heading['objectives'] as $key => $objective) {
-          $player_objective = $player_record['objectives'][$key];
-          if ($player_objective['objectiveHash'] !== $objective['hash']) { // ensure the order is constant
-            throw new Exception("hashes don't match. {$player_objective['objectiveHash']} !== {$objective['hash']}");
-          }
-          $progress = $player_objective['progress'];
-          if ($progress === 0 || $progress === $objective['completionValue']) {
-            $progress = '';
-          }
-          $recordState = get_player_objective_state($player_record, $key);
-          $table .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$objective['completionValue']}'>$progress</td>";
-        }
-      } else if (!empty($heading['interval_objectives'])) {
-        $key = count($heading['interval_objectives']) - 1; // assume last one is the highest. They should all have progress up to their cap
-        $player_objective = $player_record['intervalObjectives'][$key];
-        $progress = $player_objective['progress'];
-        if ($progress === 0 || $progress === $player_objective['completionValue']) {
-          $progress = '';
-        }
-        $recordState = get_player_objective_state($player_record, $key);
-        $table .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$player_objective['completionValue']}'>$progress</td>";
+      if (!empty($heading['record_hash'])) {
+        $table .= get_player_record_tds($player_data, $heading);
+      } else if (!empty($heading['checklist_entry_hash'])) {
+        $table .= get_player_checklist_entry_td($player_data, $heading);
+      } else {
+        echo_pretty_json($heading);
+        throw new Exception('unhandled heading');
       }
 
     }
@@ -429,17 +438,47 @@ function show_page($page_key, $type = null) {
   $table .= '</tbody></table>';
   echo $table;
 }
+function get_player_record_tds($player_data, $heading) {
+  $player_record = $player_data['records'][$heading['record_hash']];
+  if (!empty($heading['objectives'])) {
+    $html = '';
+    foreach ($heading['objectives'] as $key => $objective) {
+      $player_objective = $player_record['objectives'][$key];
+      if ($player_objective['objectiveHash'] !== $objective['hash']) { // ensure the order is constant
+        throw new Exception("hashes don't match. {$player_objective['objectiveHash']} !== {$objective['hash']}");
+      }
+      $progress = $player_objective['progress'];
+      if ($progress === 0 || $progress === $objective['completionValue']) {
+        $progress = '';
+      }
+      $recordState = get_player_objective_state($player_record, $key);
+      $html .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$objective['completionValue']}'>$progress</td>";
+    }
+    return $html;
+  }
+
+  if (!empty($heading['interval_objectives'])) {
+    $key = count($heading['interval_objectives']) - 1; // assume last one is the highest. They should all have progress up to their cap
+    $player_objective = $player_record['intervalObjectives'][$key];
+    $progress = $player_objective['progress'];
+    if ($progress === 0 || $progress === $player_objective['completionValue']) {
+      $progress = '';
+    }
+    $recordState = get_player_objective_state($player_record, $key);
+    return "<td recordState='$recordState' title='{$player_objective['progress']}/{$player_objective['completionValue']}'>$progress</td>";
+  }
+
+  echo_pretty_json($heading);
+  throw new Exception('unhandled heading');
+}
+function get_player_checklist_entry_td($player_data, $heading) {
+  $complete = $player_data['checklist_entries'][$heading['checklist_entry_hash']];
+  $recordState = $complete ? 'complete' : 'incomplete';
+  return "<td recordState='$recordState'></td>";
+}
 
 function get_headings($page, $type = null) {
-  $nodes = definitions::get('PresentationNode');
-  $records = definitions::get('Record');
-  $objectives = definitions::get('Objective');
-
-  $seal_node = $nodes[$page['seal_node_hash']];
-  $seal_record = $records[$seal_node['completionRecordHash']]; // has title. ignore objective
-
-  // echo_pretty_json($seal_node);
-  // echo_pretty_json($seal_record);
+  $headings = array();
 
   $headings[] = array(
     'name' => 'Player',
@@ -447,10 +486,18 @@ function get_headings($page, $type = null) {
     'order' => 0,
   );
 
-  $add_index = 0;
+  $next_default_order = 100;
+
+  ///// RECORD HEADINGS
+  $nodes = definitions::get('PresentationNode');
+  $records = definitions::get('Record');
+  $objectives = definitions::get('Objective');
 
   $record_hash_lists = array();
-  $record_hash_lists[] = array_column($seal_node['children']['records'], 'recordHash');
+  if (!empty($page['seal_node_hash'])) {
+    $seal_node = $nodes[$page['seal_node_hash']];
+    $record_hash_lists[] = array_column($seal_node['children']['records'], 'recordHash');
+  }
   if ($type !== 'seal') {
     if (!empty($page['other_node_hashes'])) {
       foreach ($page['other_node_hashes'] as $node_hash) {
@@ -485,7 +532,7 @@ function get_headings($page, $type = null) {
         'interval_objectives' => array(),
         'scope' => $record['scope'], // 0 account, 1 character
         'for_gilding' => $record['forTitleGilding'],
-        'order' => $page['records'][$record['hash']]['order'] ?? (100 + $add_index++),
+        'order' => $page['records'][$record['hash']]['order'] ?? ($next_default_order++),
         // not handling rewards and interval rewards
         // not handling ScoreValue and intervalScoreValues
         // not handling featuredPriority. Usually min or max int, but sometimes something like 91000
@@ -516,10 +563,30 @@ function get_headings($page, $type = null) {
     }
   }
 
+  // CHECKLIST HEADINGS
+  if (!empty($page['checklist_hash'])) {
+    $checklists = definitions::get('Checklist');
+    $checklist = $checklists[$page['checklist_hash']];
+    foreach ($checklist['entries'] as $entry) {
+      $headings[] = array(
+        'checklist_hash' => $page['checklist_hash'],
+        'checklist_entry_hash' => $entry['hash'],
+        'name' => $entry['displayProperties']['name'],
+        'description' => $entry['displayProperties']['description'], // always empty right now
+        'scope' => $entry['scope'],
+        'location_hash' => $entry['destinationHash'] ?? null,
+        'destination_hash' => $entry['locationHash'] ?? null,
+        'bubble_hash' => $entry['bubbleHash'] ?? null,
+        'order' => ($next_default_order++),
+      );
+    }
+  }
+
   usort($headings, 'column_sorter');
   // echo_pretty_json($headings);
   return $headings;
 }
+
 function get_rows($headings, $players) {
   $rows = array();
 
@@ -534,54 +601,22 @@ function get_rows($headings, $players) {
       'id' => $player['destinyUserInfo']['membershipType'] . '_' . $player['destinyUserInfo']['membershipId'],
       'total_completion' => 0,
       'records' => array(),
+      'checklist_entries' => array(),
     );
     foreach ($headings as $heading) {
       if ($heading['name'] === 'Player') {
         continue;
       }
 
-      if ($heading['scope'] === 0) { // account scope
-        $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
-        $player_data['records'][$heading['record_hash']] = $profile_record;
-        $player_data['total_completion'] += estimate_player_record_progress($profile_record);
-      } else if ($heading['scope'] === 1) { // character scope
-        // Example: season of chosen battlegrounds has multiple objectives. progress is the same across characters, but state may differ. e.g. 4 vs 12
-        // Example: season of chosen path of the chosen has one objective and progress differes between characters. state may differ. e.g. 7 vs 67
-
-        $best_character_record = null;
-
-        $all_character_records = array();
-        foreach ($profile['characterRecords']['data'] as $character_hash => $character_records) {
-          $all_character_records[] = $character_records['records'][$heading['record_hash']];
-        }
-
-        $identical = (count(array_unique(array_map('json_encode_character_record_reduced', $all_character_records))) === 1);
-        if ($identical) {
-          $best_character_record = $all_character_records[0]; // may get random state if obscured for only some characters
-        } else {
-          foreach ($all_character_records as $character_record) {
-            if (!$best_character_record) {
-              $best_character_record = $character_record;
-              continue;
-            }
-            foreach ($character_record['objectives'] as $key => $objective) { // would be wonky if there is differing progress on multiple objectives
-              if ($objective['progress'] > $best_character_record['objectives'][$key]['progress']) {
-                $best_character_record = $character_record;
-              }
-            }
-          }
-          if (count($character_record['objectives']) > 1) {
-            echo_pretty_json($heading);
-            echo_pretty_json($all_character_records);
-            throw new Exception('multiple objectives on character records that aren\'t identical. This isn\'t handled yet');
-          }
-        }
-          
-        $player_data['records'][$heading['record_hash']] = $best_character_record;
-        $player_data['total_completion'] += estimate_player_record_progress($best_character_record);
+      if (!empty($heading['record_hash'])) {
+        update_player_data_for_record_heading($player_data, $profile, $heading);
+      } else if (!empty($heading['checklist_hash'])) {
+        update_player_data_for_checklist_heading($player_data, $profile, $heading);
       } else {
-        throw new Exception('scope ' . $heading['scope'] . ' not handled');
+        echo_pretty_json($heading);
+        throw new Exception('unhandled heading');
       }
+      
     }
     $rows[] = $player_data;
   }
@@ -591,7 +626,59 @@ function get_rows($headings, $players) {
 
   return $rows;
 }
+function update_player_data_for_record_heading(&$player_data, $profile, $heading) {
+  if ($heading['scope'] === 0) { // account scope
+      $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
+      $player_data['records'][$heading['record_hash']] = $profile_record;
+      $player_data['total_completion'] += estimate_player_record_progress($profile_record);
+    } else if ($heading['scope'] === 1) { // character scope
+      // Example: season of chosen battlegrounds has multiple objectives. progress is the same across characters, but state may differ. e.g. 4 vs 12
+      // Example: season of chosen path of the chosen has one objective and progress differes between characters. state may differ. e.g. 7 vs 67
 
+      $best_character_record = null;
+
+      $all_character_records = array();
+      foreach ($profile['characterRecords']['data'] as $character_hash => $character_records) {
+        $all_character_records[] = $character_records['records'][$heading['record_hash']];
+      }
+
+      $identical = (count(array_unique(array_map('json_encode_character_record_reduced', $all_character_records))) === 1);
+      if ($identical) {
+        $best_character_record = $all_character_records[0]; // may get random state if obscured for only some characters
+      } else {
+        foreach ($all_character_records as $character_record) {
+          if (!$best_character_record) {
+            $best_character_record = $character_record;
+            continue;
+          }
+          foreach ($character_record['objectives'] as $key => $objective) { // would be wonky if there is differing progress on multiple objectives
+            if ($objective['progress'] > $best_character_record['objectives'][$key]['progress']) {
+              $best_character_record = $character_record;
+            }
+          }
+        }
+        if (count($character_record['objectives']) > 1) {
+          echo_pretty_json($heading);
+          echo_pretty_json($all_character_records);
+          throw new Exception('multiple objectives on character records that aren\'t identical. This isn\'t handled yet');
+        }
+      }
+
+      $player_data['records'][$heading['record_hash']] = $best_character_record;
+      $player_data['total_completion'] += estimate_player_record_progress($best_character_record);
+    } else {
+      throw new Exception('scope ' . $heading['scope'] . ' not handled');
+    }
+}
+function update_player_data_for_checklist_heading(&$player_data, $profile, $heading) {
+  if ($heading['scope'] !== 0) {
+    throw new Exception('scope ' . $heading['scope'] . ' not handled');
+  }
+
+  $collected = $profile['profileProgression']['data']['checklists'][$heading['checklist_hash']][$heading['checklist_entry_hash']];
+  $player_data['checklist_entries'][$heading['checklist_entry_hash']] = $collected;
+  $player_data['total_completion'] += (int) $collected;
+}
 function estimate_player_record_progress($record) {
   $progress = 0;
   $count = null;
