@@ -1,24 +1,60 @@
---- Implement
-Find API page: https://bungie-net.github.io/multi/index.html
-Run php locally
+
+--- Setup this project to run on your own server
+- Checkout this git repository on your server
+- Register for a developer app at https://www.bungie.net/en/Application
+- Create a secret.key file in the main project directory and add your api key
+- There are no dependencies to install, put you'll need PHP
+- Each profile fetch API call needs seconds and megabytes of data, so everything is cached in files. You may need to enable folder and file creation/editing for the profiles/ and definitions/ directories.
+- Individual users do not need to authenticate. Only public data is used.
+
+- [TODO improve] call defintions::update() one time
+- [TODO improve] find your clan id and hardcode it as an argument to get_group_members in index.php. 
+
+- share your feedback or submit pull requests for improvements
+
+
+--- Resources
+- https://bungie-net.github.io/multi/index.html
+
+--- Key concepts
+-- Group
+A Destiny 2 clan is a Bungie group
+You can fetch it's member list.
+
+-- User
+This is the bungie.net account. It's main utility is giving you all of the memberships someone has, including the ones specific to a gaming platform.
+A membership for one platform can override the details for a different platform.
+This program uses the primary membership type and id as the profile key. It doesn't try to handle cases where someone has multiple active profiles that aren't being overriden.
+
+-- Profile / Account
+This is a player in destiny. A number of components can be requested and the response can end up being very large.
+A player can have multiple characters.
+
+-- Presentation Node
+These form a hierarchy of display groups.
+Some can have an associated record.
+
+-- Record
+These are things that can be completed, mainly triumphs and triumph-like things.
+A record has a list of objectives. The objectives are stored in two different places depending on whether they are listed in parallel or if there are multiple steps that must be earned in order.
+
+
+
+////////// INTERNAL NOTES
+
+--- Implementation next steps
 Setup database ? just use a file for now
 Setup on remote server
+Create github page
+Add a license?
 rewrite front end to provide better realtime info in browser? (use js)
 
---- Features
+--- Feature ideas
 Automatically reload users once per day
-  Get all clan members
-  Iterate over them to get their triumph data
+  remove files over 2 weeks old
 Allow reloading individual users
-One page per raid/seal
-Icons for triumphs/seals?
-
-Color per triumph: red/yellow/light green/green
-Separate triumphs needed for seal
 track historical triumph values?
-sortable by column (how to handle multiple encounters?)
-pin a user to top?
-prefer to show stadia name, else bnet name
 
 --- Other project ideas
 Charlemagne calendar link?
+How does charlemagne get realtime D2 data?

@@ -12,6 +12,7 @@ $runtime = -microtime(true);
 echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 
 // definitions::update();
+// list_all_seals($active = false);
 
 // $result = bungie_api::get_manifest();
 // $result = bungie_api::get_group_members(4331943); // Anomaly
@@ -70,7 +71,7 @@ $components = array(
 // $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components))); // kalium
 // $result = bungie_api::api('/Destiny2/3/Profile/4611686018490731084/?components=' . implode(',', array_values($components))); // scorpin
 
-echo_pretty_json($result);
+// echo_pretty_json($result);
 
 
 // $records = definitions::get('Record');
@@ -121,13 +122,6 @@ $hashes = array(
 // destiny and bungie membershipIDs are not the same
 // DestinyUnlockValueUIStyle controls how the unlock value "should" be displayed
 
-// PresentationNode is the display category.
-// PN.hash = 616318467 is the parent node for all earnable seals. It has no parent. It's presentationNode children are the seals.
-// PN.completionRecordHash = record.hash for a seal.
-// PN.hash = record.parentNodeHash for a triumph in a seal. The records are also listed as children of the PN.
-// PN.hash = 1881970629 is the parent node for all legacy seals.
-// Other top-level PNs include: seasonal challenges, various metrics, items, various seasonal collection sets, badges, etc.
-
 // $text = file_get_contents("definitions/DestinyObjectiveDefinition-a1065791-e29c-4e23-9dc7-d88310a12936.json");
 // $objectives = json_decode($text, true);
 // echo_pretty_json($objectives);
@@ -135,3 +129,28 @@ $hashes = array(
 
 $runtime += microtime(true);
 echo "SCRIPT END after " . number_format($runtime, 3) . " seconds";
+
+
+function list_all_seals($active = true) {
+  // PresentationNode is the display category.
+  // PN.hash = 616318467 is the parent node for all earnable seals. It has no parent. It's presentationNode children are the seals.
+  // PN.completionRecordHash = record.hash for a seal.
+  // PN.hash = record.parentNodeHash for a triumph in a seal. The records are also listed as children of the PN.
+  // Other top-level PNs include: seasonal challenges, various metrics, items, various seasonal collection sets, badges, etc.
+
+  $nodes = definitions::get('PresentationNode');
+  $records = definitions::get('Record');
+  
+  $root_hash = $active ? 616318467 : 1881970629;
+
+  $root_seal_node = $nodes[$root_hash];
+  foreach ($root_seal_node['children']['presentationNodes'] as $node) {
+    $seal_node = $nodes[$node['presentationNodeHash']];
+    $seal_record = $records[$seal_node['completionRecordHash']];
+    echo 'node ' . str_pad($seal_node['hash'], 10) . ' | record ' . str_pad($seal_record['hash'], 10) . ' | ' . $seal_node['displayProperties']['name'] . ' | ' . reset($seal_record['titleInfo']['titlesByGender']) . PHP_EOL;
+  }
+  echo PHP_EOL;
+}
+
+
+

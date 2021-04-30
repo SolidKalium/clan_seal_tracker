@@ -15,7 +15,7 @@ route();
   // support non-seal pages (all raid triumphs, gear, checklists, catalysts, challenges, weekly milestones?)
   // highlight column on hover? (without bumping elements around. needs js)
   // fix gap in sticky header?
-  // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, etc)
+  // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, etc)
   // add sort capability on columns? (for sorting columns after load)
   // put clan name and icon somewhere? Show seal icon if relevant?
   // distinguish groups of columns?
@@ -23,7 +23,10 @@ route();
   // column order (before load)
   // when to update definitions from manifest?
   // how to tell which season a gilding triumph is for? I don't think this is in the api yet
+  // the names/descriptions/etc from Bungie might need to be html escaped in some places before displaying them. No obvious issues yet
 
+// Assumptions
+  // interval objectives are always of the same kind.
 
 function route() {
   if (isset($_GET['page'])) {
@@ -42,15 +45,16 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Raid',
       'seal_node_hash' => 1486062207,
-      'other_nodes' => array(1525933460),
+      'other_node_hashes' => array(1525933460),
       'records' => array(
          2756328801 => array('column_name' => 'Badge', 'order' => 1),
          3448775736 => array('column_name' => 'Raid', 'order' => 2),
          4078980921 => array('column_name' => 'Clan', 'order' => 3),
          3000516033 => array('column_name' => 'Arc', 'number_objectives' => true, 'order' => 4),
-         623283604  => array('column_name' => 'Solar', 'number_objectives' => true, 'order' => 5),
-         2826160801 => array('column_name' => 'Void', 'number_objectives' => true, 'order' => 6),
-         342038729  => array('column_name' => 'Class', 'number_objectives' => true, 'order' => 7),
+         2826160801 => array('column_name' => 'Void', 'number_objectives' => true, 'order' => 5),
+         623283604  => array('column_name' => 'Solar', 'number_objectives' => true, 'order' => 6),
+         2588923804 => array('column_name' => 'Stasis', 'number_objectives' => true, 'order' => 7),
+         342038729  => array('column_name' => 'Class', 'number_objectives' => true, 'order' => 8),
          717856991  => array('column_name' => 'Wishes', 'order' => -4),
          1359055399 => array('column_name' => 'Raid banners', 'order' => -3),
          628370196  => array('column_name' => 'Chests', 'order' => -2),
@@ -62,18 +66,19 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Raid',
       'seal_node_hash' => 1827854727,
-      'other_nodes' => array(615240848),
+      'other_node_hashes' => array(615240848),
       'records' => array(
-        3866024089 => array('column_name' => 'Badge',),
-        3804486505 => array('column_name' => 'Raid',),
-        1221037312 => array('column_name' => 'Clan',),
-        3427328428 => array('column_name' => 'Arc', 'number_objectives' => true),
-        277137394  => array('column_name' => 'Void', 'number_objectives' => true),
-        2571794337 => array('column_name' => 'Solar', 'number_objectives' => true),
-         // => array('column_name' => 'Stasis', 'number_objectives' => true),
-         // => array('column_name' => 'Class', 'number_objectives' => true),
+        3866024089 => array('column_name' => 'Badge', 'order' => 1),
+        3804486505 => array('column_name' => 'Raid', 'order' => 2),
+        1221037312 => array('column_name' => 'Clan', 'order' => 3),
+        3427328428 => array('column_name' => 'Arc', 'number_objectives' => true, 'order' => 4),
+        277137394  => array('column_name' => 'Void', 'number_objectives' => true, 'order' => 5),
+        2571794337 => array('column_name' => 'Solar', 'number_objectives' => true, 'order' => 6),
+        2629178011 => array('column_name' => 'Stasis', 'number_objectives' => true, 'order' => 7),
+        1830799772 => array('column_name' => 'Class', 'number_objectives' => true, 'order' => 8),
         1922270325 => array('column_name' => 'Chests',),
         521675034  => array('column_name' => 'Divinity',),
+        1522774125 => array('column_name' => 'Flawless', 'suppress' => true),
       ),
     ),
     'dsc' => array(
@@ -81,18 +86,20 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Raid',
       'seal_node_hash' => 2960810718,
-      'other_nodes' => array(1726708384),
+      'other_node_hashes' => array(1726708384),
       'records' => array(
-        3504856768 => array('column_name' => 'Badge',),
-        3185876102 => array('column_name' => 'Raid',),
-        518342793  => array('column_name' => 'Clan',),
-        564366615  => array('column_name' => 'Class', 'number_objectives' => true),
-        3834307795 => array('column_name' => 'Arc', 'number_objectives' => true),
-        3200831458 => array('column_name' => 'Solar', 'number_objectives' => true),
-        513707022  => array('column_name' => 'Stasis', 'number_objectives' => true),
-        3875695735 => array('column_name' => 'Void', 'number_objectives' => true),
+        3504856768 => array('column_name' => 'Badge', 'order' => 1),
+        3185876102 => array('column_name' => 'Raid', 'order' => 2),
+        518342793  => array('column_name' => 'Clan', 'order' => 3),
+        3834307795 => array('column_name' => 'Arc', 'number_objectives' => true, 'order' => 4),
+        3875695735 => array('column_name' => 'Void', 'number_objectives' => true, 'order' => 5),
+        3200831458 => array('column_name' => 'Solar', 'number_objectives' => true, 'order' => 6),
+        513707022  => array('column_name' => 'Stasis', 'number_objectives' => true, 'order' => 7),
+        564366615  => array('column_name' => 'Class', 'number_objectives' => true, 'order' => 8),
         992355976  => array('column_name' => 'Chests', 'number_objectives' => true),
         3323713181 => array('column_name' => 'Exo Logs', 'number_objectives' => true),
+        2699580344 => array('column_name' => 'Day One', 'number_objectives' => true, 'suppress' => true),
+        3560923614 => array('column_name' => 'Flawless', 'suppress' => true),
       ),
     ),
     'vog' => array(
@@ -106,7 +113,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 2107507397,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -116,7 +123,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 3665267419,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -126,7 +133,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 1733555826,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -136,7 +143,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Activity',
       'seal_node_hash' => 3776992251,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -146,7 +153,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 379405979,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -156,7 +163,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 79180995,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -166,7 +173,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 1321008463,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -176,7 +183,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Seasonal',
       'seal_node_hash' => 1321008462,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -192,7 +199,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Destination',
       'seal_node_hash' => 560097044,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -201,7 +208,7 @@ function get_page_definitions() {
       'name' => 'Corrupted Eggs',
       'category' => 'Checklists',
       'subcategory' => null,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -211,7 +218,7 @@ function get_page_definitions() {
       'name' => 'Ahamkara Bones',
       'category' => 'Checklists',
       'subcategory' => null,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -221,7 +228,7 @@ function get_page_definitions() {
       'name' => 'Glykon Clues',
       'category' => 'Checklists',
       'subcategory' => null,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -231,7 +238,7 @@ function get_page_definitions() {
       'name' => 'Milestones',
       'category' => 'Other',
       'subcategory' => null,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -241,7 +248,7 @@ function get_page_definitions() {
       'name' => 'Catalysts',
       'category' => 'Other',
       'subcategory' => null,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -251,7 +258,7 @@ function get_page_definitions() {
       'name' => 'Seasonal Challenges',
       'category' => 'Other',
       'subcategory' => null,
-      'other_nodes' => array(),
+      'other_node_hashes' => array(),
       'records' => array(
 
       ),
@@ -307,16 +314,6 @@ function list_pages() {
       echo '</ul>';
     }
   }
-  
-
-  // $root_seal_node = $nodes['616318467'];
-  // // echo_pretty_json($root_seal_node);
-  // foreach ($root_seal_node['children']['presentationNodes'] as $node) {
-  //   $seal_node = $nodes[$node['presentationNodeHash']];
-  //   $seal_record = $records[$seal_node['completionRecordHash']];
-  //   echo 'node ' . $seal_node['hash'] . ' record ' . $seal_record['hash'] . ' ' . $seal_node['displayProperties']['name'] . ' ' . reset($seal_record['titleInfo']['titlesByGender']) . PHP_EOL;
-  //   // echo_pretty_json($node);
-  // }
 }
 
 /**
@@ -335,14 +332,26 @@ function show_page($page_key, $type = null) {
 
   $page = $pages[$page_key];
 
-  echo "<title>{$page['name']}</title>";
-  echo "<h1>{$page['name']}</h1>";
+  if ($type === 'seal') {
+    $nodes = definitions::get('PresentationNode');
+    $records = definitions::get('Record');
+
+    $seal_node = $nodes[$page['seal_node_hash']];
+    $seal_record = $records[$seal_node['completionRecordHash']];
+
+    $title = reset($seal_record['titleInfo']['titlesByGender']) . ' (' . $page['name'] . ' Seal)';
+    echo "<title>$title</title>";
+    echo "<h1>$title</h1>";
+  } else {
+    echo "<title>{$page['name']}</title>";
+    echo "<h1>{$page['name']}</h1>";
+  }
 
 
-  $players = profiles::get_cached_players(); // TODO flag for using cache vs current roster
+  $players = profiles::get_cached_players();
   // $players = bungie_api::get_group_members(4331943); // Anomaly
 
-  $headings = get_headings($page);
+  $headings = get_headings($page, $type);
   $rows = get_rows($headings, $players);
 
   
@@ -366,7 +375,8 @@ function show_page($page_key, $type = null) {
       $th1 .= "<th colspan='$count' $heading_attributes}'>{$column_name}</th>";
       foreach ($heading['objectives'] as $key => $objective) {
         $subcolumn_name = !empty($heading['number_objectives']) ? $key + 1 : $objective['name'];
-        $th2 .= "<th objective_hash='$key'>$subcolumn_name</th>";
+        $title = !empty($heading['number_objectives']) ? "title='{$objective['name']}'" : '';
+        $th2 .= "<th $title objective_hash='$key'>$subcolumn_name</th>";
       }
     }
   }
@@ -420,7 +430,7 @@ function show_page($page_key, $type = null) {
   echo $table;
 }
 
-function get_headings($page) {
+function get_headings($page, $type = null) {
   $nodes = definitions::get('PresentationNode');
   $records = definitions::get('Record');
   $objectives = definitions::get('Objective');
@@ -439,47 +449,71 @@ function get_headings($page) {
 
   $add_index = 0;
 
-  foreach ($seal_node['children']['records'] as $record_skeleton) {
-    $record = $records[$record_skeleton['recordHash']];
-    $heading = array(
-      'record_hash' => $record['hash'],
-      'name' => $record['displayProperties']['name'],
-      'description' => $record['displayProperties']['description'] .
-        ($record['expirationInfo']['description'] ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
-        ($record['requirements']['entitlementUnavailableMessage'] ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
-      'icon' => $record['displayProperties']['icon'],
-      'objectives' => array(),
-      'interval_objectives' => array(),
-      'scope' => $record['scope'], // 0 account, 1 character
-      'for_gilding' => $record['forTitleGilding'],
-      'order' => $page['records'][$record['hash']]['order'] ?? (100 + $add_index++),
-      // not handling rewards and interval rewards
-      // not handling ScoreValue and intervalScoreValues
-      // not handling featuredPriority. Usually min or max int, but sometimes something like 91000
-    ) + ($page['records'][$record['hash']] ?? array());
-
-    foreach ($record['objectiveHashes'] as $hash) {
-      $objective = $objectives[$hash]; // completion value, progress description
-      $heading['objectives'][] = array(
-        'hash' => $hash,
-        'name' => $objective['progressDescription'],
-        'completionValue' => $objective['completionValue'],
-        // valueStyle uses enum DestinyUnlockValueUIStyle. how to properly display progress as a number/checkbox/etc
-      );
-    }
-    if (!empty($record['intervalInfo']['intervalObjectives'])) {
-      foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
-        // $interval_objective is just intervalValueScore and hash
-        $objective = $objectives[$interval_objective['intervalObjectiveHash']];
-        $heading['interval_objectives'][] = array(
-          'hash' => $objective['hash'],
-          'name' => $objective['progressDescription'],
-          'completionValue' => $objective['completionValue'],
-        );
+  $record_hash_lists = array();
+  $record_hash_lists[] = array_column($seal_node['children']['records'], 'recordHash');
+  if ($type !== 'seal') {
+    if (!empty($page['other_node_hashes'])) {
+      foreach ($page['other_node_hashes'] as $node_hash) {
+        $record_hash_lists[] = array_column($nodes[$node_hash]['children']['records'], 'recordHash');
       }
     }
 
-    $headings[] = $heading;
+    if (!empty($page['records'])) {
+      $record_hash_lists[] = array_keys($page['records']);
+    }
+  }
+
+  foreach ($record_hash_lists as $record_hash_list) {
+    foreach ($record_hash_list as $record_hash) {
+      $record = $records[$record_hash];
+
+      if (!empty($headings[$record['hash']])) {
+        continue; // already added from a different list
+      }
+      if (!empty($page['records'][$record['hash']]['suppress'])) {
+        continue;
+      }
+
+      $heading = array(
+        'record_hash' => $record['hash'],
+        'name' => $record['displayProperties']['name'],
+        'description' => $record['displayProperties']['description'] .
+          ($record['expirationInfo']['description'] ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
+          ($record['requirements']['entitlementUnavailableMessage'] ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
+        'icon' => $record['displayProperties']['icon'],
+        'objectives' => array(),
+        'interval_objectives' => array(),
+        'scope' => $record['scope'], // 0 account, 1 character
+        'for_gilding' => $record['forTitleGilding'],
+        'order' => $page['records'][$record['hash']]['order'] ?? (100 + $add_index++),
+        // not handling rewards and interval rewards
+        // not handling ScoreValue and intervalScoreValues
+        // not handling featuredPriority. Usually min or max int, but sometimes something like 91000
+      ) + ($page['records'][$record['hash']] ?? array());
+
+      foreach ($record['objectiveHashes'] as $hash) {
+        $objective = $objectives[$hash]; // completion value, progress description
+        $heading['objectives'][] = array(
+          'hash' => $hash,
+          'name' => $objective['progressDescription'],
+          'completionValue' => $objective['completionValue'],
+          // valueStyle uses enum DestinyUnlockValueUIStyle. how to properly display progress as a number/checkbox/etc
+        );
+      }
+      if (!empty($record['intervalInfo']['intervalObjectives'])) {
+        foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
+          // $interval_objective is just intervalValueScore and hash
+          $objective = $objectives[$interval_objective['intervalObjectiveHash']];
+          $heading['interval_objectives'][] = array(
+            'hash' => $objective['hash'],
+            'name' => $objective['progressDescription'],
+            'completionValue' => $objective['completionValue'],
+          );
+        }
+      }
+
+      $headings[$record['hash']] = $heading;
+    }
   }
 
   usort($headings, 'column_sorter');
