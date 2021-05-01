@@ -85,7 +85,7 @@ function get_page_definitions() {
       'category' => 'Seals',
       'subcategory' => 'Raid',
       'seal_node_hash' => 1827854727,
-      'badge_node_hash' => 223465203, // TODO
+      'badge_node_hash' => 223465203,
       'other_node_hashes' => array(615240848),
       'records' => array(
         3866024089 => array('column_name' => 'Badge', 'order' => 1),
@@ -398,7 +398,6 @@ function get_page_definitions() {
       'subcategory' => null,
       'type' => 'badge',
       'badge_node_hash' => 3267852685,
-      'disable_reason' => 'in development',
     ),
     'season_7_badge' => array(
       'name' => 'Season of Opulence',
@@ -406,7 +405,6 @@ function get_page_definitions() {
       'subcategory' => null,
       'type' => 'badge',
       'badge_node_hash' => 2759158924,
-      'disable_reason' => 'in development',
     ),
     'season_6_badge' => array(
       'name' => 'Season of the Drifter',
@@ -927,10 +925,10 @@ function get_headings($page, $type = null) {
   }
 
   usort($headings, 'column_sorter');
-  echo_pretty_json($headings);
+  // echo_pretty_json($headings);
   return $headings;
 }
-function get_normalized_item_name($item) { // TODO are exotics like mask of bakris handled correctly?
+function get_normalized_item_name($item) {
   // DestinyClass
     // Titan: 0
     // Hunter: 1
@@ -972,6 +970,9 @@ function get_normalized_item_name($item) { // TODO are exotics like mask of bakr
   $replacement = $item['itemTypeDisplayName'];
   if (in_array($replacement, array('Titan Mark', 'Hunter Cloak', 'Warlock Bond'))) {
     $replacement = 'Class Item';
+  }
+  if ($replacement === 'Sword') {
+    return $replacement;
   }
 
   $normalized = false;
