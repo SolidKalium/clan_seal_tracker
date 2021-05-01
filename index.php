@@ -14,17 +14,14 @@ route();
 // TODO list
   // support more pages (raid gear (with mappings to encounters. checkout sourceHash), mods, challenges, weekly milestones?)
   // highlight column on hover? (without bumping elements around. needs js)
-  // make player column sticky when scrolling right?
   // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, etc)
   // add sort capability on columns? (for sorting columns after load)
   // put clan name and icon somewhere? Show seal icon if relevant?
-  // distinguish groups of columns?
   // make a page that can select users?
   // pin one or more users to the top? (or just highlight them orange)
   // support multiple clans or default clusters of users? maybe use cookies and a selector page.
   // column order (before load) (optional: columns that are completed the most are on the left)
   // when to update definitions from manifest?
-  // how to tell which season a gilding triumph is for? I don't think this is in the api yet
   // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter
   // link user names to a relevant d2 checklist page?
   // ability to highlight blue users with overlap in missing requiements. Compare just to one missing thing or rank by similarity? or both?
@@ -40,6 +37,7 @@ route();
 // Not fixing list
   // certain gear sets have very different names from each other and should be normalized to just the gear type
   // no support for gilded badges
+  // tell which season a gilding triumph is for? I don't think this is in the api yet
 
 
 // Assumptions
@@ -693,12 +691,24 @@ function get_player_record_tds($player_data, $heading) {
       if ($player_objective['objectiveHash'] !== $objective['hash']) { // ensure the order is constant
         throw new Exception("hashes don't match. {$player_objective['objectiveHash']} !== {$objective['hash']}");
       }
+
+      $class = '';
+      if (count($heading['objectives']) > 1) {
+        if ($objective === reset($heading['objectives'])) {
+          $class = 'group first';
+        } else if ($objective === end($heading['objectives'])) {
+          $class = 'group last';
+        } else {
+          $class = 'group middle';
+        }
+      }
+
       $progress = $player_objective['progress'];
       if ($progress === 0 || $progress === $objective['completionValue']) {
         $progress = '';
       }
       $recordState = get_player_objective_state($player_record, $key);
-      $html .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$objective['completionValue']}'>$progress</td>";
+      $html .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$objective['completionValue']}' class='$class'>$progress</td>";
     }
     return $html;
   }

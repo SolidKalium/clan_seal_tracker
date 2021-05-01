@@ -23,6 +23,10 @@ li[disabled="1"] {
 
 /* GENERAL */
 
+body {
+  overscroll-behavior: none;
+}
+
 span.name-number {
   color: lightgrey;
 }
@@ -32,6 +36,8 @@ span.name-number {
 
 table {
   border-spacing: 0;
+  padding-right: 40px;
+  padding-bottom: 40px;
 }
 
 th {
@@ -57,11 +63,22 @@ tr.first > th {
   position: sticky;
   top: 0;
 }
-
 tr.second > th {
   position: sticky;
   /* top defined in js */
 }
+tr.first > th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+td:first-child {
+  position: sticky;
+  left: 0;
+  background-color: white;
+  z-index: 1;
+}
+
 
 th[gild] {
   background-color: gold;
@@ -77,6 +94,16 @@ td {
 }
 tbody > tr:first-child > td {
   border-top-width: 2px;
+}
+tbody > tr > td.group.first {
+  border-left-color: darkgrey;
+}
+tbody > tr > td.group.last {
+  border-right-color: darkgrey;
+}
+tbody > tr > td:not(.group) { /* TODO fix specificity*/
+  border-left-color: darkgrey;
+  border-right-color: darkgrey;
 }
 
 tr:hover > td {
