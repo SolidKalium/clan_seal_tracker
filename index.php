@@ -36,8 +36,11 @@ route();
   // use a generic table display function so there's less of an arbitrary intermediate format that gets interpreted into html?
   // right click option on a player to copy quick list of what they need. Another option for copying requirements and players for a selected group?
   // use icons for gear classes acquired?
+
+
+// Not fixing list
+  // certain gear sets have very different names from each other and should be normalized to just the gear type
   // no support for gilded badges
-  // force exotic badges to split the exotics apart
 
 
 // Assumptions
@@ -866,20 +869,40 @@ function get_headings($page, $type = null) {
       }
     }
 
+    $class_names = array(
+      0 => 'Titan',
+      1 => 'Warlock',
+      2 => 'Hunter',
+    );
+
     foreach ($collectible_hash_sets as $collectible_hash_set) {
       $identical = (count(array_unique(array_values($collectible_hash_set))) === 1);
-      if ($identical) {
-        $collectible = $collectibles[reset($collectible_hash_set)]; // TODO sourceHash & acquisitionInfo.acquireMaterialRequirementHash?
-        $item = $items[$collectible['itemHash']];
-        // echo_pretty_json($collectible, $item);
 
+      $collectible = $collectibles[reset($collectible_hash_set)]; // TODO sourceHash & acquisitionInfo.acquireMaterialRequirementHash?
+      $item = $items[$collectible['itemHash']];
+      // echo_pretty_json($collectible, $item);
+
+      if ($identical) {
         $headings[] = array(
           'collectible_hash' => $collectible['hash'],
           'name' => $collectible['displayProperties']['name'],
-          'description' => $item['itemTypeDisplayName'], // usually empty or just says shader is equipable
-          'scope' => 0, // this matches what is on the collectibles
+          'description' => $item['itemTypeDisplayName'],
+          'scope' => $collectible['scope'], // should be 0
           'order' => ($next_default_order++),
         );
+      } else if ($item['inventory']['tierTypeName'] === 'Exotic') {
+        foreach ($collectible_hash_set as $key => $collectible_hash) {
+          $collectible = $collectibles[$collectible_hash];
+          $item = $items[$collectible['itemHash']];
+
+          $headings[] = array(
+            'collectible_hash' => $collectible['hash'],
+            'name' => $collectible['displayProperties']['name'],
+            'description' => 'Exotic ' . $class_names[$item['classType']] . ' ' . $item['itemTypeDisplayName'],
+            'scope' => $collectible['scope'], // should be 1
+            'order' => ($next_default_order++),
+          );
+        }
       } else {
         $item_names = array();
         foreach ($collectible_hash_set as $key => $collectible_hash) {
@@ -896,7 +919,7 @@ function get_headings($page, $type = null) {
           'collectible_hash_set' => $collectible_hash_set,
           'name' => get_normalized_item_name($item),
           'description' => $type . ': ' . implode(', ', $item_names),
-          'scope' => 1, // this matches what is on the collectibles
+          'scope' => $collectible['scope'], // should be 1
           'order' => ($next_default_order++),
         );
       }
@@ -904,7 +927,7 @@ function get_headings($page, $type = null) {
   }
 
   usort($headings, 'column_sorter');
-  // echo_pretty_json($headings);
+  echo_pretty_json($headings);
   return $headings;
 }
 function get_normalized_item_name($item) { // TODO are exotics like mask of bakris handled correctly?
@@ -1119,9 +1142,19 @@ function update_player_data_for_collectible_heading(&$player_data, $profile, $he
   $state_text = array();
   $description = '';
 
-  if ($heading['scope'] === 0) {
+  // use first character's info. Except for a few dozen exceptions, they have the same values. Mainly mida minitool, drang, and man o war.
+  $character_collectibles = reset($profile['characterCollectibles']['data']);
+
+
+  if (!empty($heading['collectible_hash'])) {
     $hash = $heading['collectible_hash'];
-    $state = $profile['profileCollectibles']['data']['collectibles'][$heading['collectible_hash']]['state'];
+
+    if ($heading['scope'] === 0) {
+      $state = $profile['profileCollectibles']['data']['collectibles'][$heading['collectible_hash']]['state'];
+    } else {
+      $character_collectibles = reset($profile['characterCollectibles']['data']);
+      $state = $character_collectibles['collectibles'][$heading['collectible_hash']]['state'];
+    }
 
     $state_text += array_filter(array(
       'complete' => !($state & 1),
@@ -1132,10 +1165,8 @@ function update_player_data_for_collectible_heading(&$player_data, $profile, $he
   } else {
     $hash = implode(',', array_values($heading['collectible_hash_set']));
     $states = array();
-    foreach ($heading['collectible_hash_set'] as $key => $collectible_hash) {
-      // use first character's info. Except for a few dozen exceptions, they have the same values. Mainly mida minitool, drang, and man o war.
-      $character_collectibles = reset($profile['characterCollectibles']['data']);
 
+    foreach ($heading['collectible_hash_set'] as $key => $collectible_hash) {
       if (empty($character_collectibles['collectibles'][$collectible_hash])) {
         // rare. applies to some trials gear like the helmet
         $character_state = $profile['profileCollectibles']['data']['collectibles'][$collectible_hash]['state'];
