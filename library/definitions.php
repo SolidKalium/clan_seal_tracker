@@ -17,7 +17,9 @@ class definitions {
       'DestinyPresentationNodeDefinition',
       // 'DestinyMilestoneDefinition',
       'DestinyChecklistDefinition',
-      // 'DestinyCollectibleDefinition',
+      'DestinyCollectibleDefinition',
+      // 'DestinyInventoryItemDefinition', // very big
+      'DestinyInventoryItemLiteDefinition', // still big, but smaller
       // 'DestinyDestinationDefinition',
       // 'DestinyLocationDefinition',
       // 'DestinyPlaceDefinition',

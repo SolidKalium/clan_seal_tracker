@@ -15,8 +15,11 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
-display_node_hierarchy(1866538467, true); // TODO previous challenges? 3759694843
-// display_hash_info(3364492516);
+// display_node_hierarchy(1866538467, 2); // TODO previous challenges? 3759694843
+display_node_hierarchy(498211331, false);
+// display_hash_info(3093771363);
+// display_hash_info(2282824303);
+// display_hash_info(29206418);
 
 
 // $result = bungie_api::get_manifest();
@@ -96,6 +99,9 @@ if (!empty($result)) {
 // DestinyUnlockValueUIStyle controls how the unlock value "should" be displayed
 
 
+// explore_character_collectible_differences(5, 4611686018500895898);
+// display_hash_info(1683385696);
+
 $runtime += microtime(true);
 echo "SCRIPT END after " . number_format($runtime, 3) . " seconds";
 
@@ -149,60 +155,54 @@ function list_all_checklists($verbose = false) {
   echo PHP_EOL;
 }
 
-function display_node_hierarchy($root_hash = '1866538467' /* records root */, $show_non_node_children = false, $current_depth = 0) {
-  // "collectionRootNode": 3790247699,
-  // "badgesRootNode": 498211331,
-  // "metricsRootNode": 1074663644,
-  // "activeTriumphsRootNodeHash": 1866538467,
-  // "activeSealsRootNodeHash": 616318467,
-  // "legacyTriumphsRootNodeHash": 3215903653,
-  // "legacySealsRootNodeHash": 1881970629,
-  // "medalsRootNodeHash": 3901403713,
-  // "exoticCatalystsRootNodeHash": 511607103,
-  // "loreRootNodeHash": 1993337477,
-  // "seasonalChallengesPresentationNodeHash": 3443694067,
+function explore_character_collectible_differences($type, $id) {
+  $profile = profiles::get($type, $id);
 
-  $nodes = definitions::get('PresentationNode');
-  $node = $nodes[$root_hash];
+  // collectible state
+    // 0 none
+    // 1 not acquired
+    // 2 obscured
+    // 4 invisible
+    // 8 cannot afford material requirements
+    // 16 inventory space unavailable
+    // 32 uniqueness violation
+    // 64 purchase disabled
 
-  $padding = str_pad('', 2 * $current_depth);
-  echo $padding . "<span style='color:silver;'>" . str_pad($root_hash, 10) . "</span> {$node['displayProperties']['name']} <span style='color:silver;'>{$node['displayProperties']['description']}</span>" . PHP_EOL;
-
-  if ($show_non_node_children) {
-    if (!empty($node['children']['collectibles'])) {
-      echo $padding . '  has collectibles' . PHP_EOL; // could add display
-    }
-    if (!empty($node['children']['records'])) {
-      echo $padding . '  has records' . PHP_EOL; // could add display
-    }
-    if (!empty($node['children']['metrics'])) {
-      echo $padding . '  has metrics' . PHP_EOL; // could add display
-    }
+  $t = array();
+  foreach ($profile['characterCollectibles']['data'] as $character_hash => $character_collectibles) {
+    // The number of entries for all three characters is the same. Currently 1807.
+    // But for some collectibles the states are different. Roughly 290 for kalium.
+    // I have not yet seen states 8 or 16 in public data.
+    // I have seen these flags: 1 2 4 32 and 64, as well as the absence of any flags.
+    // Ignoring state 64 significantly reduces the number of differences. 7 to 11 for kalium.
+    // Example: 1586531648 focusing lense in states 64/65/65
+    // Example: 1159460176 class-specific emblem 0/1/1
+    // Example: 1348250939 class-specific emote 0/1/1 (see also 1683385696 city dance and 1683385702 graceful dance which are unique to humans and awoken)
+    // Example: 199479286 class-specific finisher 32/64/64
+    // Example: 2202434429 drang 0/1/1 (probably matches availability from banshee)
+    // Example: 2963869878 man o war linear fusion from io 0/1/1
+    // Example: 74211518 mod from artifact 64/65/64
+    $t[] = $character_collectibles;
   }
-
-  foreach ($node['children']['presentationNodes'] as $child) {
-    display_node_hierarchy($child['presentationNodeHash'], $show_non_node_children, $current_depth + 1);
-  }
-
-  if (!$current_depth) {
-    echo PHP_EOL;
-  }
-} 
-
-function display_hash_info($hash) {
-  $types = array('PresentationNode', 'Record', 'Objective');
-
-  foreach ($types as $type) {
-    $definitions = definitions::get($type);
-    if (!empty($definitions[$hash])) {
-      echo $type . ' ' . $hash;
-      echo_pretty_json($definitions[$hash]);
-      return;
-    }
-  }
-
-  echo 'hash not found: ' . $hash . PHP_EOL;
+  $t0 = array_map('json_encode', array_map('hide_collectible_states', $t[0]['collectibles']));
+  $t1 = array_map('json_encode', array_map('hide_collectible_states', $t[1]['collectibles']));
+  $t2 = array_map('json_encode', array_map('hide_collectible_states', $t[2]['collectibles']));
+  $u0 = array_diff_assoc($t0, $t1, $t2);
+  $u1 = array_diff_assoc($t1, $t0, $t2);
+  $u2 = array_diff_assoc($t2, $t0, $t1);
+  echo 'counts ' . count($t0) . ' ' . count($t1) . ' ' . count($t2) . PHP_EOL;
+  echo 'unique counts ' . count($u0) . ' ' . count($u1) . ' ' . count($u2) . PHP_EOL;
+  echo_pretty_json($u0, $u1, $u2);
 }
+function hide_collectible_states($collectible) { // profile or character collectible. Just an array with a state key.
+  if ($collectible['state'] & (8 | 16)) {
+    throw new Exception('Unusual collectible state: ' . $collectible['state']);
+  }
+  return array(
+    'state' => $collectible['state'] & (1 | 2 | 4 | 32), // hide 8 16 64
+  );
+}
+
 
 
 

@@ -1,17 +1,20 @@
 <?php
 
+// SETUP
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
   echo '<pre>';
   throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 set_error_handler("exception_error_handler");
 
+ini_set('memory_limit', '256M');
 
 include_once 'library/bungie_api.php';
 include_once 'library/definitions.php';
 include_once 'library/profiles.php';
 
 
+// DEBUG ASSIST
 function echo_pretty_json(...$jsons) {
   foreach ($jsons as $json) {
     echo '<pre>' . htmlspecialchars(json_encode($json, JSON_PRETTY_PRINT)) . PHP_EOL . PHP_EOL . '</pre>';
@@ -41,8 +44,77 @@ function display_table($rows) {
   echo $html;
 }
 
+function display_node_hierarchy($root_hash = '1866538467' /* records root */, $display_level = 0, $current_depth = 0) {
+  // "collectionRootNode": 3790247699,
+  // "badgesRootNode": 498211331,
+  // "metricsRootNode": 1074663644,
+  // "activeTriumphsRootNodeHash": 1866538467,
+  // "activeSealsRootNodeHash": 616318467,
+  // "legacyTriumphsRootNodeHash": 3215903653,
+  // "legacySealsRootNodeHash": 1881970629,
+  // "medalsRootNodeHash": 3901403713,
+  // "exoticCatalystsRootNodeHash": 511607103,
+  // "loreRootNodeHash": 1993337477,
+  // "seasonalChallengesPresentationNodeHash": 3443694067,
+
+  $nodes = definitions::get('PresentationNode');
+  $node = $nodes[$root_hash];
+
+  $padding = str_pad('', 2 * $current_depth);
+  echo $padding . "<span style='color:silver;'>" . str_pad($root_hash, 10) . "</span> {$node['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$node['displayProperties']['description']}</span>" . PHP_EOL;
+
+  if ($display_level > 0) {
+    $child_types = array(
+      'collectibles' => array('name' => 'collectible', 'definition_type' => 'Collectible'),
+      'records' => array('name' => 'record', 'definition_type' => 'Record'),
+      'metrics' => array('name' => 'metric', 'definition_type' => 'Metric'),
+    );
+    foreach ($child_types as $key => $info) {
+      if (!empty($node['children'][$key])) {
+        echo $padding . '  <span style="color:silver;">has <span style="color:grey;">' . count($node['children'][$key]) . '</span> ' . $key . '</span>' . PHP_EOL;
+        if ($display_level > 1) {
+          $definitions = definitions::get($info['definition_type']);
+          foreach (array_column($node['children'][$key], $info['name'] . 'Hash') as $child_hash) {
+            $child = $definitions[$child_hash];
+            echo $padding . "  <span style='color:silver;'>" . str_pad($child_hash, 10) . "</span> {$child['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$child['displayProperties']['description']}</span>" . PHP_EOL;
+          }
+        }
+      }
+    }
+  }
+
+  foreach ($node['children']['presentationNodes'] as $child) {
+    display_node_hierarchy($child['presentationNodeHash'], $display_level, $current_depth + 1);
+  }
+
+  if (!$current_depth) {
+    echo PHP_EOL;
+  }
+}
+
+function display_hash_info($hash) {
+  $types = array('PresentationNode', 'Record', 'Objective', 'Collectible', 'InventoryItemLite');
+
+  foreach ($types as $type) {
+    $definitions = definitions::get($type);
+    if (!empty($definitions[$hash])) {
+      echo $type . ' ' . $hash;
+      echo_pretty_json($definitions[$hash]);
+
+      if ($type === 'Collectible') {
+        $items = definitions::get('InventoryItemLite');
+        $item = $items[$definitions[$hash]['itemHash']];
+        echo_pretty_json($item);
+      }
+      return;
+    }
+  }
+
+  echo 'hash not found: ' . $hash . PHP_EOL;
+}
 
 
+// UTILITY
 function enable_implicit_flush() {
   // @apache_setenv('no-gzip', 1);
   @ini_set('zlib.output_compression', 0);
