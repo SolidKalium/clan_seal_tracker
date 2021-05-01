@@ -30,41 +30,66 @@ span.name-number {
 
 /* TABLE */
 
+table {
+  border-spacing: 0;
+}
+
 th {
-  border: 1px solid black;
+  border-style: solid;
+  border-color: black;
+  border-width: 1px 1px 0px 0px;
   background-color: white;
   padding-left: 2px;
   padding-right: 2px;
   min-width: 16px;
 }
+tr.first > th[rowspan="2"], tr.second th {
+  border-bottom-width: 1px;
+}
+tr.first > th:first-child {
+  border-left-width: 1px;
+}
 
 thead {
   background-color: white;
 }
-tr.first th {
+tr.first > th {
   position: sticky;
   top: 0;
 }
-tr.second th {
+
+tr.second > th {
   position: sticky;
-  /*top defined in js */
+  /* top defined in js */
 }
 
 th[gild] {
   background-color: gold;
 }
 
-th td {
+th > td {
   padding: 0px;
 }
 
 td {
-  border: 2px solid white;
+  border: 1px solid white;
   height: 21px; /* This is the default for cells with text in them. If no text in a row, it was defaulting to 20. Includes padding and margin. */
 }
+tbody > tr:first-child > td {
+  border-top-width: 2px;
+}
 
-tr:hover td {
-  border: 2px solid black;
+tr:hover > td {
+  border-color: black; /* TODO improve, likely using js to change the borders of the rows above and below */
+  border-top-width: 2px;
+  /*border-bottom-width: 2px;*/
+}
+tr:hover + tr > td {
+  border-top-color: black;
+  /*border-top-width: 0px;*/
+}
+tr:has(+ tr:hover) { /* not supported anywhere */
+  /*border-top-width: 0px;*/
 }
 
 td:not([recordState]) {
@@ -83,13 +108,13 @@ td[recordState=""] { /*could be redeemed*/
 
 td[recordState~="complete"] {
   background-color: green;
-  border-color: green;
+  /*border-color: green;*/
   color: lightgrey;
 }
 
 td[recordState~="reward"] /*reward unavailable*/, td[recordState~="incomplete"] {
   background-color: var(--red);
-  border-color: var(--red);
+  /*border-color: var(--red);*/
   color: var(--red-text);
 }
 td[recordState~="reward"]:after {
@@ -98,13 +123,13 @@ td[recordState~="reward"]:after {
 
 td[recordState~="progress"] { /*not part of api*/
   background-color: var(--yellow);
-  border-color: var(--yellow);
+  /*border-color: var(--yellow);*/
   color: var(--yellow-text);
 }
 
 td[recordState~="obscured"], td[recordState~="hidden"], td[recordState~="unowned"] {
   background-color: var(--silver);
-  border-color: var(--silver);
+  /*border-color: var(--silver);*/
   color: white;
 }
 td[recordState~="obscured"]:after {

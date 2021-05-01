@@ -12,9 +12,8 @@ echo '<pre>';
 route();
 
 // TODO list
-  // support more pages (raid gear (with mappings to encounters. checkout sourceHash), mods, badges (use a letter for every class collected?), catalysts, challenges, weekly milestones?)
+  // support more pages (raid gear (with mappings to encounters. checkout sourceHash), mods, challenges, weekly milestones?)
   // highlight column on hover? (without bumping elements around. needs js)
-  // fix gap in sticky header?
   // make player column sticky when scrolling right?
   // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, etc)
   // add sort capability on columns? (for sorting columns after load)
@@ -608,6 +607,12 @@ function show_page($page_key, $type = null) {
   
   $th1 = '';
   $th2 = '';
+  // $th_bg = '<tr><th colspan="' . count($headings) . '"" id="header-bg"></th</tr>'; // display none until loaded table-row?
+  // I have found no way to style below a tr or th, including using after
+  // chrome moves divs out of the table
+  // I can add a third sticky tr, but I don't know how to hide it until it is scrolled past
+  // If border-collapse is collapse, header borders aren't sticky.
+  // If border-spacing is 0, the borders look too thick
   foreach ($headings as $heading) {
     $column_name = $heading['column_name'] ?? $heading['name'];
 
@@ -638,7 +643,7 @@ function show_page($page_key, $type = null) {
       foreach ($heading['objectives'] as $key => $objective) {
         $subcolumn_name = !empty($heading['number_objectives']) ? $key + 1 : $objective['name'];
         $title = !empty($heading['number_objectives']) ? 'title="' . htmlspecialchars($objective['name']) . '"' : '';
-        $th2 .= "<th $title objective_hash='$key' $heading_attributes_2>$subcolumn_name</th>";
+        $th2 .= "<th $title objective_hash='{$objective['hash']}' $heading_attributes_2>$subcolumn_name</th>";
       }
     }
   }
