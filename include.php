@@ -67,7 +67,7 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $d
     $child_types = array(
       'collectibles' => array('name' => 'collectible', 'definition_type' => 'Collectible'),
       'records' => array('name' => 'record', 'definition_type' => 'Record'),
-      'metrics' => array('name' => 'metric', 'definition_type' => 'Metric'),
+      // 'metrics' => array('name' => 'metric', 'definition_type' => 'Metric'),
     );
     foreach ($child_types as $key => $info) {
       if (!empty($node['children'][$key])) {
@@ -91,13 +91,65 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $d
     echo PHP_EOL;
   }
 }
-// display_node_hierarchy_reverse($root_hash, $display_level = 0, $current_depth) { TODO }
+function display_node_hierarchy_reverse($root_hash, $current_depth = 0) {
+  $type = '';
+
+  $nodes = definitions::get('PresentationNode');
+  if (!empty($nodes[$root_hash])) {
+    $node = $nodes[$root_hash];
+  } else {
+    // not a node, but probably has the fields we need. Some things like item would need more effort.
+
+    $child_types = array(
+      'collectibles' => array('name' => 'collectible', 'definition_type' => 'Collectible'),
+      'records' => array('name' => 'record', 'definition_type' => 'Record'),
+      // 'metrics' => array('name' => 'metric', 'definition_type' => 'Metric'),
+    );
+
+    foreach ($child_types as $key => $info) {
+      $definitions = definitions::get($info['definition_type']);
+      if (!empty($definitions[$root_hash])) {
+        $node = $definitions[$root_hash];
+        $type = ' (' . $info['name'] . ')';
+        break;
+      }
+    }
+  }
+  
+
+  $padding = str_pad('', 2 * $current_depth);
+  echo $padding . "<span style='color:silver;'>" . str_pad($root_hash, 10) . "</span> {$node['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$node['displayProperties']['description']}$type</span>" . PHP_EOL;
+
+  
+  foreach ($node['parentNodeHashes'] as $parent_hash) {
+    display_node_hierarchy_reverse($parent_hash, $current_depth + 1);
+  }
+
+  if (!$current_depth) {
+    echo PHP_EOL;
+  }
+}
 
 function display_hash_info($hash) {
-  $types = array('PresentationNode', 'Record', 'Objective', 'Collectible', 'InventoryItemLite');
+  $types = array(
+    'PresentationNode',
+    'Record',
+    'Objective',
+    // 'Milestone',
+    'Checklist',
+    'Collectible',
+    // 'ItemCategory',
+    // 'RewardSource',
+    'Artifact',
+    // 'EntitlementOffer',
+    // 'Destination',
+    // 'Location',
+    // 'Place',
+    'InventoryItemLite',
+  );
 
   foreach ($types as $type) {
-    $definitions = definitions::get($type);
+    $definitions = definitions::get($type, true); // just warn if not loaded
     if (!empty($definitions[$hash])) {
       echo $type . ' ' . $hash;
       echo_pretty_json($definitions[$hash]);

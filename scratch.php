@@ -16,10 +16,27 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
 // display_node_hierarchy(1866538467, 2); // TODO previous challenges? 3759694843
-display_node_hierarchy(498211331, false);
+
+// display_node_hierarchy_reverse(199171388);
+// display_node_hierarchy(3509235358);
+// display_hash_info(3241617029);
+// display_hash_info(1875194813);
+
 // display_hash_info(3093771363);
 // display_hash_info(2282824303);
 // display_hash_info(29206418);
+
+
+// investigating focusing lens mod
+display_hash_info(792292104); // item
+//  buckets, tier, perk
+display_hash_info(1586531648); // collectible
+display_hash_info(1402439016); // source
+display_hash_info(59); // item category
+display_hash_info(4104513227); // item category
+display_hash_info(3196106184); // item category
+display_hash_info(2906646562); // item category
+display_node_hierarchy_reverse(1586531648); // collectible
 
 
 // $result = bungie_api::get_manifest();

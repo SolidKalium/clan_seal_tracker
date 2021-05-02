@@ -12,17 +12,21 @@ class definitions {
     }
 
     $definitions_to_update = array(
-      'DestinyObjectiveDefinition',
-      'DestinyRecordDefinition',
-      'DestinyPresentationNodeDefinition',
-      // 'DestinyMilestoneDefinition',
-      'DestinyChecklistDefinition',
-      'DestinyCollectibleDefinition',
-      // 'DestinyInventoryItemDefinition', // very big
-      'DestinyInventoryItemLiteDefinition', // still big, but smaller
-      // 'DestinyDestinationDefinition',
-      // 'DestinyLocationDefinition',
-      // 'DestinyPlaceDefinition',
+      'PresentationNode',
+      'Record',
+      'Objective',
+      // 'Milestone',
+      'Checklist',
+      'Collectible',
+      // 'InventoryItem', // very big
+      'InventoryItemLite', // still big, but smaller
+      // 'ItemCategory',
+      // 'RewardSource', // empty
+      'Artifact', // just the current artifact
+      // 'EntitlementOffer', // these entries have no useful data
+      // 'Destination',
+      // 'Location',
+      // 'Place',
     );
 
     $current_filenames = self::get_current_filenames();
@@ -30,7 +34,8 @@ class definitions {
     $manifest = bungie_api::get_manifest();
     $definitions = $manifest['jsonWorldComponentContentPaths']['en']; // NOTE: using individual files may not be supported long term
 
-    foreach ($definitions_to_update as $key) {
+    foreach ($definitions_to_update as $type) {
+      $key = 'Destiny' . $type . 'Definition';
       $path = $definitions[$key];
       $path_parts = explode('/', $path);
       $new_filename = end($path_parts);
@@ -52,7 +57,7 @@ class definitions {
   } 
 
   private static $memo = array();
-  public static function get($type) {
+  public static function get($type, $only_warn_if_missing = false) {
     if (isset(self::$memo[$type])) {
       return self::$memo[$type];
     }
@@ -62,6 +67,10 @@ class definitions {
     $current_filenames = self::get_current_filenames();
 
     if (!$current_filenames[$full_type]) {
+      if ($only_warn_if_missing) {
+        echo 'missing ' . $type . 'definition file' . PHP_EOL;
+        return array();
+      }
       throw new Exception('No definitions downloaded for ' . $type);
     }
 

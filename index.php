@@ -12,26 +12,29 @@ echo '<pre>';
 route();
 
 // TODO list
-  // support more pages (raid gear (with mappings to encounters. checkout sourceHash), mods, challenges, weekly milestones?)
+  // support more pages (challenges, weekly milestones?)
+  // when to update definitions from manifest?
+  // use a generic table display function so there's less of an arbitrary intermediate format that gets interpreted into html?
+  // use icons for gear classes acquired?
+  // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter
+
   // highlight column on hover? (without bumping elements around. needs js)
-  // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, etc)
+  // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, gear source, etc)
   // add sort capability on columns? (for sorting columns after load)
-  // put clan name and icon somewhere? Show seal icon if relevant?
+  // column order (before load) (optional: columns that are completed the most are on the right)
+  // third header for which node it came from?
+
   // make a page that can select users?
   // pin one or more users to the top? (or just highlight them orange)
   // support multiple clans or default clusters of users? maybe use cookies and a selector page.
-  // column order (before load) (optional: columns that are completed the most are on the left)
-  // when to update definitions from manifest?
-  // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter
+  // put clan name and icon somewhere? Show seal icon if relevant?
+  // right click option on a player to copy quick list of what they need. Another option for copying requirements and players for a selected group? right click to add player to selection for all pages or one page?
   // link user names to a relevant d2 checklist page?
-  // ability to highlight blue users with overlap in missing requiements. Compare just to one missing thing or rank by similarity? or both?
+  // ability to highlight blue users with overlap in missing requirements. Compare just to one missing thing or rank by similarity? or both?
+
   // harbinger - lost now more can have progress and be obscured. just show as progress?
   // distinguish between unclaimed interval objectives and unclaimed but full-completed records?
   // "progress" status might not be displaying in some cases (example: nightfall scores (interval objectives), edz lost sectors)
-  // third header for which node it came from?
-  // use a generic table display function so there's less of an arbitrary intermediate format that gets interpreted into html?
-  // right click option on a player to copy quick list of what they need. Another option for copying requirements and players for a selected group?
-  // use icons for gear classes acquired?
 
 
 // Not fixing list
@@ -480,6 +483,24 @@ function get_page_definitions() {
         3068761227 => array('suppress' => true), // devil's ruin
       ),
     ),
+    'mods' => array(
+      'name' => 'Mods',
+      'category' => 'Other',
+      'subcategory' => null,
+      'suppress_seasonal_mods' => true,
+      'other_node_hashes' => array(
+        2819021773 /* Head */,
+        2390416266 /* Arms */,
+        4163848934 /* Chest */,
+        1817221096 /* Legs */,
+        1170707857 /* Class */,
+        1929360037 /* General */,
+        123185593 /* Combat Style */,
+        2154827630 /* Legacy and Raid */,
+        3839307707 /* Weapons */,
+        3110461398 /* Ghost */,
+      ),
+    ),
     'seasonal_challenges' => array(
       'name' => 'Seasonal Challenges',
       'category' => 'Other',
@@ -488,7 +509,7 @@ function get_page_definitions() {
       'records' => array(
 
       ),
-      'disable_reason' => 'in development', // TODO
+      'disable_reason' => 'in development',
     ),
     'guardian_games' => array(
       'name' => 'Guardian Games',
@@ -653,7 +674,7 @@ function show_page($page_key, $type = null) {
     $table .= "<tr id='{$player_data['id']}'>";
     foreach ($headings as $heading) {
       if ($heading['name'] === 'Player') {
-        $completed = number_format($player_data['total_completion'], 2);
+        $completed = rtrim(rtrim(number_format($player_data['total_completion'], 2), '0'), '.');
         $title = "title='$completed/$max_completion'";
         if (profiles::is_stadia($player_data['name'])) {
           $name = explode('#', $player_data['name']);
@@ -772,6 +793,7 @@ function get_headings($page, $type = null) {
   $objectives = definitions::get('Objective');
 
   $record_hash_lists = array();
+  $collectible_hash_lists = array();
   if ((!$type || $type === 'seal') && !empty($page['seal_node_hash'])) {
     $seal_node = $nodes[$page['seal_node_hash']];
     $record_hash_lists[] = array_column($seal_node['children']['records'], 'recordHash');
@@ -780,6 +802,7 @@ function get_headings($page, $type = null) {
     if (!empty($page['other_node_hashes'])) {
       foreach ($page['other_node_hashes'] as $node_hash) {
         $record_hash_lists[] = array_column($nodes[$node_hash]['children']['records'], 'recordHash');
+        $collectible_hash_lists[] = array_column($nodes[$node_hash]['children']['collectibles'], 'collectibleHash');
       }
     }
 
@@ -840,6 +863,50 @@ function get_headings($page, $type = null) {
       $headings[$record['hash']] = $heading;
     }
   }
+  if (array_filter($collectible_hash_lists)) {
+    // Unlike badges, these don't get merged
+    $collectibles = definitions::get('Collectible');
+    $items = definitions::get('InventoryItemLite');
+
+    if (!empty($page['suppress_seasonal_mods'])) {
+      $artifacts = definitions::get('Artifact');
+      $artifact_item_hashes = array();
+      foreach ($artifacts as $artifact) {
+        foreach ($artifact['tiers'] as $tier) {
+          foreach ($tier['items'] as $item) {
+            $artifact_item_hashes[] = $item['itemHash'];
+          }
+        }
+      }
+    }
+
+    foreach ($collectible_hash_lists as $collectible_hash_list) {
+      foreach ($collectible_hash_list as $collectible_hash) {
+        $collectible = $collectibles[$collectible_hash];
+        $item = $items[$collectible['itemHash']];
+        // not showing mod perks
+
+        if (!empty($headings[$collectible['hash']])) {
+          continue; // already added from a different list
+        }
+
+        if (
+          !empty($page['suppress_seasonal_mods']) &&
+          in_array($collectible['itemHash'], $artifact_item_hashes)
+        ) {
+          continue;
+        }
+
+        $headings[] = array(
+          'collectible_hash' => $collectible['hash'],
+          'name' => $collectible['displayProperties']['name'],
+          'description' => $item['itemTypeDisplayName'],
+          'scope' => $collectible['scope'],
+          'order' => ($next_default_order++),
+        );
+      }
+    }
+  }
 
   // CHECKLIST HEADINGS
   if (!$type && !empty($page['checklist_hash'])) {
@@ -891,7 +958,7 @@ function get_headings($page, $type = null) {
     foreach ($collectible_hash_sets as $collectible_hash_set) {
       $identical = (count(array_unique(array_values($collectible_hash_set))) === 1);
 
-      $collectible = $collectibles[reset($collectible_hash_set)]; // TODO sourceHash & acquisitionInfo.acquireMaterialRequirementHash?
+      $collectible = $collectibles[reset($collectible_hash_set)];
       $item = $items[$collectible['itemHash']];
       // echo_pretty_json($collectible, $item);
 
@@ -1021,13 +1088,15 @@ function get_normalized_item_name($item) {
 function get_rows($headings, $players) {
   $rows = array();
 
+  $private_players = array();
+
   foreach ($players as $player) {
     $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId']);
+    $id = $player['destinyUserInfo']['membershipType'] . '_' . $player['destinyUserInfo']['membershipId'];
     if (empty($profile['profileRecords']['data'])) {
-      // echo profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']) . ' is hidding' . PHP_EOL;
+      $private_players[$id] = profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']);
       continue;
     }
-    $id = $player['destinyUserInfo']['membershipType'] . '_' . $player['destinyUserInfo']['membershipId'];
     // if ($id !== '5_4611686018500895898') { continue; } // kalium
     // if ($id !== '5_4611686018503337845') { continue; } // gyrados
     // if ($id !== '2_4611686018449964451') { continue; } // pirate
@@ -1061,6 +1130,8 @@ function get_rows($headings, $players) {
 
   $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
   usort($rows, get_row_sorter($max_completion));
+
+  // echo 'Private players:'; echo_pretty_json($private_players);
 
   return $rows;
 }
