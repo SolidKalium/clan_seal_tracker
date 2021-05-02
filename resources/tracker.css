@@ -95,13 +95,13 @@ td {
 tbody > tr:first-child > td {
   border-top-width: 2px;
 }
-tbody > tr > td.group.first {
+tbody td.group.first {
   border-left-color: darkgrey;
 }
-tbody > tr > td.group.last {
+tbody td.group.last {
   border-right-color: darkgrey;
 }
-tbody > tr > td:not(.group) { /* TODO fix specificity*/
+tbody td:not(.group) { /* TODO fix specificity*/
   border-left-color: darkgrey;
   border-right-color: darkgrey;
 }
