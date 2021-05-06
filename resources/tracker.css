@@ -95,13 +95,13 @@ td {
 tbody > tr:first-child > td {
   border-top-width: 2px;
 }
-tbody td.group.first {
+tbody td.first {
   border-left-color: darkgrey;
 }
-tbody td.group.last {
+tbody td.last {
   border-right-color: darkgrey;
 }
-tbody td:not(.group) { /* TODO fix specificity*/
+tbody td:not(.group) {
   border-left-color: darkgrey;
   border-right-color: darkgrey;
 }
@@ -129,7 +129,7 @@ td[recordState] { /*All data cells, but not player column*/
 
 td[recordState=""] { /*could be redeemed*/
   background-color: var(--lime);
-  border-color: var(--lime);
+  /*border-color: var(--lime);*/
   color: grey;
 }
 
@@ -144,7 +144,7 @@ td[recordState~="reward"] /*reward unavailable*/, td[recordState~="incomplete"] 
   /*border-color: var(--red);*/
   color: var(--red-text);
 }
-td[recordState~="reward"]:after {
+td[recordState~="reward"]:empty:after {
   content: "reward";
 }
 
@@ -159,13 +159,13 @@ td[recordState~="obscured"], td[recordState~="hidden"], td[recordState~="unowned
   /*border-color: var(--silver);*/
   color: white;
 }
-td[recordState~="obscured"]:after {
+td[recordState~="obscured"]:empty:after {
   content: "obscured";
 }
-td[recordState~="hidden"]:after {
+td[recordState~="hidden"]:empty:after {
   content: "hidden";
 }
-td[recordState~="unowned"]:after {
+td[recordState~="unowned"]:empty:after {
   content: "unowned";
 }
 

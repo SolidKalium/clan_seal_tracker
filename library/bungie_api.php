@@ -210,10 +210,13 @@ class bungie_api {
   ///// HELPERS
 
   public static function api($path, $post = false) {
+    // PCGR must go through stats.bungie.net. This does not provide affinitization to a bungie server.
+    // Other requests can go through www.bungie.net. This does provide affinitizaation.
     $base = 'https://www.bungie.net/Platform';
 
     $curl_opts = array(
       CURLOPT_HTTPHEADER => array(
+        // 'Authorization: Bearer ' . '', // TODO store/automate. json_decode if copied
         'X-API-Key: ' . file_get_contents("secret.key"),
       ),
       CURLOPT_URL => $base . $path,
@@ -227,10 +230,13 @@ class bungie_api {
     $result = json_decode($result_text, true);
     if ($result === null) {
       // NOTE: if the server isn't working, the response will be html
-      echo $result_text;
+      echo htmlspecialchars($result_text);
       throw new Exception("json_decode error " . json_last_error() . ": " . json_last_error_msg());
     }
 
+    $excluded_paths = array(
+      '/App/OAuth/token/',
+    );
     $expected = array( // First draft. If this error checking causes issues, improve it.
       "ErrorCode" => 1,
       "ThrottleSeconds" => 0,
@@ -238,10 +244,12 @@ class bungie_api {
       "Message" => "Ok",
       "MessageData" => array(),
     );
-    foreach ($expected as $key => $value) {
-      if ($result[$key] !== $value) {
-        echo_pretty_json($result);
-        throw new Exception("Expected " . $key . " => " . json_encode($value) . ", but received " . json_encode($result[$key]));
+    if (!in_array($path, $excluded_paths)) {
+      foreach ($expected as $key => $value) {
+        if ($result[$key] !== $value) {
+          echo_pretty_json($result);
+          throw new Exception("Expected " . $key . " => " . json_encode($value) . ", but received " . json_encode($result[$key]));
+        }
       }
     }
 
@@ -255,6 +263,50 @@ class bungie_api {
     );
 
     return self::_fetch($curl_opts);
+  }
+
+  public static function get_auth_endpoint() {
+    // gets url to give to user
+    // when the user clicks the button to authorize, they will be returned to the configured page with ?code=<hexcode>&state=testing
+    $url = 'https://www.bungie.net/en/oauth/authorize';
+    $query = array(
+      'response_type' => 'code',
+      'client_id' => '', // TODO from config
+      'state' => 'testing', // TODO
+    );
+
+    return $url . '?' . http_build_query($query);
+  }
+
+  public static function get_token($code) { // TODO just use bungie_api::api
+    // Tokens expire in one hour
+    // does not return the bonus fields typical of other api call
+    $url = 'https://www.bungie.net/Platform/App/OAuth/token/';
+    $query = array(
+      'grant_type' => 'authorization_code',
+      'code' => $code,
+      'client_id' => '', // TODO config
+    );
+
+    $curl_opts = array(
+      CURLOPT_HTTPHEADER => array(
+        'X-API-Key: ' . file_get_contents("secret.key"),
+      ),
+      CURLOPT_URL => $url,
+      CURLOPT_POST => true,
+      CURLOPT_POSTFIELDS => http_build_query($query),
+    );
+
+    $result_text = self::_fetch($curl_opts);
+
+    $result = json_decode($result_text, true);
+    if ($result === null) {
+      // NOTE: if the server isn't working, the response will be html
+      echo htmlspecialchars($result_text);
+      throw new Exception("json_decode error " . json_last_error() . ": " . json_last_error_msg());
+    }
+
+    return $result;
   }
 
 

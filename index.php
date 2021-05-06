@@ -15,12 +15,20 @@ route();
   // support more pages (challenges, weekly milestones?)
   // when to update definitions from manifest?
   // use a generic table display function so there's less of an arbitrary intermediate format that gets interpreted into html?
+  // improve heading fetching. recursively handle nodes.
+  // optionally suppress headings only if no one has it complete? Option to make heading not count toward progress.
   // use icons for gear classes acquired?
-  // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter
+  // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter or handle with the generic html table function.
+  // better secrets/settings handling? Use json + settings
+  //   optionally hide a user for a particular page
+  // database instead of filesystem? make it work on a server
+  // improve style on main page. Header. Improve flow of chunks.
+  // Use jquery?
+  // gracefully handle api auth errors
 
   // highlight column on hover? (without bumping elements around. needs js)
   // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, gear source, etc)
-  // add sort capability on columns? (for sorting columns after load)
+  // add sort capability on columns? (for sorting columns after load. what is the best method to reorder data? css, move the nodes? https://stackoverflow.com/questions/10683712/html-table-sort)
   // column order (before load) (optional: columns that are completed the most are on the right)
   // third header for which node it came from?
 
@@ -31,16 +39,19 @@ route();
   // right click option on a player to copy quick list of what they need. Another option for copying requirements and players for a selected group? right click to add player to selection for all pages or one page?
   // link user names to a relevant d2 checklist page?
   // ability to highlight blue users with overlap in missing requirements. Compare just to one missing thing or rank by similarity? or both?
+  // right click user option to re-order columns so their incomplete columns are on the left
+  // right click column option to send it to the right or left. May need to duplicate 3rd header if so... (or just remove it)
 
-  // harbinger - lost now more can have progress and be obscured. just show as progress?
-  // distinguish between unclaimed interval objectives and unclaimed but full-completed records?
-  // "progress" status might not be displaying in some cases (example: nightfall scores (interval objectives), edz lost sectors)
+  // a settings page where users can login and control which pages they show up on?
+  // connect to discord?
 
 
 // Not fixing list
   // certain gear sets have very different names from each other and should be normalized to just the gear type
   // no support for gilded badges
   // tell which season a gilding triumph is for? I don't think this is in the api yet
+  // harbinger seal's Lost No More triumph can have progress and be obscured. The number now shows but remains gray.
+  // not distinguishing between unclaimed interval objectives and unclaimed but full-completed records
 
 
 // Assumptions
@@ -500,6 +511,9 @@ function get_page_definitions() {
         3839307707 /* Weapons */,
         3110461398 /* Ghost */,
       ),
+      'collectibles' => array(
+        '737130625' => array('column_name' => 'Riven\'s Curse', 'suppress' => true), // not acquireable
+      ),
     ),
     'seasonal_challenges' => array(
       'name' => 'Seasonal Challenges',
@@ -886,6 +900,9 @@ function get_headings($page, $type = null) {
         $item = $items[$collectible['itemHash']];
         // not showing mod perks
 
+        if (!empty($page['collectibles'][$collectible_hash]['suppress'])) {
+          continue;
+        }
         if (!empty($headings[$collectible['hash']])) {
           continue; // already added from a different list
         }
@@ -928,6 +945,7 @@ function get_headings($page, $type = null) {
   }
 
   // BADGE HEADINGS
+  // note: currently ignores page.collectibles
   if (
     ($type === 'badge') ||
     (!$type && !empty($page['badge_node_hash']) && empty($page['hide_badge_unless_explicit']))
@@ -1090,6 +1108,19 @@ function get_rows($headings, $players) {
 
   $private_players = array();
 
+  $pinned_player_ids = array(
+    // '5_4611686018500895898', // kalium
+    // '2_4611686018449964451', // blackflame
+    // '2_4611686018449964451', // pirate
+    // '5_4611686018501984731', // migs
+    // '5_4611686018495301011', // cptylor
+    // '3_4611686018498588294', // shy
+    // '2_4611686018432856064', // drkraven
+    // '1_4611686018448818630', // vault
+    // '2_4611686018434203724', // bundle
+    // '5_4611686018495369222', // arcanesage
+  );
+
   foreach ($players as $player) {
     $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId']);
     $id = $player['destinyUserInfo']['membershipType'] . '_' . $player['destinyUserInfo']['membershipId'];
@@ -1104,10 +1135,13 @@ function get_rows($headings, $players) {
       'name' => profiles::get_display_name($profile),
       'id' => $id,
       'total_completion' => 0,
+      'pinned' => in_array($id, $pinned_player_ids),
       'records' => array(),
       'checklist_entries' => array(),
       'collectibles' => array(),
     );
+    if (!$player_data['pinned'] && $pinned_player_ids) { continue; }
+    // echo_pretty_json($headings);
     foreach ($headings as $heading) {
       if ($heading['name'] === 'Player') {
         continue;
@@ -1126,6 +1160,7 @@ function get_rows($headings, $players) {
       
     }
     $rows[] = $player_data;
+    // echo_pretty_json($player_data);
   }
 
   $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
@@ -1297,10 +1332,21 @@ function get_player_objective_state($record, $key) {
   // Combines objective progress with overall record state
 
   if ($record['state'] === 0) {
-    return ''; // not yet redeemed
+    // not yet redeemed.
+    // this also works for interval objectives (e.g. guardian games bronze medals 681149483)
+    return '';
   }
 
   $objective = $record['objectives'][$key] ?? $record['intervalObjectives'][$key];
+  if (
+    !empty($record['intervalObjectives']) &&
+    !$objective['complete'] &&
+    $objective['progress']
+  ) {
+    // sometimes a particular record with one interval complete will return state 7 instead of state 6 for all such players
+    // example: EDZ lost sectors
+    return 'incomplete progress';
+  }
 
   $complete = ($record['state'] & 1) || $objective['complete'];
 
@@ -1321,6 +1367,12 @@ function get_player_objective_state($record, $key) {
 function get_row_sorter($max_completion) {
     return function ($a, $b) use ($max_completion) {
         // return value is cast to int, so returning a float less than 1 may cause incorrect sort order.
+        if ($a['pinned'] && !$b['pinned']) {
+          return -1;
+        }
+        if (!$a['pinned'] && $b['pinned']) {
+          return 1;
+        }
         if ($a['total_completion'] === $b['total_completion']) {
           return 0;
         }

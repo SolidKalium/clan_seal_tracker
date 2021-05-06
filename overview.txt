@@ -2,6 +2,7 @@
 --- Setup this project to run on your own server
 - Checkout this git repository on your server
 - Register for a developer app at https://www.bungie.net/en/Application
+- Select public auth to enable a few features (TODO in development. private might allow longer times between authorizations)
 - Create a secret.key file in the main project directory and add your api key
 - There are no dependencies to install, put you'll need PHP
 - Each profile fetch API call needs seconds and megabytes of data, so everything is cached in files. You may need to enable folder and file creation/editing for the profiles/ and definitions/ directories.
@@ -14,10 +15,18 @@
 
 
 --- Resources
+- https://www.bungie.net/en/Application (while logged in)
 - https://bungie-net.github.io/multi/index.html
+- https://github.com/Bungie-net/api/wiki/
+- https://www.light.gg/db/changes/
 
---- Key concepts
--- Group
+--- Debugging
+- Several ids are automatically populated on column and row headings
+- There are some useful functions in include.php
+
+
+////////// Key concepts
+--- Group
 A Destiny 2 clan is a Bungie group
 You can fetch it's member list.
 
@@ -48,6 +57,9 @@ Setup database ? just use a file for now
 Setup on remote server
 Create github page
 Add a license?
+Add an info page
+Add privacy info
+Add disclaimer that I am not affiliated with Bungie
 rewrite front end to provide better realtime info in browser? (use js)
 
 --- Feature ideas
@@ -55,6 +67,7 @@ Automatically reload users once per day
   remove files over 2 weeks old
 Allow reloading individual users
 track historical triumph values?
+look into php 7 features
 
 --- Other project ideas
 Charlemagne calendar link?

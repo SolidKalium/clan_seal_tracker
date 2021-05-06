@@ -15,7 +15,7 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
-// display_node_hierarchy(1866538467, 2); // TODO previous challenges? 3759694843
+// display_node_hierarchy(3443694067, 2); // TODO previous challenges? 3759694843
 
 // display_node_hierarchy_reverse(199171388);
 // display_node_hierarchy(3509235358);
@@ -28,15 +28,35 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 
 
 // investigating focusing lens mod
-display_hash_info(792292104); // item
-//  buckets, tier, perk
-display_hash_info(1586531648); // collectible
-display_hash_info(1402439016); // source
-display_hash_info(59); // item category
-display_hash_info(4104513227); // item category
-display_hash_info(3196106184); // item category
-display_hash_info(2906646562); // item category
-display_node_hierarchy_reverse(1586531648); // collectible
+// display_hash_info(792292104); // item
+// //  buckets, tier, perk
+// display_hash_info(1586531648); // collectible
+// display_hash_info(1402439016); // source
+// display_hash_info(59); // item category
+// display_hash_info(4104513227); // item category
+// display_hash_info(3196106184); // item category
+// display_hash_info(2906646562); // item category
+// display_node_hierarchy_reverse(1586531648); // collectible
+
+
+// investigating damage in a raid. It is not available.
+$membershipType = 5; $destinyMembershipId = 4611686018495237916; $characterId = 2305843009538476316; // yoshi H 2305843009538476316 T 2305843009622114122 W 2305843009622114123
+$activityId = 7023983145;
+$activityId = 8376275544;
+$activityHash = 548750096;
+// $result = bungie_api::api('/Destiny2/Stats/Definition/');
+// $result = profiles::get(5, 4611686018495237916);
+// $result = bungie_api::api("/Destiny2/{$membershipType}/Profile/{$destinyMembershipId}/?components=100,200");
+// $result = bungie_api::api("/Destiny2/{$membershipType}/Account/{$destinyMembershipId}/Character/{$characterId}/Stats/AggregateActivityStats/"); // generic aggregate stats
+// $result = bungie_api::api("/Destiny2/Stats/PostGameCarnageReport/{$activityId}/"); // damage isn't in here
+// $result = bungie_api::api("/Destiny2/{$membershipType}/Account/{$destinyMembershipId}/Stats/"); // all characters + merged. pve and pvp
+// $result = bungie_api::api("/Destiny2/{$membershipType}/Account/{$destinyMembershipId}/Character/{$characterId}/Stats/"); // pvp is one group. pve split into patrol, raid, story, strikes, all pve, all gambit
+// $result = bungie_api::api("/Destiny2/{$membershipType}/Account/{$destinyMembershipId}/Character/{$characterId}/Stats/Activities/"); // list of activities and single number stats
+// $result = bungie_api::api("/Destiny2/{$membershipType}/Account/{$destinyMembershipId}/Character/{$characterId}/Stats/UniqueWeapons/"); // lists weapons with 5 stats each
+// display_hash_info(548750096); // activity hash
+// display_hash_info(707184738); // activity graph's nodeActivityId. Unknown type
+// display_hash_info(1540899845); // activity graph's parent nodeActivityID. unknown type TODO?
+// could look at character/account historical stats
 
 
 // $result = bungie_api::get_manifest();
@@ -56,6 +76,14 @@ display_node_hierarchy_reverse(1586531648); // collectible
 // $result = bungie_api::api('/Trending/Categories/'); // news
 // $result = bungie_api::api('/Destiny2/Milestones/'); // general milestone list
 // $result = bungie_api::api('/Destiny2/SearchDestinyPlayer/-1/SolidKalium/');
+// $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/Character/2305843009610364882/Vendors/?components=400,401,402'); // kalium titan
+
+
+// getting vendor info. sale status is a vendor item status. failure reasons are on the vendor.
+// echo bungie_api::get_auth_endpoint() . PHP_EOL . PHP_EOL;
+// $result = bungie_api::get_token(''); // TODO
+// display_hash_info(1303706313);
+
 
 $components = array(
   'None' => 0,
@@ -63,7 +91,7 @@ $components = array(
   // 'VendorReceipts' => 101,
 	// "ProfileInventories" => 102,
 	// "ProfileCurrencies" => 103,
-	// "ProfileProgression" => 104, // checklists and artifact, even with privacy on
+	"ProfileProgression" => 104, // checklists and artifact, does not work with privacy on
 	// "PlatformSilver" => 105, // logged in user only
 	// "Characters" => 200, // minutes played, light level, selected title, emblem, etc.
 	// "CharacterInventories" => 201,
