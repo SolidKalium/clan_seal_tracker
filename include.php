@@ -196,13 +196,39 @@ function enable_implicit_flush() {
   ob_implicit_flush(1);
 }
 
-function get_setting($key) {
-  // TODO defaults? cache?
-  $settings = json_decode(file_get_contents('settings.json'), true);
-  if ($settings === null) {
-    throw new Exception('Invalid settings.json ' . json_last_error() . ": " . json_last_error_msg());
+$settings = null;
+function get_setting($key) { // TODO defaults?
+  global $settings;
+  if (empty($settings)) {
+    $settings = load_json('settings.json');
   }
+
   return $settings[$key];
+}
+
+$page_definitions = null;
+function get_page_definitions() {
+  global $page_definitions;
+  if (empty($page_definitions)) {
+    $page_definitions = load_json('pages.json');
+  }
+
+  return $page_definitions;
+}
+
+function load_json($path) {
+  $file_contents = file_get_contents($path);
+
+  // minimalist comment stripping and hanging comma stripping
+  $file_contents = preg_replace("/\/\/[^\n]*\n/", "\n", $file_contents);
+  $file_contents = preg_replace("/,\s*}/", "\n}", $file_contents);
+  $file_contents = preg_replace("/,\s*]/", "\n]", $file_contents);
+
+  $json = json_decode($file_contents, true);
+  if ($json === null) {
+    throw new Exception('Invalid ' . $path . ' ' . json_last_error() . ": " . json_last_error_msg());
+  }
+  return $json;
 }
 
 function echo_definition_line($definition, $depth = 0, $extra_description = '') {
