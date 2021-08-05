@@ -2,17 +2,11 @@
   "secret_key": "",
   "group_id": "",
   "skip_profile_update": {
-    "{membership_type}_{membership_id}": true, "//": "comment",
-    "{membership_type}_{membership_id}": true, "//": "comment"
+    "{membership_type}_{membership_id}": true, // set players who shouldn't be updated (good for players who are frequently set to private)
   },
   "hide_page_profile": {
-    "{page_key}" : {
-      "{membership_type}_{membership_id}": true, "//": "comment",
-      "{membership_type}_{membership_id}": true, "//": "comment"
+    "{page_key}" : { // for each page, list the players to be hidden
+      "{membership_type}_{membership_id}": true,
     },
-    "{page_key}" : {
-      "{membership_type}_{membership_id}": true, "//": "comment",
-      "{membership_type}_{membership_id}": true, "//": "comment"
-    }
   }
 }
