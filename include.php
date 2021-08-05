@@ -61,7 +61,7 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $d
   $node = $nodes[$root_hash];
 
   $padding = str_pad('', 2 * $current_depth);
-  echo $padding . "<span style='color:silver;'>" . str_pad($root_hash, 10) . "</span> {$node['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$node['displayProperties']['description']}</span>" . PHP_EOL;
+  echo_definition_line($node, $current_depth);
 
   if ($display_level > 0) {
     $child_types = array(
@@ -71,12 +71,12 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $d
     );
     foreach ($child_types as $key => $info) {
       if (!empty($node['children'][$key])) {
-        echo $padding . '  <span style="color:silver;">has <span style="color:grey;">' . count($node['children'][$key]) . '</span> ' . $key . '</span>' . PHP_EOL;
+        echo_info_line('has ', count($node['children'][$key]), ' ' . $key, $current_depth + 1);
         if ($display_level > 1) {
           $definitions = definitions::get($info['definition_type']);
           foreach (array_column($node['children'][$key], $info['name'] . 'Hash') as $child_hash) {
             $child = $definitions[$child_hash];
-            echo $padding . "  <span style='color:silver;'>" . str_pad($child_hash, 10) . "</span> {$child['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$child['displayProperties']['description']}</span>" . PHP_EOL;
+            echo echo_definition_line($child, $current_depth + 1);
           }
         }
       }
@@ -117,8 +117,7 @@ function display_node_hierarchy_reverse($root_hash, $current_depth = 0) {
   }
   
 
-  $padding = str_pad('', 2 * $current_depth);
-  echo $padding . "<span style='color:silver;'>" . str_pad($root_hash, 10) . "</span> {$node['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$node['displayProperties']['description']}$type</span>" . PHP_EOL;
+  echo_definition_line($node, $current_depth, $type);
 
   
   foreach ($node['parentNodeHashes'] as $parent_hash) {
@@ -135,20 +134,38 @@ function display_hash_info($hash) {
     'PresentationNode',
     'Record',
     'Objective',
-    // 'Milestone',
+    'Milestone',
     'Checklist',
     'Collectible',
+    // 'InventoryItem', // very big
+    'InventoryItemLite', // still big, but smaller
     // 'ItemCategory',
-    // 'RewardSource',
-    'Artifact',
-    // 'EntitlementOffer',
-    // 'Activity',
-    // 'ActivityGraph',
-    // 'ActivityInteractable',
+
+    // 'RewardSource', // empty
+    'Artifact', // just the current artifact
+    // 'EntitlementOffer', // these entries have no useful data
+
+    'Activity',
+    'ActivityGraph',
+    'ActivityInteractable', // I think the presence of an entry here indicates a player can interact with it.
+    // 'ActivityMode',
+    // 'ActivityModifier',
+    // 'ActivityType',
+
     // 'Destination',
     // 'Location',
     // 'Place',
-    'InventoryItemLite',
+
+    'Progression',
+    // 'ProgressionLevelRequirement',
+    // 'ProgressionMapping',
+    // 'RewardAdjusterProgressionMap',
+    // 'RewardAdjusterPointer',
+    // 'RewardSource',
+    // 'RewardMapping',
+    // 'RewardSheet',
+    // 'RewardItemList',
+    // 'SackRewardItemList',
   );
 
   foreach ($types as $type) {
@@ -177,5 +194,23 @@ function enable_implicit_flush() {
   @ini_set('implicit_flush', 1);
   for ($i = 0; $i < ob_get_level(); $i++) { ob_end_flush(); }
   ob_implicit_flush(1);
+}
+
+function get_setting($key) {
+  // TODO defaults? cache?
+  $settings = json_decode(file_get_contents('settings.json'), true);
+  if ($settings === null) {
+    throw new Exception('Invalid settings.json ' . json_last_error() . ": " . json_last_error_msg());
+  }
+  return $settings[$key];
+}
+
+function echo_definition_line($definition, $depth = 0, $extra_description = '') {
+  $padding = str_pad('', 2 * $depth);
+  echo $padding . "<span style='color:silver;'>" . str_pad($definition['hash'], 10) . "</span> {$definition['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$definition['displayProperties']['description']}$extra_description</span>" . PHP_EOL;
+}
+function echo_info_line($start, $focus, $end = '', $depth = 0) {
+  $padding = str_pad('', 2 * $depth);
+  echo $padding . "<span style='color:silver;''>$start<span style='color:grey;''>$focus</span>$end</span>" . PHP_EOL;
 }
 

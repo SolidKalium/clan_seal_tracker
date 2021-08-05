@@ -91,6 +91,8 @@ th > td {
 td {
   border: 1px solid white;
   height: 21px; /* This is the default for cells with text in them. If no text in a row, it was defaulting to 20. Includes padding and margin. */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 tbody > tr:first-child > td {
   border-top-width: 2px;
@@ -104,6 +106,9 @@ tbody td.last {
 tbody td:not(.group) {
   border-left-color: darkgrey;
   border-right-color: darkgrey;
+}
+td.numbered {
+  max-width: 16px; /* They're numbered to make them smaller. This trims "obscured" and other messages */
 }
 
 tr:hover > td {

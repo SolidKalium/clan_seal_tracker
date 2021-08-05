@@ -8,14 +8,14 @@ echo '<pre>';
 
 
 
-$runtime = -microtime(true);
+$start_time = microtime(true);
 echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 
 
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
-// display_node_hierarchy(3443694067, 2); // TODO previous challenges? 3759694843
+display_node_hierarchy(1866538467, 2);
 
 // display_node_hierarchy_reverse(199171388);
 // display_node_hierarchy(3509235358);
@@ -75,6 +75,7 @@ $activityHash = 548750096;
 // $result = bungie_api::api('/GlobalAlerts/');
 // $result = bungie_api::api('/Trending/Categories/'); // news
 // $result = bungie_api::api('/Destiny2/Milestones/'); // general milestone list
+// $result = bungie_api::api('/Destiny2/Milestones/{milestoneHash}/Content/'); // TODO
 // $result = bungie_api::api('/Destiny2/SearchDestinyPlayer/-1/SolidKalium/');
 // $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/Character/2305843009610364882/Vendors/?components=400,401,402'); // kalium titan
 
@@ -84,6 +85,31 @@ $activityHash = 548750096;
 // $result = bungie_api::get_token(''); // TODO
 // display_hash_info(1303706313);
 
+// improve loading
+$membershipType = 5; $destinyMembershipId = 4611686018500895898;
+// $profile = profiles::get($membershipType, $destinyMembershipId);
+// $profile = bungie_api::get_profile($membershipType, $destinyMembershipId, array('Profiles'));
+// echo "get_profile took " . number_format(microtime(true) - $start_time, 3) . " seconds" . PHP_EOL;
+// $profile = bungie_api::get_profile($membershipType, $destinyMembershipId, array('Profiles', 'ProfileProgression', 'CharacterProgressions', 'PresentationNodes', 'Collectibles', 'Records'));
+// $profile += bungie_api::get_memberships($destinyMembershipId, $membershipType); // only takes about 0.1 seconds
+
+
+// milestones
+// display_hash_info(432848324); // inventoryitem for weekly clan engrams
+// display_hash_info(2540008660); // item for personal contribution
+// display_hash_info(344489854); // item for daily focus
+// display_hash_info(3500096607); // objective for strike daily focus
+// display_hash_info(3373751971); // item for medal case
+// display_hash_info(534869653); // xur, no real details
+// display_hash_info(3181387331); // last wish raid
+// display_hash_info(2122313384); // activity for last wish
+// display_hash_info(1126840038); // last wish first activity phase. not available
+// display_hash_info(1661734046); // last wish activity, but old version
+// display_hash_info(3789021730); // group clan rewards milestone. two different lists? not found
+
+// display_hash_info(); // 
+// display_profile_milestones(5, 4611686018500895898);
+
 
 $components = array(
   'None' => 0,
@@ -91,11 +117,11 @@ $components = array(
   // 'VendorReceipts' => 101,
 	// "ProfileInventories" => 102,
 	// "ProfileCurrencies" => 103,
-	"ProfileProgression" => 104, // checklists and artifact, does not work with privacy on
+	// "ProfileProgression" => 104, // checklists and artifact, does not work with privacy on
 	// "PlatformSilver" => 105, // logged in user only
 	// "Characters" => 200, // minutes played, light level, selected title, emblem, etc.
 	// "CharacterInventories" => 201,
-	// "CharacterProgressions" => 202, // might include season pass info. progression, faction, quest, milestone, quests, non-instanced item objectives, checklists, artifact
+	"CharacterProgressions" => 202, // might include season pass info. progression, faction, quest, milestone, quests, non-instanced item objectives, checklists (lost sectors and jade rabbits), artifact
 	// "CharacterRenderData" => 203,
 	// "CharacterActivities" => 204,
 	// "CharacterEquipment" => 205,
@@ -115,14 +141,15 @@ $components = array(
 	// "VendorSales" => 402, // none
 	// "Kiosks" => 500,
 	// "CurrencyLookups" => 600,
-	"PresentationNodes" => 700,
+	// "PresentationNodes" => 700,
 	// "Collectibles" => 800,
-	"Records" => 900,
+	// "Records" => 900,
 	// "Transitory" => 1000, // currently empty
 	// "Metrics" => 1100,
 );
 // $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components))); // kalium
 // $result = bungie_api::api('/Destiny2/3/Profile/4611686018490731084/?components=' . implode(',', array_values($components))); // scorpin
+
 
 if (!empty($result)) {
   echo_pretty_json($result);
@@ -147,7 +174,7 @@ if (!empty($result)) {
 // explore_character_collectible_differences(5, 4611686018500895898);
 // display_hash_info(1683385696);
 
-$runtime += microtime(true);
+$runtime = microtime(true) - $start_time;
 echo "SCRIPT END after " . number_format($runtime, 3) . " seconds";
 
 
@@ -248,8 +275,92 @@ function hide_collectible_states($collectible) { // profile or character collect
   );
 }
 
+function display_profile_milestones($type, $id) {
+  $profile = profiles::get($type, $id);
 
+  $milestones = definitions::get('Milestone');
+  $activities = definitions::get('Activity');
+  // $rewards = definitions::get('Reward');
+  $objectives = definitions::get('Objective');
 
+  $characters = array_values($profile['characterProgressions']['data']); // TODO handle all in parallel?
+
+  $character = reset($characters);
+  foreach ($character['milestones'] as $milestone_hash => $character_milestone) {
+    $milestone = $milestones[$milestone_hash];
+
+    echo_definition_line($milestone);
+
+    foreach (array('startDate', 'endDate', 'order') as $key) {
+      if (!empty($character_milestone[$key])) {
+        echo_info_line($key . ' ', $character_milestone[$key], '', 1);
+      }
+    }
+
+    if (!empty($character_milestone['vendors'])) {
+      echo_info_line('has ', count($character_milestone['vendors']), ' vendors', 1);
+    }
+
+    if (!empty($character_milestone['activities'])) {
+      echo_info_line('has ', count($character_milestone['activities']), ' activities', 1);
+      foreach ($character_milestone['activities'] as $milestone_activity) {
+        $activity = $activities[$milestone_activity['activityHash']];
+        echo_definition_line($activity, 1, ' (activity)');
+
+        // challenges
+        foreach ($milestone_activity['challenges'] ?? [] as $challenge) {
+          $objective = $objectives[$challenge['objective']['objectiveHash']];
+          echo_definition_line($objective, 2, ' (challenge objective) (' . ($challenge['objective']['visible'] ? 'visible' : 'invisible') . ') (' . $challenge['objective']['progress'] . '/' . $challenge['objective']['completionValue'] . ') (' . ($challenge['objective']['complete'] ? 'complete' : 'incomplete') . ')');
+
+          $handled_keys = array('objective');
+          if (array_diff(array_keys($challenge), $handled_keys)) {
+            echo 'unhandled challenge keys' . PHP_EOL;
+            echo_pretty_json($character_milestone);
+          }
+        }
+
+        // phases
+        if (!empty($milestone_activity['phases'])) {
+          $phases = [];
+          foreach ($milestone_activity['phases'] as $phase) {
+            $phases[] = $phase['complete'] ? 'Y' : 'N';
+          }
+          echo_info_line('phases: [', implode(',', $phases), ']', 2);
+        }
+
+        $handled_keys = array('activityHash', 'challenges', 'modifierHashes', 'booleanActivityOptions' /* no data available */, 'phases');
+        if (array_diff(array_keys($milestone_activity), $handled_keys)) {
+          echo 'unhandled activity keys' . PHP_EOL;
+          echo_pretty_json($character_milestone);
+        }
+      }
+    }
+
+    if (!empty($character_milestone['rewards'])) { // TODO
+      // echo_pretty_json($character_milestone);
+      echo_info_line('has ', count($character_milestone['rewards']), ' rewards', 1);
+      // foreach ($character_milestone['rewards'] as $reward) {}
+    }
+
+    if (!empty($character_milestone['availableQuests'])) { // TODO
+      // echo_pretty_json($character_milestone);
+      echo_info_line('has ', count($character_milestone['availableQuests']), ' available quests', 1);
+      // foreach ($character_milestone['rewards'] as $reward) {}
+    }
+
+    $handled_keys = array('milestoneHash', 'startDate', 'endDate', 'order', 'vendors', 'activities', 'rewards', 'availableQuests');
+    if (array_diff(array_keys($character_milestone), $handled_keys)) {
+      echo 'unhandled milestone keys' . PHP_EOL;
+      echo_pretty_json($character_milestone);
+    }
+
+  }
+
+  echo PHP_EOL;
+}
+function list_all_milestones() { // TODO (for headers)
+  $milestones = definitions::get('Milestone');
+}
 
 
 

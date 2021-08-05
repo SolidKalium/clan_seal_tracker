@@ -1,0 +1,18 @@
+{
+  "secret_key": "",
+  "group_id": "",
+  "skip_profile_update": {
+    "{membership_type}_{membership_id}": true, "//": "comment",
+    "{membership_type}_{membership_id}": true, "//": "comment"
+  },
+  "hide_page_profile": {
+    "{page_key}" : {
+      "{membership_type}_{membership_id}": true, "//": "comment",
+      "{membership_type}_{membership_id}": true, "//": "comment"
+    },
+    "{page_key}" : {
+      "{membership_type}_{membership_id}": true, "//": "comment",
+      "{membership_type}_{membership_id}": true, "//": "comment"
+    }
+  }
+}

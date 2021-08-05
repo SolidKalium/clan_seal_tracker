@@ -20,6 +20,7 @@ class bungie_api {
   }
 
   public static function get_group_members($group_id) {
+    // takes about 0.7 seconds
     $group_id = (int) $group_id;
 
     $response = self::api('/GroupV2/' . $group_id . '/Members/');
@@ -217,7 +218,7 @@ class bungie_api {
     $curl_opts = array(
       CURLOPT_HTTPHEADER => array(
         // 'Authorization: Bearer ' . '', // TODO store/automate. json_decode if copied
-        'X-API-Key: ' . file_get_contents("secret.key"),
+        'X-API-Key: ' . get_setting("secret_key"),
       ),
       CURLOPT_URL => $base . $path,
     );
@@ -290,7 +291,7 @@ class bungie_api {
 
     $curl_opts = array(
       CURLOPT_HTTPHEADER => array(
-        'X-API-Key: ' . file_get_contents("secret.key"),
+        'X-API-Key: ' . get_setting("secret_key"),
       ),
       CURLOPT_URL => $url,
       CURLOPT_POST => true,

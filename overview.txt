@@ -3,13 +3,12 @@
 - Checkout this git repository on your server
 - Register for a developer app at https://www.bungie.net/en/Application
 - Select public auth to enable a few features (TODO in development. private might allow longer times between authorizations)
-- Create a secret.key file in the main project directory and add your api key
+- Create settings.json and add your api key and clan group_id
 - There are no dependencies to install, put you'll need PHP
 - Each profile fetch API call needs seconds and megabytes of data, so everything is cached in files. You may need to enable folder and file creation/editing for the profiles/ and definitions/ directories.
 - Individual users do not need to authenticate. Only public data is used.
 
 - [TODO improve] call defintions::update() one time
-- [TODO improve] find your clan id and hardcode it as an argument to get_group_members in index.php. 
 
 - share your feedback or submit pull requests for improvements
 
@@ -68,7 +67,11 @@ Automatically reload users once per day
 Allow reloading individual users
 track historical triumph values?
 look into php 7 features
+if checking player data frequently, could add custom events to send to discord
 
 --- Other project ideas
 Charlemagne calendar link?
 How does charlemagne get realtime D2 data?
+
+--- Misc notes
+Gilding count is a metric

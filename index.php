@@ -12,25 +12,35 @@ echo '<pre>';
 route();
 
 // TODO list
-  // support more pages (challenges, weekly milestones?)
-  // when to update definitions from manifest?
+  // support weekly milestones. three rows, one per character. two heading levels for raid phases
+  // when to update definitions from manifest? create an intermediate dataset to cache per page? 23MB of item may be big for serverless
   // use a generic table display function so there's less of an arbitrary intermediate format that gets interpreted into html?
   // improve heading fetching. recursively handle nodes.
-  // optionally suppress headings only if no one has it complete? Option to make heading not count toward progress.
+  // optionally suppress headings only if no one has it complete (or no progress)? records[].only_display_if => progress / complete
+  //   Option to make heading not count toward progress?
+  //   Store progress per cell, then sum at the end
   // use icons for gear classes acquired?
+  // indicate somewhere that a triumph is per character instead of per account?
   // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter or handle with the generic html table function.
   // better secrets/settings handling? Use json + settings
   //   optionally hide a user for a particular page
   // database instead of filesystem? make it work on a server
   // improve style on main page. Header. Improve flow of chunks.
   // Use jquery?
-  // gracefully handle api auth errors
+  // gracefully handle api auth errors, other errors
+  // maybe do a basic api check for "player has been online since last data fetch". Might be on clan. If not, can skip updating that player
+  //   may be able to fetch just one character if only one character has been played.
+  // use a data structure for membership ids? type can be optional but generally required. pickle/unpickle functions
+  // merge new and old profile and definition info? Make it work automatically
+  // add objective to header hover text, just in case
 
   // highlight column on hover? (without bumping elements around. needs js)
   // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, gear source, etc)
   // add sort capability on columns? (for sorting columns after load. what is the best method to reorder data? css, move the nodes? https://stackoverflow.com/questions/10683712/html-table-sort)
   // column order (before load) (optional: columns that are completed the most are on the right)
   // third header for which node it came from?
+  // option to auto-filter to people with certain progress? support filters in js. "at least one of", "all of" (no use case?), "progress on" (one or multiple?)
+  // easy option to disable sort complete to bottom? might support multiple sort orders in js
 
   // make a page that can select users?
   // pin one or more users to the top? (or just highlight them orange)
@@ -44,7 +54,21 @@ route();
 
   // a settings page where users can login and control which pages they show up on?
   // connect to discord?
+  // export as csv/excel?
 
+  // table for each raid badge where the headers are encounters and subheaders are classes.
+  //   Cell colors indicate status for completed that week, collected all drops for that encounter.
+  //     Dark border and color if done that week?
+  //     Red-yellow gradient for % completed?
+  //   Cell icon might be the class symbol to better indicate the class for the character in case of duplicate class characters
+  //     Auto-sort THW. Could change TTH order to THT (and HWW to WHW) so that the missing class is always replaced by a duplicate.
+  //   Cell number for how many collectibles are available for that encounter?
+  //   On cell hover, list the missing collectibles
+  //   On header hover, list the possible gear
+
+
+// Low priority list
+  // for sets of gear in a collection, change text color to gold for each letter representing a class with a complete set
 
 // Not fixing list
   // certain gear sets have very different names from each other and should be normalized to just the gear type
@@ -52,6 +76,10 @@ route();
   // tell which season a gilding triumph is for? I don't think this is in the api yet
   // harbinger seal's Lost No More triumph can have progress and be obscured. The number now shows but remains gray.
   // not distinguishing between unclaimed interval objectives and unclaimed but full-completed records
+  // store updates for triumph progress for each person when updated. First seen and last seen timestamps for historical values.
+  // a way to dive in to and explore the data for a particular triumph. E.g. list the successful and unsuccessful proving grounds runs for a player
+  // fix up Bungie's descriptions (replace variables, things in [brackets], or unprintable icons from their font)
+  // alternative rankings: triumph points; by fully completed triumphs and only using partial completion for tiebreaking
 
 
 // Assumptions
@@ -143,9 +171,21 @@ function get_page_definitions() {
       'name' => 'Vault of Glass',
       'category' => 'Seals',
       'subcategory' => 'Raid',
-      'disable_reason' => 'not yet available',
+      'seal_node_hash' => 3734352323,
+      'badge_node_hash' => 1154828558,
+      'other_node_hashes' => array(132375837), // Just adds Tempo's edge and flawless
+      'records' => array(
+        2782679117 => array('column_name' => 'Badge'),
+        578313932 => array('number_objectives' => true),
+        932039090 => array('number_objectives' => true),
+        1983700615 => array('column_name' => 'Arc', 'number_objectives' => true),
+        1961032859 => array('column_name' => 'Void', 'number_objectives' => true),
+        2592913942 => array('column_name' => 'Solar', 'number_objectives' => true),
+        3969659747 => array('column_name' => 'Class', 'number_objectives' => true),
+        3790077074 => array('number_objectives' => true),
+        2384429092 => array('number_objectives' => true),
+      ),
     ),
-
     'crucible' => array(
       'name' => 'Crucible',
       'category' => 'Seals',
@@ -157,6 +197,7 @@ function get_page_definitions() {
         3973313476 /* account crucible */,
         339137305 /* chosen/13 crucible */,
         1667143694 /* hunt/12 crucible */,
+        3049172190 /* iron banner */
       ),
     ),
     'gambit' => array(
@@ -202,6 +243,38 @@ function get_page_definitions() {
         2973304209 /* cosmodrome strikes */,
       ),
     ),
+    // 'conqueror' => array( // season 14 doesn't have triumphs for strikes/crucible/gambit
+    //   'name' => 'Conqueror + season 13 strikes',
+    //   'category' => 'Seals',
+    //   'subcategory' => 'Activity',
+    //   'seal_node_hash' => null,
+    //   'other_node_hashes' => array(
+    //     3776992251 /* conqueror seal */,
+    //     // 1954283988 /* account nightfalls */,
+    //     // 1990811028 /* account strikes */,
+    //     // 636644708 /* chosen/13 strikes */,
+    //     // 2675905563 /* hunt/12 strikes */,
+    //     // 4285884347 /* dreaming city strikes */,
+    //     // 1427965125 /* tangled shore strikes */,
+    //     // 69244313 /*  nessus strikes */,
+    //     // 245634203 /* edz strikes */,
+    //     // 2973304209 /* cosmodrome strikes */,
+    //   ),
+    //   'require_at_least_one_record_hash' => array( // TODO
+    //     3663146391, // devil's lair
+    //     3176422761, // arms dealer
+    //     2483704578, // proving grounds
+    //     2589774932, // warden
+    //     371577627, // saber
+    //     2117601105, // insight terminus
+    //     1820446245, // devil's lair
+    //     1404404279, // arms dealer
+    //     2867134615, // proving grounds
+    //     4018693329, // warden
+    //     8651357, // saber
+    //     1451485767, // insight terminus
+    //   ),
+    // ),
 
     'shadowkeep' => array(
       'name' => 'Shadowkeep', // seal name is harbinger, not to be confused with the harbinger exotic quest
@@ -257,6 +330,19 @@ function get_page_definitions() {
         3006777794 /* general */,
       ),
     ),
+    'season_14' => array(
+      'name' => 'Season of the Splicer',
+      'category' => 'Seals',
+      'subcategory' => 'Seasonal',
+      'seal_node_hash' => 1321008457,
+      'other_node_hashes' => array(
+        1134387311 /* quests */,
+        2826444925 /* activities */,
+        529389631 /* gear */,
+        3807851309 /* prismatic lenses */,
+        933409053 /* general */,
+      ),
+    ),
     'mmxxi' => array(
       'name' => 'MMXXI',
       'category' => 'Seals',
@@ -307,6 +393,85 @@ function get_page_definitions() {
       'other_node_hashes' => array(
         748764525 /* world */,
         2074120351 /* exploration */,
+      ),
+    ),
+    'cosmodrome' => array(
+      'name' => 'Cosmodrome',
+      'category' => 'Seals',
+      'subcategory' => 'Destination',
+      'other_node_hashes' => array(
+        3177164055 /* exploration */,
+      ),
+    ),
+    'lost_sectors' => array(
+      'name' => 'Lost Sectors',
+      'category' => 'Seals',
+      'subcategory' => 'Destination',
+      'records' => array( // TODO it would be better if these were grouped
+        520634566 => array(), // Concealed Void
+        2854743101 => array(),
+        1416307185 => array(),
+        4076413958 => array(), // Bunker E15
+        631767421 => array(),
+        1525617457 => array(),
+        430920723 => array(), // Perdition
+        3227342880 => array(),
+        745577862 => array(),
+        4003962220 => array(), // Veles Labyrinth
+        767109427 => array(),
+        3965319255 => array(),
+        411957691 => array(), // Exodus Garden 2A
+        817142456 => array(),
+        2203010110 => array(),
+        1887599917 => array(), // K1 Logistics
+        1327177738 => array(),
+        6245488 => array(),
+        1511640986 => array(), // K1 Revelation
+        3983292393 => array(),
+        1565741749 => array(),
+        2561650494 => array(), // K1 Crew Quarters
+        1435133189 => array(),
+        114953849 => array(),
+        1803530104 => array(), // K1 Communion
+        2317819527 => array(),
+        4040235491 => array(),
+      ),
+    ),
+
+    'new_light' => array(
+      'name' => 'New Light',
+      'category' => 'Lifetime',
+      'subcategory' => null,
+      'other_node_hashes' => array(
+        2748609922, // progression
+        2957698451, // combatants
+        1132985648, // gear
+        1573488630, // clans (social)
+        3346731843, // fireteam (social)
+      ),
+    ),
+    'titan' => array(
+      'name' => 'Titan',
+      'category' => 'Lifetime',
+      'subcategory' => null,
+      'other_node_hashes' => array(
+        3436349154,
+      ),
+    ),
+    'hunter' => array(
+      'name' => 'Hunter',
+      'category' => 'Lifetime',
+      'subcategory' => null,
+      'other_node_hashes' => array(
+        264195358,
+      ),
+    ),
+    'warlock' => array(
+      'name' => 'Warlock',
+      'category' => 'Lifetime',
+      'subcategory' => null,
+      'other_node_hashes' => array(
+        1424071291,
       ),
     ),
 
@@ -519,11 +684,17 @@ function get_page_definitions() {
       'name' => 'Seasonal Challenges',
       'category' => 'Other',
       'subcategory' => null,
-      'other_node_hashes' => array(193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696),
+      'other_node_hashes' => array(1243102869, 2412404671, 2412404668, 2412404669, 2412404666, 2412404667, 2412404664, 2412404665, 2412404662, 2412404663, 445954461),
+      // 'other_node_hashes' => array(193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696), // season 13
       'records' => array(
 
       ),
-      'disable_reason' => 'in development',
+    ),
+    'solstice' => array(
+      'name' => 'Solstice of Heroes',
+      'category' => 'Other',
+      'subcategory' => null,
+      'other_node_hashes' => array(760002588),
     ),
     'guardian_games' => array(
       'name' => 'Guardian Games',
@@ -630,11 +801,11 @@ function show_page($page_key, $type = null) {
   echo "<h1>$title</h1>";
 
 
-  $players = profiles::get_cached_players();
-  // $players = bungie_api::get_group_members(4331943); // Anomaly
+  // $players = profiles::get_cached_players();
+  $players = bungie_api::get_group_members(get_setting("group_id"));
 
   $headings = get_headings($page, $type);
-  $rows = get_rows($headings, $players);
+  $rows = get_rows($page_key, $headings, $players);
   $max_completion = count($headings) - 1;
 
   
@@ -737,12 +908,16 @@ function get_player_record_tds($player_data, $heading) {
           $class = 'group middle';
         }
       }
+      if ($heading['number_objectives'] ?? false) {
+        $class .= ' numbered';
+      }
 
       $progress = $player_objective['progress'];
       if ($progress === 0 || $progress === $objective['completionValue']) {
         $progress = '';
       }
       $recordState = get_player_objective_state($player_record, $key);
+
       $html .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$objective['completionValue']}' class='$class'>$progress</td>";
     }
     return $html;
@@ -1103,44 +1278,61 @@ function get_normalized_item_name($item) {
   return $name;
 }
 
-function get_rows($headings, $players) {
+function get_rows($page_key, $headings, $players) {
   $rows = array();
 
   $private_players = array();
 
-  $pinned_player_ids = array(
+  $pinned_profile_ids = array(
     // '5_4611686018500895898', // kalium
-    // '2_4611686018449964451', // blackflame
     // '2_4611686018449964451', // pirate
     // '5_4611686018501984731', // migs
     // '5_4611686018495301011', // cptylor
+    // '2_4611686018434203724', // bundle
+    // '5_4611686018495302579', // valent
+    // '2_4611686018445720014', // vader
+    // '3_4611686018490731084', // scorpin
+    // '5_4611686018503337845', // gyrados
     // '3_4611686018498588294', // shy
     // '2_4611686018432856064', // drkraven
     // '1_4611686018448818630', // vault
-    // '2_4611686018434203724', // bundle
     // '5_4611686018495369222', // arcanesage
+    // '2_4611686018449964451', // blackflame
   );
 
+  $skip_page_profile = get_setting('hide_page_profile');
+
   foreach ($players as $player) {
-    $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId']);
     $id = $player['destinyUserInfo']['membershipType'] . '_' . $player['destinyUserInfo']['membershipId'];
+
+    if (!in_array($id, $pinned_profile_ids) && $pinned_profile_ids) { continue; }
+    if (!empty($skip_page_profile[$page_key][$id])) { continue; }
+
+    // if ($id !== '5_4611686018500895898') { continue; } // kalium
+    // if ($id !== '5_4611686018503337845') { continue; } // gyrados
+    // if ($id !== '2_4611686018449964451') { continue; } // pirate
+    // echo_pretty_json($player); exit();
+
+    $last_seen = $player['lastOnlineStatusChange'] ?? null;
+    if (!empty($player['isOnline'])) {
+      $last_seen = time(); // last seen now
+    }
+    $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId'], $last_seen);
+
     if (empty($profile['profileRecords']['data'])) {
       $private_players[$id] = profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']);
       continue;
     }
-    // if ($id !== '5_4611686018500895898') { continue; } // kalium
-    // if ($id !== '5_4611686018503337845') { continue; } // gyrados
-    // if ($id !== '2_4611686018449964451') { continue; } // pirate
     $player_data = array(
       'name' => profiles::get_display_name($profile),
       'id' => $id,
       'total_completion' => 0,
-      'pinned' => in_array($id, $pinned_player_ids),
+      'pinned' => in_array($id, $pinned_profile_ids),
       'records' => array(),
       'checklist_entries' => array(),
       'collectibles' => array(),
     );
-    if (!$player_data['pinned'] && $pinned_player_ids) { continue; }
+    // $has_record_from_list = false;
     // echo_pretty_json($headings);
     foreach ($headings as $heading) {
       if ($heading['name'] === 'Player') {
@@ -1159,6 +1351,12 @@ function get_rows($headings, $players) {
       }
       
     }
+    // if (
+    //   ($page['require_at_least_one_record_hash'] ?? []) &&
+    //   !$has_record_from_list
+    // ) {
+    //   continue;
+    // }
     $rows[] = $player_data;
     // echo_pretty_json($player_data);
   }
@@ -1177,6 +1375,7 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
       $player_data['total_completion'] += estimate_player_record_progress($profile_record);
   } else if ($heading['scope'] === 1) { // character scope
     // Example: season of chosen battlegrounds has multiple objectives. progress is the same across characters, but state may differ. e.g. 4 vs 12
+    //   Progress may be 0 instead of 1 for some completed objectives (Example: complete challenger's proving quest)
     // Example: season of chosen path of the chosen has one objective and progress differes between characters. state may differ. e.g. 7 vs 67
 
     $best_character_record = null;
@@ -1190,6 +1389,8 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
     if ($identical) {
       $best_character_record = $all_character_records[0]; // may get random state if obscured for only some characters
     } else {
+      // could index by progress, ksort SORT_NUMERIC, take the best one. if there were duplicates, re-estimate by progress only, then by progress only with no cap per item
+      // ideally could display all the values on hover [T: 1/1, W: 3/1, H: 0/1]. TODO when redesigning output. Make sure it stays yellow if all reqs not met on 1 character
       foreach ($all_character_records as $character_record) {
         if (!$best_character_record) {
           $best_character_record = $character_record;
@@ -1202,9 +1403,9 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
         }
       }
       if (count($character_record['objectives']) > 1) {
-        echo_pretty_json($heading);
-        echo_pretty_json($all_character_records);
-        throw new Exception('multiple objectives on character records that aren\'t identical. This isn\'t handled yet');
+        // echo_pretty_json($heading);
+        // echo_pretty_json($all_character_records);
+        // throw new Exception('multiple objectives on character records that aren\'t identical. This isn\'t handled yet');
       }
     }
 

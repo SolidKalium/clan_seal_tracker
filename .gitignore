@@ -1,4 +1,6 @@
 excel/
-definitions/
-profiles/
+definitions*/
+profiles*/
 secret.key
+settings.json
+**/.DS_Store

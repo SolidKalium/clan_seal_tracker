@@ -15,21 +15,38 @@ class definitions {
       'PresentationNode',
       'Record',
       'Objective',
-      // 'Milestone',
+      'Milestone',
       'Checklist',
       'Collectible',
       // 'InventoryItem', // very big
       'InventoryItemLite', // still big, but smaller
       // 'ItemCategory',
+
       // 'RewardSource', // empty
       'Artifact', // just the current artifact
       // 'EntitlementOffer', // these entries have no useful data
+
       // 'Activity',
       // 'ActivityGraph',
       // 'ActivityInteractable', // I think the presence of an entry here indicates a player can interact with it.
+      // 'ActivityMode',
+      // 'ActivityModifier',
+      // 'ActivityType',
+
       // 'Destination',
       // 'Location',
       // 'Place',
+
+      'Progression',
+      // 'ProgressionLevelRequirement',
+      // 'ProgressionMapping',
+      // 'RewardAdjusterProgressionMap',
+      // 'RewardAdjusterPointer',
+      // 'RewardSource',
+      // 'RewardMapping',
+      // 'RewardSheet',
+      // 'RewardItemList',
+      // 'SackRewardItemList',
     );
 
     $current_filenames = self::get_current_filenames();
