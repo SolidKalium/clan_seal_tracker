@@ -87,7 +87,12 @@ route();
 
 function route() {
   if (isset($_GET['page'])) {
+    $start_time = microtime(true);
+
     show_page($_GET['page'], $_GET['type'] ?? null);
+
+    $runtime = microtime(true) - $start_time;
+    // echo "page load time: " . number_format($runtime, 3) . " seconds";
     return;
   }
 
@@ -180,7 +185,7 @@ function show_page($page_key, $type = null) {
 
 
   // $players = profiles::get_cached_players();
-  $players = bungie_api::get_group_members(get_setting("group_id"));
+  $players = groups::get_group_members(get_setting("group_id"));
 
   $headings = get_headings($page, $type);
   $rows = get_rows($page_key, $headings, $players);

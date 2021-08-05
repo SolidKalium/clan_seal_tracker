@@ -12,6 +12,7 @@ ini_set('memory_limit', '256M');
 include_once 'library/bungie_api.php';
 include_once 'library/definitions.php';
 include_once 'library/profiles.php';
+include_once 'library/groups.php';
 
 
 // DEBUG ASSIST
