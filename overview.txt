@@ -4,9 +4,10 @@
 - Register for a developer app at https://www.bungie.net/en/Application
 - Select public auth to enable a few features (TODO in development. private might allow longer times between authorizations)
 - Create settings.json and add your api key and clan group_id
-- There are no dependencies to install, put you'll need PHP
+- There are no dependencies to install, put you'll need PHP with CURL
 - Each profile fetch API call needs seconds and megabytes of data, so everything is cached in files. You may need to enable folder and file creation/editing for the profiles/ and definitions/ directories.
 - Individual users do not need to authenticate. Only public data is used.
+- Apache may need to be given permission to write files and folders
 
 - [TODO improve] call defintions::update() one time
 
@@ -52,6 +53,7 @@ A main area, like the EDZ. A location is more specific. I don't know what a bubb
 ////////// INTERNAL NOTES
 
 --- Implementation next steps
+Files that should be accessible need to be in their own folder.
 Setup database ? just use a file for now
 Setup on remote server
 Create github page

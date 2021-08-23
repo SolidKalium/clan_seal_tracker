@@ -44,6 +44,25 @@ function display_table($rows) {
 
   echo $html;
 }
+function get_csv($rows) {
+  // assume all keys are the same and in a consistent order...
+  $columns = array_keys(current($rows));
+
+  $handle = fopen('temp.csv', 'w');
+
+  fputcsv($handle, $columns);
+  foreach ($rows as $row) {
+    fputcsv($handle, $row);
+  }
+
+  fclose($handle);
+
+  $csv = file_get_contents('temp.csv');
+
+  unlink('temp.csv');
+
+  return $csv;
+}
 
 function display_node_hierarchy($root_hash = '1866538467' /* records root */, $display_level = 0, $current_depth = 0) {
   // "collectionRootNode": 3790247699,

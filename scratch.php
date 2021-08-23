@@ -11,11 +11,13 @@ echo '<pre>';
 $start_time = microtime(true);
 echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 
+// ini_set('display_errors', 1); // uncomment these while debugging on a production server
+// error_reporting(~0);
 
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
-display_node_hierarchy(1866538467, 2);
+// display_node_hierarchy(1866538467, 2);
 
 // display_node_hierarchy_reverse(199171388);
 // display_node_hierarchy(3509235358);
@@ -154,6 +156,8 @@ $components = array(
 if (!empty($result)) {
   echo_pretty_json($result);
 }
+
+list_clan_members();
 
 
 /** Quick dictionary reference 
@@ -362,6 +366,49 @@ function list_all_milestones() { // TODO (for headers)
   $milestones = definitions::get('Milestone');
 }
 
+function list_clan_members() {
+  $members = bungie_api::get_group_members(4331943);
+
+  $membership_types = array(
+    1 => 'xbox',
+    2 => 'playstation',
+    3 => 'steam',
+    4 => 'blizzard',
+    5 => 'stadia',
+  );
+
+  foreach ($members as $member) {
+    $row = array(
+      // 'member_type' => $member['destinyUserInfo']['membershipType'],
+      // 'member_id' => $member['destinyUserInfo']['membershipId'],
+      'bungie_name' => $member['bungieNetUserInfo']['displayName'],
+      'stadia_name' => '',
+      'xbox_name' => '',
+      'playstation_name' => '',
+      'steam_name' => '',
+      // 'blizzard_name' => '',
+      'last_seen' => date('Y-m-d H:i:s', $member['lastOnlineStatusChange']),
+      'joined_clan' => date('Y-m-d H:i:s', strtotime($member['joinDate'])),
+    );
+
+    $profile = profiles::get($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
+
+    foreach ($profile['destinyMemberships'] as $membership) {
+      $platform = $membership_types[$membership['membershipType']];
+      $row[$platform . '_name'] = $membership['displayName'];
+      if ($membership['displayName'] !== $membership['LastSeenDisplayName']) {
+        echo "Non-matching names for $platform: {$membership['displayName']} | {$membership['LastSeenDisplayName']}" . PHP_EOL;
+      }
+    }
+
+    $rows[] = $row;
+  }
+
+  array_multisort(array_column($rows, 'joined_clan'), SORT_ASC, $rows);
+
+  // echo get_csv($rows), PHP_EOL;
+  display_table($rows);
+}
 
 
 
