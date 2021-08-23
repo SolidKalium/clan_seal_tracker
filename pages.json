@@ -90,7 +90,7 @@
       "2592913942": {"column_name": "Solar", "number_objectives": true},
       "3969659747": {"column_name": "Class", "number_objectives": true},
       "3790077074": {"number_objectives": true},
-      "2384429092": {"number_objectives": true},
+      "2384429092": {"number_objectives": true, "suppress": true}, // Tempo's edge / first 24 hours
     },
   },
   "crucible": {
