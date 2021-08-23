@@ -605,10 +605,45 @@
     "subcategory": null,
     "other_node_hashes": [1965217294],
   },
-  // "dawning": {
-  //   "name": "Dawning",
-  //   "category": "Other",
-  //   "subcategory": null,
-  //   "other_node_hashes": [12380736, 2293230544],
-  // },
+  "dawning": {
+    "name": "Dawning",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [12380736, 2293230544],
+  },
+  "leviathan": {
+    "name": "Leviathan",
+    "category": "Legacy",
+    "subcategory": null,
+    "other_node_hashes": [
+      2558323083,
+    ],
+  },
+  "crown": {
+    "name": "Crown of Sorrow",
+    "category": "Legacy",
+    "subcategory": null,
+    "other_node_hashes": [
+      2481808943,
+    ],
+    "records": {
+      "3292013044": {"suppress": true}, // First 24 hours
+    }
+  },
+  "menagerie": {
+    "name": "Menagerie",
+    "category": "Legacy",
+    "subcategory": null,
+    "other_node_hashes": [
+      297242190,
+    ],
+  },
+  "tribute_hall": {
+    "name": "Tribute Hall",
+    "category": "Legacy",
+    "subcategory": null,
+    "other_node_hashes": [
+      1519064131,
+    ],
+  },
 }
