@@ -5,9 +5,15 @@ class definitions {
 
   private static $definitions_updated = false;
   private static $dir = 'definitions';
+  private static $manifest_filename = 'd2_manifest.json';
 
   public static function update() {
     if (self::$definitions_updated) {
+      return;
+    }
+
+    if (self::was_updated_recently()) {
+      self::$definitions_updated = true;
       return;
     }
 
@@ -74,6 +80,7 @@ class definitions {
     }
 
     self::$definitions_updated = true;
+    file_put_contents(self::$dir . '/' . self::$manifest_filename, json_encode($manifest));
   } 
 
   private static $memo = array();
@@ -121,5 +128,14 @@ class definitions {
     closedir($dh);
 
     return $current_filenames;
+  }
+
+  private static function was_updated_recently() {
+    $path = self::$dir . '/' . self::$manifest_filename;
+
+    return (
+      file_exists($path) &&
+      filemtime($path) > (time() - (5 * 60))
+    );
   }
 }

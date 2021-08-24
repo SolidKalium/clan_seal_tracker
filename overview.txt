@@ -9,8 +9,6 @@
 - Individual users do not need to authenticate. Only public data is used.
 - Apache may need to be given permission to write files and folders
 
-- [TODO improve] call defintions::update() one time
-
 - share your feedback or submit pull requests for improvements
 
 
@@ -64,12 +62,9 @@ Add disclaimer that I am not affiliated with Bungie
 rewrite front end to provide better realtime info in browser? (use js)
 
 --- Feature ideas
-Automatically reload users once per day
-  remove files over 2 weeks old
-Allow reloading individual users
 track historical triumph values?
 look into php 7 features
-if checking player data frequently, could add custom events to send to discord
+if automatically checking player data frequently, could add custom events to send to discord
 
 --- Other project ideas
 Charlemagne calendar link?

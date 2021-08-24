@@ -8,12 +8,11 @@ echo '<script> ' . file_get_contents('resources/tracker.js') . ' </script>';
 echo '<link rel="shortcut icon" href="resources/favicon_16.png" type="image/x-icon">';
 echo '<pre>';
 
-
+definitions::update();
 route();
 
 // TODO list
   // support weekly milestones. three rows, one per character. two heading levels for raid phases
-  // when to update definitions from manifest? create an intermediate dataset to cache per page? 23MB of item may be big for serverless
   // use a generic table display function so there's less of an arbitrary intermediate format that gets interpreted into html?
   // improve heading fetching. recursively handle nodes.
   // optionally suppress headings only if no one has it complete (or no progress)? records[].only_display_if => progress / complete
@@ -22,16 +21,12 @@ route();
   // use icons for gear classes acquired?
   // indicate somewhere that a triumph is per character instead of per account?
   // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter or handle with the generic html table function.
-  // better secrets/settings handling? Use json + settings
-  //   optionally hide a user for a particular page
+  // better secrets/settings handling?
   // database instead of filesystem? make it work on a server
   // improve style on main page. Header. Improve flow of chunks.
   // Use jquery?
   // gracefully handle api auth errors, other errors
-  // maybe do a basic api check for "player has been online since last data fetch". Might be on clan. If not, can skip updating that player
-  //   may be able to fetch just one character if only one character has been played.
   // use a data structure for membership ids? type can be optional but generally required. pickle/unpickle functions
-  // merge new and old profile and definition info? Make it work automatically
   // add objective to header hover text, just in case
 
   // highlight column on hover? (without bumping elements around. needs js)
@@ -273,6 +268,13 @@ function show_page($page_key, $type = null) {
 }
 function get_player_record_tds($player_data, $heading) {
   $player_record = $player_data['records'][$heading['record_hash']];
+
+  $progress_override = null;
+  $override_profile_triumph_progress = get_setting('override_profile_triumph_progress');
+  if (isset($override_profile_triumph_progress[$player_data['id']][$heading['record_hash']])) {
+    $progress_override = $override_profile_triumph_progress[$player_data['id']][$heading['record_hash']];
+  }
+
   if (!empty($heading['objectives'])) {
     $html = '';
     foreach ($heading['objectives'] as $key => $objective) {
@@ -295,13 +297,14 @@ function get_player_record_tds($player_data, $heading) {
         $class .= ' numbered';
       }
 
-      $progress = $player_objective['progress'];
+      $progress = $progress_override ?? $player_objective['progress'];
+      $raw_progress = $progress;
       if ($progress === 0 || $progress === $objective['completionValue']) {
         $progress = '';
       }
       $recordState = get_player_objective_state($player_record, $key);
 
-      $html .= "<td recordState='$recordState' title='{$player_objective['progress']}/{$objective['completionValue']}' class='$class'>$progress</td>";
+      $html .= "<td recordState='$recordState' title='$raw_progress/{$objective['completionValue']}' class='$class'>$progress</td>";
     }
     return $html;
   }
@@ -309,12 +312,13 @@ function get_player_record_tds($player_data, $heading) {
   if (!empty($heading['interval_objectives'])) {
     $key = count($heading['interval_objectives']) - 1; // assume last one is the highest. They should all have progress up to their cap
     $player_objective = $player_record['intervalObjectives'][$key];
-    $progress = $player_objective['progress'];
+    $progress = $progress_override ?? $player_objective['progress'];
+    $raw_progress = $progress;
     if ($progress === 0 || $progress === $player_objective['completionValue']) {
       $progress = '';
     }
     $recordState = get_player_objective_state($player_record, $key);
-    return "<td recordState='$recordState' title='{$player_objective['progress']}/{$player_objective['completionValue']}'>$progress</td>";
+    return "<td recordState='$recordState' title='$raw_progress/{$player_objective['completionValue']}'>$progress</td>";
   }
 
   if (count($player_record) === 2 && !array_diff(array_keys($player_record), array('state', 'intervalsRedeemedCount'))) {
