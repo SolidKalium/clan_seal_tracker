@@ -16,7 +16,6 @@ class profiles {
     // Theoretically, we could fetch just the profile's characters, but that still takes a moment, so it's only worth it to use the timestamps from the clan member list.
 
     // TODO handle multithreaded server? use cookies so it's fast even if two requests sent?
-    // TODO cache clan info every 5 minutes?
 
     $key = self::get_key($membership_type, $membership_id);
     $path = self::$dir . '/' . $key . '.json';
@@ -27,8 +26,7 @@ class profiles {
 
 
     if ($refresh !== true) { // no explicit refresh requested
-      $current_filenames = self::get_current_filenames(); // TODO check existence directly
-      if (!empty($current_filenames[$key])) { // cache exists for account
+      if (file_exists($path)) { // cache exists for account
         $mtime = filemtime($path);
         $now = time();
 
@@ -74,8 +72,25 @@ class profiles {
 
     // echo 'fetching user ' . $key . PHP_EOL;
     $profile = bungie_api::get_profile($membership_type, $membership_id, self::$standard_components);
-    $profile += bungie_api::get_memberships($membership_id, $membership_type); // only takes about 0.1 seconds
-    file_put_contents($path, json_encode($profile));
+
+    if (
+      empty($profile['profileRecords']['data']) &&
+      file_exists($path)
+    ) {
+      // prefer cached data if the player is currently in private mode.
+      // Happens to prevent trivial update if old data was also private.
+      // Could do a fancier merge based on which data is privat, instead of all-or-nothing
+      $profile = json_decode(file_get_contents($path), true);
+      if ($profile === null) {
+        throw new Exception('Failed to decode ' . $path);
+      }
+      // self::$memo[$key] = $profile;
+      return $profile;
+    } else {
+      $profile += bungie_api::get_memberships($membership_id, $membership_type); // only takes about 0.1 seconds
+      file_put_contents($path, json_encode($profile));
+    }
+
     // self::$memo[$key] = $profile;
     return $profile;
   }
@@ -97,7 +112,7 @@ class profiles {
     );
   }
 
-  private static function get_current_filenames() { // NOTE: this is an inefficient approach, but I like keeping the directory reading separate
+  private static function get_current_filenames() { // deprecated
     $current_filenames = array();
 
     if (!is_dir(self::$dir)) {
