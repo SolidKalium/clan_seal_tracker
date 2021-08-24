@@ -31,52 +31,10 @@ class bungie_api {
 
   public static function get_profile($membership_type, $membership_id, $components = array(100)) {
     // Needs to be called with the primary destiny membership details
-    $map = array(
-      'None' => 0,
-      'Profiles' => 100,
-      'VendorReceipts' => 101,
-      "ProfileInventories" => 102,
-      "ProfileCurrencies" => 103,
-      "ProfileProgression" => 104, // checklists and artifact, even with some privacy on
-      "PlatformSilver" => 105, // logged in user only
-      "Characters" => 200, // minutes played, light level, selected title, emblem, etc.
-      "CharacterInventories" => 201,
-      "CharacterProgressions" => 202, // might include season pass info. progression, faction, quest, milestone, quests, non-instanced item objectives, checklists, artifact
-      "CharacterRenderData" => 203,
-      "CharacterActivities" => 204,
-      "CharacterEquipment" => 205,
-      "ItemInstances" => 300,
-      "ItemObjectives" => 301,
-      "ItemPerks" => 302,
-      "ItemRenderData" => 303,
-      "ItemStats" => 304,
-      "ItemSockets" => 305, // slow
-      "ItemTalentGrids" => 306, // labelled as itemComponents
-      "ItemCommonData" => 307,
-      "ItemPlugStates" => 308,
-      "ItemPlugObjectives" => 309, // big, only get if needed
-      "ItemReusablePlugs" => 310,
-      "Vendors" => 400, // none
-      "VendorCategories" => 401, // none
-      "VendorSales" => 402, // none
-      "Kiosks" => 500,
-      "CurrencyLookups" => 600,
-      "PresentationNodes" => 700,
-      "Collectibles" => 800,
-      "Records" => 900,
-      "Transitory" => 1000, // currently empty
-      "Metrics" => 1100,
-    );
 
     $membership_type = (int) $membership_type;
     $membership_id = (int) $membership_id;
-    foreach ($components as $key => $value) {
-      if (isset($map[$value])) {
-        $components[$key] = $map[$value];
-      } else {
-        $components[$key] = (int) $value;
-      }
-    }
+    $components = profiles::normalize_component_codes($components);
 
     return self::api('/Destiny2/' . $membership_type . '/Profile/' . $membership_id. '/?components=' . implode(',', $components));
   }

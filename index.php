@@ -181,6 +181,7 @@ function show_page($page_key, $type = null) {
 
   // $players = profiles::get_cached_players();
   $players = groups::get_group_members(get_setting("group_id"));
+  profiles::precache_players($players);
 
   $headings = get_headings($page, $type);
   $rows = get_rows($page_key, $headings, $players);
