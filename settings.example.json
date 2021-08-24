@@ -8,5 +8,10 @@
     "{page_key}" : { // for each page, list the players to be hidden
       "{membership_type}_{membership_id}": true,
     },
+  },
+  "override_profile_triumph_progress": { // This only impacts the number in the cell, not the row order or cell style.
+    "{mmembership_type}_{membership_id}}": { // for each player, list the triumphs to be overriden.
+      "{record_hash}": 0,
+    },
   }
 }
