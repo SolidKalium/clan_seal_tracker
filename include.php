@@ -157,6 +157,7 @@ function display_hash_info($hash) {
     'Milestone',
     'Checklist',
     'Collectible',
+    'SandboxPerk',
     // 'InventoryItem', // very big
     'InventoryItemLite', // still big, but smaller
     // 'ItemCategory',

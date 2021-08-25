@@ -454,6 +454,7 @@ function get_headings($page, $type = null) {
     // Unlike badges, these don't get merged
     $collectibles = definitions::get('Collectible');
     $items = definitions::get('InventoryItemLite');
+    $perks = definitions::get('SandboxPerk');
 
     if (!empty($page['suppress_seasonal_mods'])) {
       $artifacts = definitions::get('Artifact');
@@ -471,7 +472,6 @@ function get_headings($page, $type = null) {
       foreach ($collectible_hash_list as $collectible_hash) {
         $collectible = $collectibles[$collectible_hash];
         $item = $items[$collectible['itemHash']];
-        // not showing mod perks
 
         if (!empty($page['collectibles'][$collectible_hash]['suppress'])) {
           continue;
@@ -487,10 +487,30 @@ function get_headings($page, $type = null) {
           continue;
         }
 
+        $description = $item['itemTypeDisplayName'];
+        $perk_descriptions = array();
+        foreach ($item['perks'] as $perk_info) {
+          $perk = $perks[$perk_info['perkHash']];
+          if (!$perk['isDisplayable']) { // example: second perk on fusion rifle ammo finder (collectible 4017415783)
+            continue;
+          }
+          if (empty($perk['displayProperties']['description'])) {
+            echo_pretty_json($item);
+            echo_pretty_json($perk);
+          }
+          $perk_descriptions[] = $perk['displayProperties']['description'];
+        }
+        if ($perk_descriptions) {
+          $description .= ': ' . implode(' | ', $perk_descriptions);
+        }
+        if ($collectible['sourceString']) {
+          $description .= ' (' . $collectible['sourceString'] . ')';
+        }
+
         $headings[] = array(
           'collectible_hash' => $collectible['hash'],
           'name' => $collectible['displayProperties']['name'],
-          'description' => $item['itemTypeDisplayName'],
+          'description' => $description,
           'scope' => $collectible['scope'],
           'order' => ($next_default_order++),
         );
@@ -850,13 +870,13 @@ function estimate_player_record_progress($record) {
         //   D2checklist shows the correct value. reloading the data does not resolve
         $progress += 1;
       } else {
-        $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator
+        $progress += min(1, $objective['progress'] / max(1, $objective['completionValue']));
       }
     }
   } else if (!empty($record['intervalObjectives'])) {
     $count = 1;
     $objective = end($record['intervalObjectives']);
-    $progress += min(1, $objective['progress'] / $objective['completionValue']); // assume no zeroes in denominator
+    $progress += min(1, $objective['progress'] / max(1, $objective['completionValue']));
   } else if (isset($record['state'])) {
     // state is not normally on a record.
     // example: season 12 trials confidence is high.
@@ -895,7 +915,7 @@ function update_player_data_for_collectible_heading(&$player_data, $profile, $he
     $hash = $heading['collectible_hash'];
 
     if ($heading['scope'] === 0) {
-      $state = $profile['profileCollectibles']['data']['collectibles'][$heading['collectible_hash']]['state'];
+      $state = $profile['profileCollectibles']['data']['collectibles'][$heading['collectible_hash']]['state'] ?? 3;
     } else {
       $character_collectibles = reset($profile['characterCollectibles']['data']);
       $state = $character_collectibles['collectibles'][$heading['collectible_hash']]['state'];

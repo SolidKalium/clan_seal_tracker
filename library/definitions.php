@@ -24,6 +24,7 @@ class definitions {
       'Milestone',
       'Checklist',
       'Collectible',
+      'SandboxPerk',
       // 'InventoryItem', // very big
       'InventoryItemLite', // still big, but smaller
       // 'ItemCategory',
