@@ -10,6 +10,8 @@ class profiles {
   private static $standard_components = array('Profiles', 'ProfileProgression', 'CharacterProgressions', 'PresentationNodes', 'Collectibles', 'Records'); // These are the components that will be fetched and stored
   private static $cache_minutes = 5;
 
+  private static $updated_profiles = array();
+
   public static function get($membership_type, $membership_id, $last_seen = null, $refresh = 7 * 24 * 60 * 60) {
     // refresh: if int, use api if file is older than that many seconds. if true, always use api.
     // last_seen: optional timestamp of when the player was last online
@@ -43,17 +45,23 @@ class profiles {
       if ($profile === null) {
         throw new Exception('Failed to decode ' . $path);
       }
+      self::$updated_profiles[$key] = true;
       return $profile;
     } else {
       $profile += bungie_api::get_memberships($membership_id, $membership_type); // only takes about 0.1 seconds
       file_put_contents($path, json_encode($profile));
     }
 
+    self::$updated_profiles[$key] = true;
     return $profile;
   }
   private static function _use_cache($membership_type, $membership_id, $last_seen, $refresh = 7 * 24 * 60 * 60) {
     $key = self::get_key($membership_type, $membership_id);
     $path = self::$dir . '/' . $key . '.json';
+
+    if (!empty(self::$updated_profiles[$key])) {
+      return true;
+    }
 
     if ($refresh === true) { // refresh requested explicitly
       return false;
@@ -320,7 +328,16 @@ class profiles {
         $user_info = $profile['Response']['profile']['data']['userInfo'];
         $key = self::get_key($user_info['membershipType'], $user_info['membershipId']);
         $path = self::$dir . '/' . $key . '.json';
-        file_put_contents($path, json_encode($profile['Response'] + $membership['Response']));
+
+        if (
+          empty($user_info['profileRecords']['data']) &&
+          file_exists($path)
+        ) {
+          // nothing
+        } else {
+          file_put_contents($path, json_encode($profile['Response'] + $membership['Response']));
+        }
+        self::$updated_profiles[$key] = true;
       }
     }
 
