@@ -60,6 +60,7 @@ class profiles {
     $path = self::$dir . '/' . $key . '.json';
 
     if (!empty(self::$updated_profiles[$key])) {
+      // echo $key . ' is already updated' . PHP_EOL;
       return true;
     }
 
@@ -330,9 +331,10 @@ class profiles {
         $path = self::$dir . '/' . $key . '.json';
 
         if (
-          empty($user_info['profileRecords']['data']) &&
+          empty($profile['Response']['profileRecords']['data']) &&
           file_exists($path)
         ) {
+          // echo $key . ' has no new info' . PHP_EOL;
           // nothing
         } else {
           file_put_contents($path, json_encode($profile['Response'] + $membership['Response']));
