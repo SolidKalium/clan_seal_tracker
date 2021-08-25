@@ -17,7 +17,7 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
-// display_node_hierarchy(1866538467, 2);
+display_node_hierarchy(1866538467, 2);
 
 // display_node_hierarchy_reverse(199171388);
 // display_node_hierarchy(3509235358);
@@ -27,6 +27,8 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // display_hash_info(3093771363);
 // display_hash_info(2282824303);
 // display_hash_info(29206418);
+
+// display_hash_info(3082507818); // classified triumph's objective. only on player info
 
 
 // investigating focusing lens mod
@@ -157,7 +159,7 @@ if (!empty($result)) {
   echo_pretty_json($result);
 }
 
-list_clan_members();
+// list_clan_members();
 
 
 /** Quick dictionary reference 

@@ -329,7 +329,15 @@ function get_player_record_tds($player_data, $heading) {
     return "<td recordState='$recordState'></td>";
   }
 
+  if ($heading['name'] === 'Classified') {
+    // classified triumphs may be missing objectives, but still have them present on the player
+    // these can't be faked properly, so this condition can't rely on a non-empty objective list on the $player_record
+    $recordState = (($player_record['state'] === 0) || ($player_record['state'] & 1)) ? 'complete' : 'incomplete';
+    return "<td recordState='$recordState'></td>";
+  }
+
   echo_pretty_json($heading);
+  echo_pretty_json($player_record);
   throw new Exception('unhandled heading');
 }
 function get_player_checklist_entry_td($player_data, $heading) {
@@ -403,8 +411,8 @@ function get_headings($page, $type = null) {
         'record_hash' => $record['hash'],
         'name' => $record['displayProperties']['name'],
         'description' => $record['displayProperties']['description'] .
-          ($record['expirationInfo']['description'] ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
-          ($record['requirements']['entitlementUnavailableMessage'] ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
+          (!empty($record['expirationInfo']['description']) ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
+          (!empty($record['requirements']['entitlementUnavailableMessage']) ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
         'icon' => $record['displayProperties']['icon'],
         'objectives' => array(),
         'interval_objectives' => array(),
@@ -416,14 +424,16 @@ function get_headings($page, $type = null) {
         // not handling featuredPriority. Usually min or max int, but sometimes something like 91000
       ) + ($page['records'][$record['hash']] ?? array());
 
-      foreach ($record['objectiveHashes'] as $hash) {
-        $objective = $objectives[$hash]; // completion value, progress description
-        $heading['objectives'][] = array(
-          'hash' => $hash,
-          'name' => $objective['progressDescription'],
-          'completionValue' => $objective['completionValue'],
-          // valueStyle uses enum DestinyUnlockValueUIStyle. how to properly display progress as a number/checkbox/etc
-        );
+      if (!empty($record['objectiveHashes'])) {
+        foreach ($record['objectiveHashes'] as $hash) {
+          $objective = $objectives[$hash]; // completion value, progress description
+          $heading['objectives'][] = array(
+            'hash' => $hash,
+            'name' => $objective['progressDescription'],
+            'completionValue' => $objective['completionValue'],
+            // valueStyle uses enum DestinyUnlockValueUIStyle. how to properly display progress as a number/checkbox/etc
+          );
+        }
       }
       if (!empty($record['intervalInfo']['intervalObjectives'])) {
         foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
@@ -758,7 +768,7 @@ function get_rows($page_key, $headings, $players) {
 }
 function update_player_data_for_record_heading(&$player_data, $profile, $heading) {
   if ($heading['scope'] === 0) { // account scope
-      $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']];
+      $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']] ?? fake_empty_record_for_heading($heading);
       $player_data['records'][$heading['record_hash']] = $profile_record;
       $player_data['total_completion'] += estimate_player_record_progress($profile_record);
   } else if ($heading['scope'] === 1) { // character scope
@@ -770,7 +780,7 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
 
     $all_character_records = array();
     foreach ($profile['characterRecords']['data'] as $character_hash => $character_records) {
-      $all_character_records[] = $character_records['records'][$heading['record_hash']];
+      $all_character_records[] = $character_records['records'][$heading['record_hash']] ?? fake_empty_record_for_heading($heading);
     }
 
     $identical = (count(array_unique(array_map('json_encode_character_record_reduced', $all_character_records))) === 1);
@@ -802,6 +812,30 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
   } else {
     throw new Exception('scope ' . $heading['scope'] . ' not handled');
   }
+}
+function fake_empty_record_for_heading($heading) {
+  // works for both profile and character records
+
+  $record = array(
+    'state' => 12, // incomplete and obscured
+    'intervalObjectives' => $heading['interval_objectives'] ?? array(),
+    'objectives' => $heading['objectives'] ?? array(),
+    'intervalsRedeemedCount' => 0,
+  );
+
+  foreach (array('intervalObjectives', 'objectives') as $objectives_type) {
+    foreach ($record[$objectives_type] as $i => $objective) {
+      $record[$objectives_type][$i] += array(
+        'objectiveHash' => $objective['hash'],
+        'progress' => 0,
+        // completionValue
+        'complete' => false,
+        'visible' => true,
+      );
+    }
+  }
+
+  return $record;
 }
 function estimate_player_record_progress($record) {
   $progress = 0;

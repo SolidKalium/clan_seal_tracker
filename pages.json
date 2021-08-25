@@ -182,6 +182,13 @@
   //     1451485767, // insight terminus
   //   [,
   // },
+  "deadeye": {
+    "name": "Weapons",
+    "category": "Seals",
+    "subcategory": "Activity",
+    "seal_node_hash": 361765966,
+    "other_node_hashes": [],
+  },
 
   "shadowkeep": {
     "name": "Shadowkeep", // seal name is harbinger, not to be confused with the harbinger exotic quest
@@ -250,12 +257,30 @@
       933409053, // general
     ],
   },
-  "mmxxi": {
-    "name": "MMXXI",
+  "season_15": {
+    "name": "Season of the Lost",
     "category": "Seals",
     "subcategory": "Seasonal",
-    "disable_reason": "not yet available",
+    "seal_node_hash": 1321008456,
+    "other_node_hashes": [
+      1202345386, // quests
+      3027737790, // gear
+      3735727166, // astral alignment
+      1949199957, // shattered realm
+      2619080017, // forest of echoes
+      1926009491, // debris of dreams
+      2479490220, // the ruins of wrath
+      230744312, // prismatic lenses
+      1961109500, // general
+      1158320377, // tracing the stars
+    ],
   },
+  // "mmxxi": {
+  //   "name": "MMXXI",
+  //   "category": "Seals",
+  //   "subcategory": "Seasonal",
+  //   "disable_reason": "not yet available",
+  // },
 
   "dreaming_city": {
     "name": "Dreaming City",
@@ -342,6 +367,27 @@
       "1803530104": {}, // K1 Communion
       "2317819527": {},
       "4040235491": {},
+      "650083959": {}, // Aphelion's Rest
+      "2287130716": {},
+      "4165635946": {},
+      "2193406386": {}, // Bay of Drowned Wishes
+      "2647820497": {},
+      "3847481245": {},
+      "2031458774": {}, // Chamber of Starlight
+      "468949293": {},
+      "4086832833": {},
+      "2425653583": {}, // The Empty Tank
+      "797277988": {},
+      "1085039026": {},
+      "566963956": {}, // Scavenger's Den
+      "1282520811": {},
+      "2462339247": {},
+      "327081021": {}, // Excavation Site XII
+      "3685948858": {},
+      "984829568": {},
+      "549937976": {}, // The Quearry
+      "2065841479": {},
+      "3992532131": {},
     },
   },
 
@@ -585,12 +631,27 @@
       "737130625": {"column_name": "Riven's Curse", "suppress": true}, // not acquireable
     },
   },
-  "seasonal_challenges": {
-    "name": "Seasonal Challenges",
+  "seasonal_challenges_15": {
+    "name": "Seasonal Challenges (Lost)",
     "category": "Other",
     "subcategory": null,
-    "other_node_hashes": [1243102869, 2412404671, 2412404668, 2412404669, 2412404666, 2412404667, 2412404664, 2412404665, 2412404662, 2412404663, 445954461],
-    // "other_node_hashes": [193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696], // season 13
+    "other_node_hashes": [3608142460, 4143126230, 4143126229, 4143126228, 4143126227, 4143126226, 4143126225, 4143126224, 4143126239, 4143126238, 2527916754],
+    "records": {},
+  },
+  "seasonal_challenges_14": {
+    "name": "Seasonal Challenges (Splicer)",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [2119135358],
+    // "other_node_hashes": [1243102869, 2412404671, 2412404668, 2412404669, 2412404666, 2412404667, 2412404664, 2412404665, 2412404662, 2412404663, 445954461],
+    "records": {},
+  },
+  "seasonal_challenges_13": {
+    "name": "Seasonal Challenges (Chosen)",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [2119135353],
+    // "other_node_hashes": [193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696],
     "records": {},
   },
   "solstice": {
