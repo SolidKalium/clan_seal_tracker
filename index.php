@@ -407,47 +407,58 @@ function get_headings($page, $type = null) {
         continue;
       }
 
-      $heading = array(
-        'record_hash' => $record['hash'],
-        'name' => $record['displayProperties']['name'],
-        'description' => $record['displayProperties']['description'] .
-          (!empty($record['expirationInfo']['description']) ? ' (' . $record['expirationInfo']['description'] . ')' : '') .
-          (!empty($record['requirements']['entitlementUnavailableMessage']) ? ' (' . $record['requirements']['entitlementUnavailableMessage'] . ')' : ''),
-        'icon' => $record['displayProperties']['icon'],
-        'objectives' => array(),
-        'interval_objectives' => array(),
-        'scope' => $record['scope'], // 0 account, 1 character
-        'for_gilding' => $record['forTitleGilding'],
-        'order' => $page['records'][$record['hash']]['order'] ?? ($next_default_order++),
-        // not handling rewards and interval rewards
-        // not handling ScoreValue and intervalScoreValues
-        // not handling featuredPriority. Usually min or max int, but sometimes something like 91000
-      ) + ($page['records'][$record['hash']] ?? array());
-
+      $objective_text = '';
+      $intervals_text = '';
+      $score = $record['completionInfo']['ScoreValue'] ?? 0;
+      $heading_objectives = array();
+      $heading_interval_objectives = array();
       if (!empty($record['objectiveHashes'])) {
         foreach ($record['objectiveHashes'] as $hash) {
           $objective = $objectives[$hash]; // completion value, progress description
-          $heading['objectives'][] = array(
+          $heading_objectives[] = array(
             'hash' => $hash,
             'name' => $objective['progressDescription'],
             'completionValue' => $objective['completionValue'],
             // valueStyle uses enum DestinyUnlockValueUIStyle. how to properly display progress as a number/checkbox/etc
           );
         }
+        if (count($record['objectiveHashes']) == 1) {
+          $objective_text = $objective['progressDescription'] ?: $objective['displayProperties']['description']; // second one is sometimes empty
+        }
       }
       if (!empty($record['intervalInfo']['intervalObjectives'])) {
         foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
           // $interval_objective is just intervalValueScore and hash
           $objective = $objectives[$interval_objective['intervalObjectiveHash']];
-          $heading['interval_objectives'][] = array(
+          $heading_interval_objectives[] = array(
             'hash' => $objective['hash'],
             'name' => $objective['progressDescription'],
             'completionValue' => $objective['completionValue'],
           );
+          $score += $interval_objective['intervalScoreValue'];
+          $intervals_text .= "\nInterval requirement: " . $objective['completionValue'] . ' (Score: ' . $interval_objective['intervalScoreValue'] . ')';
         }
       }
 
-      $headings[$record['hash']] = $heading;
+      $headings[$record['hash']] = array(
+        'record_hash' => $record['hash'],
+        'name' => $record['displayProperties']['name'],
+        'description' => $record['displayProperties']['description'] .
+          ($objective_text ? "\nObjective: " . $objective_text : '') .
+          ($score ? "\nScore: " . $score : '') .
+          ($intervals_text) .
+          (!empty($record['expirationInfo']['description']) ? "\n" . $record['expirationInfo']['description'] : '') .
+          (!empty($record['requirements']['entitlementUnavailableMessage']) ? "\n" . $record['requirements']['entitlementUnavailableMessage'] : ''),
+        'icon' => $record['displayProperties']['icon'],
+        'objectives' => $heading_objectives,
+        'interval_objectives' => $heading_interval_objectives,
+        'scope' => $record['scope'], // 0 account, 1 character
+        'for_gilding' => $record['forTitleGilding'],
+        'order' => $page['records'][$record['hash']]['order'] ?? ($next_default_order++),
+        // not handling rewards and interval rewards
+        // not handling ScoreValue and intervalScoreValues
+        // not handling featuredPriority. Usually min or max int, but sometimes something like 91000
+      ) + ($page['records'][$record['hash']] ?? array());;
     }
   }
   if (array_filter($collectible_hash_lists)) {
@@ -488,7 +499,6 @@ function get_headings($page, $type = null) {
         }
 
         $description = $item['itemTypeDisplayName'];
-        $perk_descriptions = array();
         foreach ($item['perks'] as $perk_info) {
           $perk = $perks[$perk_info['perkHash']];
           if (!$perk['isDisplayable']) { // example: second perk on fusion rifle ammo finder (collectible 4017415783)
@@ -498,13 +508,10 @@ function get_headings($page, $type = null) {
             echo_pretty_json($item);
             echo_pretty_json($perk);
           }
-          $perk_descriptions[] = $perk['displayProperties']['description'];
-        }
-        if ($perk_descriptions) {
-          $description .= ': ' . implode(' | ', $perk_descriptions);
+          $description .= "\nPerk: " . $perk['displayProperties']['description'];
         }
         if ($collectible['sourceString']) {
-          $description .= ' (' . $collectible['sourceString'] . ')';
+          $description .= "\n" . $collectible['sourceString'];
         }
 
         $headings[] = array(
@@ -582,7 +589,7 @@ function get_headings($page, $type = null) {
           'order' => ($next_default_order++),
         );
       } else if ($item['inventory']['tierTypeName'] === 'Exotic') {
-        foreach ($collectible_hash_set as $key => $collectible_hash) {
+        foreach ($collectible_hash_set as $class => $collectible_hash) {
           $collectible = $collectibles[$collectible_hash];
           $item = $items[$collectible['itemHash']];
 
@@ -595,11 +602,11 @@ function get_headings($page, $type = null) {
           );
         }
       } else {
-        $item_names = array();
-        foreach ($collectible_hash_set as $key => $collectible_hash) {
+        $item_names = '';
+        foreach ($collectible_hash_set as $class => $collectible_hash) {
           $collectible = $collectibles[$collectible_hash];
           $item = $items[$collectible['itemHash']];
-          $item_names[] = $collectible['displayProperties']['name'];
+          $item_names .= "\n" . $class . ': ' . $collectible['displayProperties']['name'];
           // echo_pretty_json($collectible, $item);
         }
         $type = $item['itemTypeDisplayName'];
@@ -609,7 +616,7 @@ function get_headings($page, $type = null) {
         $headings[] = array(
           'collectible_hash_set' => $collectible_hash_set,
           'name' => get_normalized_item_name($item),
-          'description' => $type . ': ' . implode(', ', $item_names),
+          'description' => $type . $item_names,
           'scope' => $collectible['scope'], // should be 1
           'order' => ($next_default_order++),
         );

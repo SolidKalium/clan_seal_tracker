@@ -28,8 +28,6 @@ display_node_hierarchy(1866538467, 2);
 // display_hash_info(2282824303);
 // display_hash_info(29206418);
 
-// display_hash_info(3082507818); // classified triumph's objective. only on player info
-
 
 // investigating focusing lens mod
 // display_hash_info(792292104); // item
