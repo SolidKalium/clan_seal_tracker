@@ -196,6 +196,10 @@ class profiles {
 
 
   public static function precache_players($players) {
+    self::_precache_players($players);
+    gc_collect_cycles(); // bonus magic
+  }
+  private static function _precache_players($players) {
     $queue = array();
 
     foreach ($players as $player) {
