@@ -68,7 +68,7 @@ class profiles {
       return false;
     }
 
-    if (!file_exists($path)) { 
+    if (!file_exists($path)) {
       return false;
     }
 
@@ -278,6 +278,13 @@ class profiles {
         curl_multi_add_handle($mh, $ch);
       }
       // var_dump($profile_chs, $membership_chs);
+
+      // magic for the live server, otherwise it exceeds the limit of 256MB.
+      // This one line consistently prevents crashing
+      // Adding "return;" to the start of this function also makes it work.
+      // GC is turned on there. PHP is v7.0 instead of 7.3. I don't know why it doesn't crash on my computer with the same limit.
+      // https://stackoverflow.com/questions/38850391/when-does-php-run-garbage-collection-in-long-running-scripts/38850392
+      gc_collect_cycles();
 
       // fetch data
       do {
