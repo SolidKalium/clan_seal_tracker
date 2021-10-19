@@ -592,6 +592,24 @@
     "badge_node_hash": 3241617029,
   },
 
+  // TODO collectibles
+  // emblems (filter out empty names)
+  // shaders
+  // transmat effects
+  // ghost shells
+  // sparrows
+  // ships
+  // masks
+  // finishers
+  // collectibles
+  // ghost mods
+  // seasonal mods
+  // weapons (per type?) (show season?)
+  // exotic weapons
+  // exotic armor
+  // ornaments?
+  // medals?
+
   "milestones": {
     "name": "Milestones",
     "category": "Other",
@@ -656,21 +674,27 @@
   },
   "solstice": {
     "name": "Solstice of Heroes",
-    "category": "Other",
+    "category": "Events",
     "subcategory": null,
     "other_node_hashes": [760002588],
   },
   "guardian_games": {
     "name": "Guardian Games",
-    "category": "Other",
+    "category": "Events",
     "subcategory": null,
     "other_node_hashes": [1965217294],
   },
   "dawning": {
     "name": "Dawning",
-    "category": "Other",
+    "category": "Events",
     "subcategory": null,
     "other_node_hashes": [12380736, 2293230544],
+  },
+  "festival_of_the_lost": {
+    "name": "Festival of the Lost",
+    "category": "Events",
+    "subcategory": null,
+    "other_node_hashes": [1488084792],
   },
   "leviathan": {
     "name": "Leviathan",
