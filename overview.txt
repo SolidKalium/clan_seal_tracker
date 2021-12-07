@@ -17,6 +17,8 @@
 - https://bungie-net.github.io/multi/index.html
 - https://github.com/Bungie-net/api/wiki/
 - https://www.light.gg/db/changes/
+- https://github.com/vpzed/Destiny2-API-Info/wiki/Destiny-2-Open-Source-Projects (old)
+- https://www.reddit.com/r/DestinyTheGame/comments/jitt09/a_comprehensive_list_of_useful_external_destiny_2/
 
 --- Debugging
 - Several ids are automatically populated on column and row headings

@@ -21,13 +21,11 @@ route();
   // use icons for gear classes acquired?
   // indicate somewhere that a triumph is per character instead of per account?
   // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter or handle with the generic html table function.
-  // better secrets/settings handling?
-  // database instead of filesystem? make it work on a server
+  // database instead of filesystem?
   // improve style on main page. Header. Improve flow of chunks.
   // Use jquery?
   // gracefully handle api auth errors, other errors
   // use a data structure for membership ids? type can be optional but generally required. pickle/unpickle functions
-  // add objective to header hover text, just in case
 
   // highlight column on hover? (without bumping elements around. needs js)
   // show other details when clicking a column header or a cell? or on hover? (interval objectives, rewards, score, icons, gear source, etc)
@@ -713,6 +711,11 @@ function get_rows($page_key, $headings, $players) {
     // '2_4611686018449964451', // pirate
     // '5_4611686018501984731', // migs
     // '5_4611686018495301011', // cptylor
+    // '5_4611686018504639662', // l0cutus
+    // '1_4611686018440477513', // bigred
+    // '3_4611686018485645582', // alrt
+    // '5_4611686018504988724', // tr1dent
+    // '5_4611686018502793980', // iamatmo
     // '2_4611686018434203724', // bundle
     // '5_4611686018495302579', // valent
     // '2_4611686018445720014', // vader

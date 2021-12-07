@@ -275,12 +275,18 @@
       1158320377, // tracing the stars
     ],
   },
-  // "mmxxi": {
-  //   "name": "MMXXI",
-  //   "category": "Seals",
-  //   "subcategory": "Seasonal",
-  //   "disable_reason": "not yet available",
-  // },
+  "30th": {
+    "name": "30th Anniversary",
+    "category": "Seals",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 2185719388,
+  },
+  "mmxxi": {
+    "name": "Moments of Triumph 2021",
+    "category": "Seals",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1210906311,
+  },
 
   "dreaming_city": {
     "name": "Dreaming City",
@@ -493,6 +499,12 @@
     "subcategory": null,
     "other_node_hashes": [2228154284],
   },
+  "grasp_of_avarice": {
+    "name": "Grasp of Avarice",
+    "category": "Dungeons",
+    "subcategory": null,
+    "other_node_hashes": [1476825620],
+  },
 
   "harbinger": {
     "name": "Harbinger",
@@ -672,30 +684,37 @@
     // "other_node_hashes": [193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696],
     "records": {},
   },
-  "solstice": {
-    "name": "Solstice of Heroes",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [760002588],
-  },
-  "guardian_games": {
-    "name": "Guardian Games",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [1965217294],
-  },
-  "dawning": {
-    "name": "Dawning",
+  "dawning_2020": {
+    "name": "Dawning 2020",
     "category": "Events",
     "subcategory": null,
     "other_node_hashes": [12380736, 2293230544],
   },
-  "festival_of_the_lost": {
-    "name": "Festival of the Lost",
+  "guardian_games_2021": {
+    "name": "Guardian Games 2021",
+    "category": "Events",
+    "subcategory": null,
+    "other_node_hashes": [1965217294],
+  },
+  "solstice_2021": {
+    "name": "Solstice of Heroes 2021",
+    "category": "Events",
+    "subcategory": null,
+    "other_node_hashes": [760002588],
+  },
+  "festival_of_the_lost_2021": {
+    "name": "Festival of the Lost 2021",
     "category": "Events",
     "subcategory": null,
     "other_node_hashes": [1488084792],
   },
+  "dawning_2021": {
+    "name": "Dawning 2021",
+    "category": "Events",
+    "subcategory": null,
+    "other_node_hashes": [4277365833],
+  },
+
   "leviathan": {
     "name": "Leviathan",
     "category": "Legacy",
