@@ -23,8 +23,10 @@ route();
   // the names/descriptions/etc from Bungie may need to be html escaped in some places before displaying them. no known issues right now. use a linter or handle with the generic html table function.
   // database instead of filesystem?
   // improve style on main page. Header. Improve flow of chunks.
+  // add additional pages for collections
   // Use jquery?
   // gracefully handle api auth errors, other errors
+  // stream progress loading the page (cached, fetching), then hide it when data is sents
   // use a data structure for membership ids? type can be optional but generally required. pickle/unpickle functions
 
   // highlight column on hover? (without bumping elements around. needs js)
@@ -33,7 +35,9 @@ route();
   // column order (before load) (optional: columns that are completed the most are on the right)
   // third header for which node it came from?
   // option to auto-filter to people with certain progress? support filters in js. "at least one of", "all of" (no use case?), "progress on" (one or multiple?)
+  //  some of these might be specified per page. E.g. has base seal.
   // easy option to disable sort complete to bottom? might support multiple sort orders in js
+  // sort hidden to the bottom. tie-break on collections for all characters.
 
   // make a page that can select users?
   // pin one or more users to the top? (or just highlight them orange)

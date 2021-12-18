@@ -167,7 +167,7 @@
   //     // 245634203, // edz strikes
   //     // 2973304209, // cosmodrome strikes
   //   ],
-  //   "require_at_least_one_record_hash": [ // TODO
+  //   "require_at_least_one_record_hash": [ // These kinds of triumphs are no longer being created
   //     3663146391, // devil's lair
   //     3176422761, // arms dealer
   //     2483704578, // proving grounds
