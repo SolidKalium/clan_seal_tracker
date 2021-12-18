@@ -237,7 +237,11 @@ function show_page($page_key, $type = null) {
     foreach ($headings as $heading) {
       if ($heading['name'] === 'Player') {
         $completed = rtrim(rtrim(number_format($player_data['total_completion'], 2), '0'), '.');
-        $title = "title='$completed/$max_completion'";
+        $title = "title='$completed/$max_completion";
+        foreach ($player_data['names'] as $type=>$name) {
+          $title .= "\n" . $type . ': ' . $name;
+        }
+        $title .= "'";
         if (profiles::is_stadia($player_data['name'])) {
           $name = explode('#', $player_data['name']);
           $table .= "<td $title>{$name[0]}<span class=name-number>#{$name[1]}</span></td>";
@@ -753,6 +757,7 @@ function get_rows($page_key, $headings, $players) {
     }
     $player_data = array(
       'name' => profiles::get_display_name($profile),
+      'names' => profiles::get_display_names($profile),
       'id' => $id,
       'total_completion' => 0,
       'pinned' => in_array($id, $pinned_profile_ids),

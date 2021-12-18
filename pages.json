@@ -280,6 +280,9 @@
     "category": "Seals",
     "subcategory": "Seasonal",
     "seal_node_hash": 2185719388,
+    "records": {
+      "1770021330": {"number_objectives": true}, // richest dead man alive
+    }
   },
   "mmxxi": {
     "name": "Moments of Triumph 2021",

@@ -47,7 +47,7 @@ $activityId = 7023983145;
 $activityId = 8376275544;
 $activityHash = 548750096;
 // $result = bungie_api::api('/Destiny2/Stats/Definition/');
-// $result = profiles::get(5, 4611686018495237916);
+// $result = profiles::get(5, 4611686018495237916); // echo_pretty_json(profiles::get_display_names($result));
 // $result = bungie_api::api("/Destiny2/{$membershipType}/Profile/{$destinyMembershipId}/?components=100,200");
 // $result = bungie_api::api("/Destiny2/{$membershipType}/Account/{$destinyMembershipId}/Character/{$characterId}/Stats/AggregateActivityStats/"); // generic aggregate stats
 // $result = bungie_api::api("/Destiny2/Stats/PostGameCarnageReport/{$activityId}/"); // damage isn't in here

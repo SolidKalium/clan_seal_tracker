@@ -193,6 +193,36 @@ class profiles {
 
     return self::normalize_name($profile_data['profile']['data']['userInfo']['displayName']);
   }
+  public static function get_display_names($profile_data) {
+    $names = array();
+
+    $user_info = $profile_data['profile']['data']['userInfo'];
+    if (!empty($user_info['bungieGlobalDisplayName'])) {
+      $names['Bungie'] = $user_info['bungieGlobalDisplayName'] . '#' . $user_info['bungieGlobalDisplayNameCode'];
+    }
+
+    $type_name = array(
+      0 => 'None',
+      1 => 'Xbox',
+      2 => 'PSN',
+      3 => 'Steam',
+      4 => 'Blizzard',
+      5 => 'Stadia',
+      10 => 'Demon',
+      254 => 'BungieNext',
+    );
+
+    if (!empty($profile_data['destinyMemberships'])) {
+      foreach ($profile_data['destinyMemberships'] as $membership) {
+        $names[$type_name[$membership['membershipType']]] = self::normalize_name($membership['displayName']);
+        if ($membership['membershipType'] === $user_info['membershipType']) {
+          $names[$type_name[$membership['membershipType']]] .= ' (default)';
+        }
+      }
+    }
+
+    return $names;
+  }
 
 
   public static function precache_players($players) {
