@@ -282,7 +282,10 @@
     "seal_node_hash": 2185719388,
     "records": {
       "1770021330": {"number_objectives": true}, // richest dead man alive
-    }
+      "1855685192": {}, // Gjallarhorn catalyst
+      "3574136388": {}, // Forerunner catalyst
+      "3835718947": {}, // Arbalest catalyst
+    },
   },
   "mmxxi": {
     "name": "Moments of Triumph 2021",
