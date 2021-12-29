@@ -91,6 +91,7 @@
       "3969659747": {"column_name": "Class", "number_objectives": true},
       "3790077074": {"number_objectives": true},
       "2384429092": {"number_objectives": true, "suppress": true}, // Tempo's edge / first 24 hours
+      "507778024": {"order": -1}, // vex catalyst
     },
   },
   "crucible": {
@@ -219,6 +220,9 @@
       148653552, // quests
       2322553724, // secrets
     ],
+    "records": {
+      "2708727662": {"order": -1}, // No Time to Explain catalyst
+    },
   },
   "season_12": {
     "name": "Season of the Hunt",
@@ -231,6 +235,10 @@
       2802812434, // gear
       1808459779, // general
     ],
+    // Icefall Mantle, Precious Scars, Athrys's Embrace, Mask of Bakris, Necrotic Grip, Dawn Chorus
+    "records": {
+      "2135780490": {"order": -1}, // Duality catalyst
+    },
   },
   "season_13": {
     "name": "Season of the Chosen",
@@ -243,6 +251,10 @@
       121075568, // gear
       3006777794, // general
     ],
+    // cuirass of the falling star, omnioculus, mantle of battle harmony
+    "records": {
+      "1833569807": {"order": -1}, // Ticuu's Divination catalyst
+    },
   },
   "season_14": {
     "name": "Season of the Splicer",
@@ -256,6 +268,10 @@
       3807851309, // prismatic lenses
       933409053, // general
     ],
+    // path of the burning steps, star-eater scales, boots of the assembler
+    "records": {
+      "250211794": {"order": -1}, // Cryosthesia catalyst
+    },
   },
   "season_15": {
     "name": "Season of the Lost",
@@ -274,6 +290,22 @@
       1961109500, // general
       1158320377, // tracing the stars
     ],
+    // no backup plans, radiant dance machines, nothing manacles
+    "records": {
+      "868748392": {"number_objectives": true}, // unsolved mysteries
+      "2503471062": {"number_objectives": true}, // techeun's gifts
+      "839992506": {"number_objectives": true}, // wayfinding echoes
+      "576592584": {"number_objectives": true}, // trivial wayfinding echoes
+      "1184842701": {"number_objectives": true}, // caches of echoes
+      "3950834212": {"number_objectives": true}, // wayfinding dreams
+      "2939070754": {"number_objectives": true}, // trivial wayfinding dreams
+      "1767438219": {"number_objectives": true}, // caches of dreams
+      "4078726305": {"number_objectives": true}, // wayfinding wrath
+      "3430706981": {"number_objectives": true}, // trivial wayfinding wrath
+      "543030486": {"number_objectives": true}, // caches of wrath
+      "478443982": {"order": -5}, // Ager's Scepter catalyst
+      "2329638530": {"order": -4}, // Lorentz Driver catalyst
+    },
   },
   "30th": {
     "name": "30th Anniversary",
@@ -517,12 +549,18 @@
     "category": "Quests",
     "subcategory": null,
     "other_node_hashes": [1460167656],
+    "records": {
+      "1107121513": {"order": -1} // Hawkmoon catalyst
+    }
   },
   "presage": {
     "name": "Presage",
     "category": "Quests",
     "subcategory": null,
     "other_node_hashes": [3108806378],
+    "records": {
+      "15917031": {"order": -1} // DMT catalyst
+    }
   },
 
   "season_10_badge": {
