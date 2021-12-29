@@ -221,7 +221,7 @@
       2322553724, // secrets
     ],
     "records": {
-      "2708727662": {"order": -1}, // No Time to Explain catalyst
+      "2708727662": {}, // No Time to Explain catalyst
     },
   },
   "season_12": {
@@ -235,9 +235,16 @@
       2802812434, // gear
       1808459779, // general
     ],
-    // Icefall Mantle, Precious Scars, Athrys's Embrace, Mask of Bakris, Necrotic Grip, Dawn Chorus
+    "collectibles": {
+      "2705309061": {}, // Icefall Mantle
+      "3551011276": {}, // Precious Scars
+      "117301517": {}, // Athrys's Embrace
+      "1244896500": {}, // Mask of Bakris
+      "1128765419": {}, // Necrotic Grip
+      "1789224066": {}, // Dawn Chorus
+    },
     "records": {
-      "2135780490": {"order": -1}, // Duality catalyst
+      "2135780490": {}, // Duality catalyst
     },
   },
   "season_13": {
@@ -251,9 +258,13 @@
       121075568, // gear
       3006777794, // general
     ],
-    // cuirass of the falling star, omnioculus, mantle of battle harmony
+    "collectibles": {
+      "3972162588": {}, // cuirass of the falling star
+      "1434922082": {}, // omnioculus
+      "2208687510": {}, // mantle of battle harmony
+    },
     "records": {
-      "1833569807": {"order": -1}, // Ticuu's Divination catalyst
+      "1833569807": {}, // Ticuu's Divination catalyst
     },
   },
   "season_14": {
@@ -268,9 +279,13 @@
       3807851309, // prismatic lenses
       933409053, // general
     ],
-    // path of the burning steps, star-eater scales, boots of the assembler
+    "collectibles": {
+      "2333070885": {}, // the path of burning steps
+      "2522582325": {}, // star-eater scales
+      "80672475": {}, // boots of the assembler
+    },
     "records": {
-      "250211794": {"order": -1}, // Cryosthesia catalyst
+      "250211794": {}, // Cryosthesia catalyst
     },
   },
   "season_15": {
@@ -290,7 +305,11 @@
       1961109500, // general
       1158320377, // tracing the stars
     ],
-    // no backup plans, radiant dance machines, nothing manacles
+    "collectibles": {
+      "4259407797": {}, // no backup plans
+      "182540649": {}, // radiant dance machines
+      "720772515": {}, // nothing manacles
+    },
     "records": {
       "868748392": {"number_objectives": true}, // unsolved mysteries
       "2503471062": {"number_objectives": true}, // techeun's gifts
@@ -303,8 +322,8 @@
       "4078726305": {"number_objectives": true}, // wayfinding wrath
       "3430706981": {"number_objectives": true}, // trivial wayfinding wrath
       "543030486": {"number_objectives": true}, // caches of wrath
-      "478443982": {"order": -5}, // Ager's Scepter catalyst
-      "2329638530": {"order": -4}, // Lorentz Driver catalyst
+      "478443982": {}, // Ager's Scepter catalyst
+      "2329638530": {}, // Lorentz Driver catalyst
     },
   },
   "30th": {

@@ -400,6 +400,9 @@ function get_headings($page, $type = null) {
     if (!empty($page['records'])) {
       $record_hash_lists[] = array_keys($page['records']);
     }
+    if (!empty($page['collectibles'])) {
+      $collectible_hash_lists[] = array_keys($page['collectibles']);
+    }
   }
 
   foreach ($record_hash_lists as $record_hash_list) {
