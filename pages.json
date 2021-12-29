@@ -542,6 +542,10 @@
     "category": "Dungeons",
     "subcategory": null,
     "other_node_hashes": [1476825620],
+    "records": {
+      "1770021330": {"number_objectives": true}, // richest dead man alive
+      "1855685192": {}, // Gjallarhorn catalyst
+    },
   },
 
   "harbinger": {
