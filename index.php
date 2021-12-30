@@ -1020,7 +1020,9 @@ function get_player_objective_state($record, $key) {
   $enums = array(
     'complete' => $complete, // this state technically means "redeemed"
     // 'reward' => ($record['state'] & 2) && !$complete,
-    'incomplete' => ($record['state'] & 4) && (!$objective['complete']),
+    'incomplete' => ($record['state'] & 4) && !$complete,
+      // This was only looking at !$objective['complete'], but I don't know why
+      // MMXXI Seeker of the Lost can incorrectly be in state 7. Record 2834253762, Data 3_4611686018471793101. intervalsRedeemedCount is correct.
     'obscured' => ($record['state'] & 8) && !$complete,
     'hidden' => ($record['state'] & 16) && !$complete,
     'unowned' => $record['state'] & 32,
