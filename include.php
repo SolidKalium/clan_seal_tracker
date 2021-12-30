@@ -7,7 +7,13 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
 }
 set_error_handler("exception_error_handler");
 
-ini_set('memory_limit', '256M');
+$limit = ini_get('memory_limit');
+if (
+  (strtolower(substr($limit, -1)) === 'k') ||
+  (strtolower(substr($limit, -1)) === 'm' && ((int) substr($limit, 0, strlen($limit) - 1) < 512))
+) {
+  ini_set('memory_limit', '512M');
+}
 
 include_once 'library/bungie_api.php';
 include_once 'library/definitions.php';

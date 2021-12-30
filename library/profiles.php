@@ -247,7 +247,7 @@ class profiles {
       return;
     }
 
-    $chunk_size = 10;
+    $chunk_size = 20;
     $components = self::normalize_component_codes(self::$standard_components);
     $base = 'https://www.bungie.net/Platform';
     $default_curl_opts = array(
