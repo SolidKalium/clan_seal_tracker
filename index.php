@@ -883,6 +883,13 @@ function estimate_player_record_progress($record) {
   $progress = 0;
   $count = null;
 
+  if (
+    isset($record['state']) &&
+    ($record['state'] === 0) || ($record['state'] & 1) // complete or just not redeemed yet
+  ) {
+    return 1;
+  }
+
   if (!empty($record['objectives'])) {
     $count = count($record['objectives']);
     foreach ($record['objectives'] as $objective) {
@@ -903,12 +910,7 @@ function estimate_player_record_progress($record) {
     // state is not normally on a record.
     // example: season 12 trials confidence is high.
 
-    $count = 1;
-    if (($record['state'] === 0) || ($record['state'] & 1)) { // complete or just not redeemed yet
-      $progress = 1;
-    } else {
-      $progress = 0;
-    }
+    return 0; // complete or not redeemed are handled above
   } else {
     echo_pretty_json($record);
     throw new Exception('No objectives found');
