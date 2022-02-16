@@ -17,6 +17,18 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
+
+// "collectionRootNode": 3790247699, emblems: 2381001021
+// "badgesRootNode": 498211331,
+// "metricsRootNode": 1074663644,
+// "activeTriumphsRootNodeHash": 1866538467,
+// "activeSealsRootNodeHash": 616318467,
+// "legacyTriumphsRootNodeHash": 3215903653,
+// "legacySealsRootNodeHash": 1881970629,
+// "medalsRootNodeHash": 3901403713,
+// "exoticCatalystsRootNodeHash": 511607103,
+// "loreRootNodeHash": 1993337477,
+// "seasonalChallengesPresentationNodeHash": 3443694067,
 display_node_hierarchy(1866538467, 2);
 
 // display_node_hierarchy_reverse(199171388);

@@ -4,6 +4,9 @@
   // if a record is in the records list, it should be displayed even if not part of a relevant node.
   // if a record is suppressed, don't show it
 
+  // Collectibles are handled a little awkwardly. In a more complex system, they might be a separate category that could optionally be combined with the badge, triumphs, an overall view, etc. Could be able to hide items that a reward for triumphs, to only show random drops, etc. Might use a separate mapping for collectible source data. Could tie raid/dungeon weapons to encounters at the same time.
+  // Could also split/combine different pages of triumphs in custom ways? E.g. all Moon triumphs, nightmare hunt triumphs only, nightmare hunt triumphs + collectibles/mods, etc.
+
   "last_wish": {
     "name": "Last Wish",
     "category": "Seals",
@@ -24,6 +27,12 @@
       "1359055399": {"column_name": "Raid banners", "order": -3},
       "628370196":  {"column_name": "Chests", "order": -2},
       "380332968":  {"column_name": "Petra's Run", "order": -1},
+    },
+    "collectibles": { // mods
+      "1616812058": {}, // Taken Armaments
+      "1244899887": {}, // Taken Invigoration
+      "2061705522": {}, // Taken Barrier
+      "426204227": {}, // Taken Repurposing
     },
   },
   "garden_of_salvation": {
@@ -46,7 +55,16 @@
       "521675034":  {"column_name": "Divinity",},
       "1522774125": {"column_name": "Flawless", "suppress": true},
     },
-    // TODO
+    "collectibles": { // mods
+      "1435246899": {}, // Enhanced Relay Defender
+      "3796544862": {}, // Enhanded Voltaic Mote Collector
+      "1395260669": {}, // Enhanced Resistant Tether
+      "2276007528": {}, // Enhanced Votaic Ammo Collector
+      "911081605": {}, // Relay Defender
+      "2076751138": {}, // Voltaic Mote Collector
+      "160781275": {}, // Resistant Tether
+      "2081488768": {}, // Votaic Ammo Collector
+    },
     // 1: accrued redemption, zealot's reward, legs
     // 2: reckless oracle, prophet of doom, arms
     // 3: sacred provenance, ancient gospel, chest
@@ -73,6 +91,12 @@
       "2699580344": {"column_name": "Day One", "number_objectives": true, "suppress": true},
       "3560923614": {"column_name": "Flawless", "suppress": true},
     },
+    "collectibles": { // mods
+      "2802279446": {}, // Herd Thinner
+      "2040177352": {}, // Enhanced Operator Augment
+      "811728933": {}, // Enhanced Scanner Augment
+      "1755084153": {}, // Enhanced Suppressor Augment
+    },
   },
   "vog": {
     "name": "Vault of Glass",
@@ -92,6 +116,19 @@
       "3790077074": {"number_objectives": true},
       "2384429092": {"number_objectives": true, "suppress": true}, // Tempo's edge / first 24 hours
       "507778024": {"order": -1}, // vex catalyst
+    },
+    "collectibles": { // mods
+      "2070411865": {}, // Rapid Oracle Disruptor
+      "2070411864": {}, // Vex Breaker
+      "2070411867": {}, // Superstructure Striker
+      "3837479520": {}, // Aggressive Oracle Disruptor
+      "3837479521": {}, // Vex Destroyer
+      "3837479522": {}, // Superstructre Medic
+      "2923491623": {}, // Precise Oracle Disruptor
+      "2923491622": {}, // Vex Striker
+      "2923491621": {}, // Superstructure Defender
+      "1995412175": {}, // Anti-Oracle
+      "1995412174": {}, // Anti-Praetorian
     },
   },
   "crucible": {
@@ -206,6 +243,17 @@
       2832559544, // exploration
       1676236275, // world
     ],
+    "collectibles": {
+      // "3016392134": {}, // Bane of Crota shell (In badge)
+      // "292635427": {}, // A Sibyl's Dreams emblem (In badge)
+      // "1552790512": {}, // Lunar Halcyon Gilt (In badge)
+      // "673924006": {}, // Moonshot shell (In badge)
+      // "3614640153": {}, // Moonrider One sparrow (In badge)
+      // "3664961551": {}, // The Third Tide ship (In badge)
+      "2538385076": {}, // Orbital Cartogropher emblem
+      // "292635426": {}, // Lunar Memoriam emblem (In badge)
+      // "1552790513": {}, // Lunar Gloom shader (In badge)
+    },
   },
   "beyond_light": {
     "name": "Beyond Light",
@@ -360,6 +408,15 @@
       1995542897, // bounties
       302201398, // the curse
     ],
+    "collectibles": {
+      "3360537487": {}, // Starlight ghost shell
+      "276336069": {}, // Secret Victories emblem
+      "1895171075": {}, // Drink at the Well emblem
+      "1895171074": {}, // Transcendent emblem
+      // "4188684306": {}, // Ennead emblem (part of Remember Your Manners triumph)
+      "1469913803": {}, // Harbinger's Echo sparrow (destroy all eggs, may get count of 40 for triumph before actually shooting them all)
+      "1469913807": {}, // Silver Tercel Sparrow
+    },
   },
   "tangled_shore": {
     "name": "Tangled Shore",
@@ -371,6 +428,14 @@
       4294103237, // exploration
       1876261587, // public events
     ],
+    "collectibles": {
+      "1335453329": {}, // Wing of the Crow emblem
+      "326386367": {}, // Eye for an Eye emblem
+      "1335453328": {}, // Untangled emblem
+      "2712527116": {}, // Secret Treasure emblem
+      "1282368191": {}, // Tangled Rust shader
+      "1282368190": {}, // Tangled Bronze shader
+    },
   },
   "nessus": {
     "name": "Nessus",
@@ -543,12 +608,22 @@
     "category": "Dungeons",
     "subcategory": null,
     "other_node_hashes": [1347078175],
+    "collectibles": {
+      // "1660030044": {}, // Wish-Ender (there's already a triumph for this)
+      "3163873689": {}, // Pallas Galliot ship
+      // "4188684307": {}, // The Eternal Return emblem (tied to solo completion)
+    },
   },
   "pit_of_heresey": {
     "name": "Pit of Heresy",
     "category": "Dungeons",
     "subcategory": null,
     "other_node_hashes": [2828966211],
+    "collectibles": {
+      "3187653285": {}, // Bane of Tyrants ship
+      // "292635431": {}, // Sanguine Static emblem (reward from triumph / initial completion)
+      // "292635430": {}, // Crimson Echoes emblem (reward from triumph)
+    },
   },
   "prophecy": {
     "name": "Prophecy",

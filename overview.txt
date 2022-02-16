@@ -17,12 +17,20 @@
 - https://bungie-net.github.io/multi/index.html
 - https://github.com/Bungie-net/api/wiki/
 - https://www.light.gg/db/changes/
+
+--- Sites to compare against or look at for inspiration
+- https://app.destinyitemmanager.com/
+- https://www.d2checklist.com/
+- https://bray.tech
+- https://destinysets.com/
+- https://www.bungie.net/7/en/User/Profile/
 - https://github.com/vpzed/Destiny2-API-Info/wiki/Destiny-2-Open-Source-Projects (old)
 - https://www.reddit.com/r/DestinyTheGame/comments/jitt09/a_comprehensive_list_of_useful_external_destiny_2/
 
 --- Debugging
 - Several ids are automatically populated on column and row headings
 - There are some useful functions in include.php
+- Run the server locally with `php -S localhost:8000` in the project folder
 
 
 ////////// Key concepts
