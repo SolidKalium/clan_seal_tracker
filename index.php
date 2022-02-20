@@ -51,6 +51,8 @@ route();
 
   // a settings page where users can login and control which pages they show up on?
   // connect to discord?
+    // bot to ping people who don't have a mod when it is for sale
+    // link from charlemagne lfg to that activity for those players (differentiate: joined/alt/maybe other commenters)
   // export as csv/excel?
 
   // table for each raid badge where the headers are encounters and subheaders are classes.
