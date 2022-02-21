@@ -5,7 +5,7 @@ include 'include.php';
 // $get_csv = 
 $members = get_clan_members();
 
-// array_multisort(array_column($members, 'joined_clan'), SORT_ASC, $members);
+array_multisort(array_column($members, 'joined_clan'), SORT_ASC, $members);
 
 // TODO make sorting or view type configurable via url?
 // echo get_csv($members), PHP_EOL;
@@ -15,7 +15,7 @@ display_member_table($members);
 
 
 function get_clan_members() {
-  $members = bungie_api::get_group_members(4331943);
+  $members = groups::get_group_members(4331943);
 
   $membership_types = array(
     1 => array('name' => 'xbox', 'icon' => 'xboxLiveLogo'),
@@ -130,3 +130,12 @@ function get_number_span($number, $color='lightgrey') { // royalblue?
   $result .= '</span>';
   return $result;
 }
+
+// Requires extra login. Not sure how to do that.
+// $result = bungie_api::api('/User/GetCredentialTypesForTargetAccount/4611686018495301011/'); // cpTylor stadia
+// echo_pretty_json($result);
+// $result = bungie_api::api('/User/GetCredentialTypesForTargetAccount/4611686018518157364/'); // cpTylor steam
+// echo_pretty_json($result);
+// $result = bungie_api::api('/User/GetMembershipFromHardLinkedCredential/SteamId/76561198057090403/'); # kalium. Wrong direction: Steam => Bungie.
+// echo_pretty_json($result);
+
