@@ -174,9 +174,9 @@ function display_hash_info($hash) {
     'Artifact', // just the current artifact
     // 'EntitlementOffer', // these entries have no useful data
 
-    'Activity',
-    'ActivityGraph',
-    'ActivityInteractable', // I think the presence of an entry here indicates a player can interact with it.
+    // 'Activity',
+    // 'ActivityGraph',
+    // 'ActivityInteractable', // I think the presence of an entry here indicates a player can interact with it.
     // 'ActivityMode',
     // 'ActivityModifier',
     // 'ActivityType',

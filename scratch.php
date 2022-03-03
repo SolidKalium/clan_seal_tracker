@@ -25,9 +25,9 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // "activeSealsRootNodeHash": 616318467,
 // "legacyTriumphsRootNodeHash": 3215903653,
 // "legacySealsRootNodeHash": 1881970629,
-// "exoticCatalystsRootNodeHash": 2642502414,
+// "exoticCatalystsRootNodeHash": 2642502414, // also includes patterns
 // "medalsRootNodeHash": 3901403713,
-// "exoticCatalystsRootNodeHash": 511607103,
+// "exoticCatalystsRootNodeHash": 511607103, // just catalysts (old view)
 // "loreRootNodeHash": 1993337477,
 // "craftingRootNodeHash": 3937826784,
 // "seasonalChallengesPresentationNodeHash": 3443694067,
@@ -137,7 +137,7 @@ $components = array(
 	// "PlatformSilver" => 105, // logged in user only
 	// "Characters" => 200, // minutes played, light level, selected title, emblem, etc.
 	// "CharacterInventories" => 201,
-	"CharacterProgressions" => 202, // might include season pass info. progression, faction, quest, milestone, quests, non-instanced item objectives, checklists (lost sectors and jade rabbits), artifact
+	// "CharacterProgressions" => 202, // might include season pass info. progression, faction, quest, milestone, quests, non-instanced item objectives, checklists (lost sectors and jade rabbits), artifact
 	// "CharacterRenderData" => 203,
 	// "CharacterActivities" => 204,
 	// "CharacterEquipment" => 205,
@@ -162,9 +162,26 @@ $components = array(
 	// "Records" => 900,
 	// "Transitory" => 1000, // currently empty
 	// "Metrics" => 1100,
+  // "StringVariables" => 1200,
+  // "Craftables" => 1300,
 );
 // $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components))); // kalium
 // $result = bungie_api::api('/Destiny2/3/Profile/4611686018490731084/?components=' . implode(',', array_values($components))); // scorpin
+
+// Patterns
+// display_hash_info(611448447); // Example presentation node (auto rifles). I no longer remember when this came from
+// display_hash_info(2855733397); // Example craftable item (come to pass)
+// // // display_hash_info(766235248); // bucketTypeHash
+// // // display_hash_info(3157915980); // progressionLevelRequirementHash
+// // // display_hash_info(2759499571); // powerCapHash
+// // // display_hash_info(521135891); // talentGridHash
+// // display_hash_info(3435464613); // perkHash
+// // display_hash_info(3520001075); // summaryItemHash
+// // profile has craftables listed. item (1) and socket.plug (0) failedRequirementIndexes
+// display_hash_info(2466515452); // Presentation node for auto rifles
+// display_hash_info(3863516258); // Example craftable item (come to pass) record
+// display_hash_info(1615038969); // forensic nightmare smg record
+// display_hash_info(850383679); // objective
 
 
 if (!empty($result)) {

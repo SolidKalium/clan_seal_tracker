@@ -433,6 +433,8 @@ class profiles {
       "Records" => 900,
       "Transitory" => 1000, // currently empty
       "Metrics" => 1100,
+      "StringVariables" => 1200,
+      "Craftables" => 1300,
     );
 
     foreach ($components as $key => $value) {
