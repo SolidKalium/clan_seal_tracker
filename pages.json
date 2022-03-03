@@ -303,6 +303,18 @@
       "2708727662": {}, // No Time to Explain catalyst
     },
   },
+  "30th": {
+    "name": "30th Anniversary",
+    "category": "Seals",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 2185719388,
+    "records": {
+      "1770021330": {"number_objectives": true}, // richest dead man alive
+      "1855685192": {}, // Gjallarhorn catalyst
+      "3574136388": {}, // Forerunner catalyst
+      "3835718947": {}, // Arbalest catalyst
+    },
+  },
   "witch_queen": {
     "name": "Witch Queen", // Throne World
     "category": "Seals",
@@ -353,18 +365,6 @@
       "263158944": {}, // grand overture catalysts
       "1163649614": {}, // dead messenger catalysts
       "3628100770": {}, // le monarque catalysts
-    },
-  },
-  "30th": {
-    "name": "30th Anniversary",
-    "category": "Seals",
-    "subcategory": "Seasonal",
-    "seal_node_hash": 2185719388,
-    "records": {
-      "1770021330": {"number_objectives": true}, // richest dead man alive
-      "1855685192": {}, // Gjallarhorn catalyst
-      "3574136388": {}, // Forerunner catalyst
-      "3835718947": {}, // Arbalest catalyst
     },
   },
 
