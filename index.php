@@ -320,14 +320,16 @@ function get_player_record_tds($player_data, $heading) {
 
   if (!empty($heading['interval_objectives'])) {
     $key = count($heading['interval_objectives']) - 1; // assume last one is the highest. They should all have progress up to their cap
-    $player_objective = $player_record['intervalObjectives'][$key];
-    $progress = $progress_override ?? $player_objective['progress'];
+    if (!empty($player_record['intervalObjectives'])) {
+      $player_objective = $player_record['intervalObjectives'][$key];
+    }
+    $progress = $progress_override ?? $player_objective['progress'] ?? 0;
     $raw_progress = $progress;
     if ($progress === 0 || $progress === $player_objective['completionValue']) {
       $progress = '';
     }
     $recordState = get_player_objective_state($player_record, $key);
-    return "<td recordState='$recordState' title='$raw_progress/{$player_objective['completionValue']}'>$progress</td>";
+    return "<td recordState='$recordState' title='$raw_progress/{$heading['interval_objectives'][$key]['completionValue']}'>$progress</td>";
   }
 
   if (count($player_record) === 2 && !array_diff(array_keys($player_record), array('state', 'intervalsRedeemedCount'))) {
@@ -440,7 +442,15 @@ function get_headings($page, $type = null) {
       if (!empty($record['intervalInfo']['intervalObjectives'])) {
         foreach ($record['intervalInfo']['intervalObjectives'] as $interval_objective) {
           // $interval_objective is just intervalValueScore and hash
-          $objective = $objectives[$interval_objective['intervalObjectiveHash']];
+          if ($interval_objective['intervalObjectiveHash'] !== 0) {
+            $objective = $objectives[$interval_objective['intervalObjectiveHash']];
+          } else {
+            $objective = array(
+              'hash' => $interval_objective['intervalObjectiveHash'],
+              'progressDescription' => '<No longer in API>',
+              'completionValue' => '<No longer in API>',
+            );
+          }
           $heading_interval_objectives[] = array(
             'hash' => $objective['hash'],
             'name' => $objective['progressDescription'],
@@ -1006,7 +1016,7 @@ function get_player_objective_state($record, $key) {
     return '';
   }
 
-  $objective = $record['objectives'][$key] ?? $record['intervalObjectives'][$key];
+  $objective = $record['objectives'][$key] ?? $record['intervalObjectives'][$key] ?? array('complete' => false, 'progress' => 0); // if intervalObjectives isn't set, the player hasn't done it
   if (
     !empty($record['intervalObjectives']) &&
     !$objective['complete'] &&

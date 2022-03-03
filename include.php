@@ -109,8 +109,10 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $d
     }
   }
 
-  foreach ($node['children']['presentationNodes'] as $child) {
-    display_node_hierarchy($child['presentationNodeHash'], $display_level, $current_depth + 1);
+  if (!empty($node['children'])) {
+    foreach ($node['children']['presentationNodes'] as $child) {
+      display_node_hierarchy($child['presentationNodeHash'], $display_level, $current_depth + 1);
+    }
   }
 
   if (!$current_depth) {
@@ -260,7 +262,10 @@ function load_json($path) {
 
 function echo_definition_line($definition, $depth = 0, $extra_description = '') {
   $padding = str_pad('', 2 * $depth);
-  echo $padding . "<span style='color:silver;'>" . str_pad($definition['hash'], 10) . "</span> {$definition['displayProperties']['name']} <span style='color:silver; display: inline-block; vertical-align: top;'>{$definition['displayProperties']['description']}$extra_description</span>" . PHP_EOL;
+  echo $padding . "<span style='color:silver; display: inline-block; vertical-align: top;'>" . str_pad($definition['hash'], 10) . "</span>"
+    . " <span style='display: inline-block; vertical-align: top;'>{$definition['displayProperties']['name']}</span>"
+    . " <span style='color:silver; display: inline-block; vertical-align: top;'>{$definition['displayProperties']['description']}$extra_description</span>"
+    . PHP_EOL;
 }
 function echo_info_line($start, $focus, $end = '', $depth = 0) {
   $padding = str_pad('', 2 * $depth);

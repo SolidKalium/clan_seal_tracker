@@ -101,6 +101,8 @@ function get_name_span($member, $type) {
     // Might be able to use javascript and search to make it work in a delayed fashion?
     // Nothing here: https://developers.google.com/apis-explorer
     // Nothing here: https://github.com/googleapis
+    // Profile and search results here: https://stadia.google.com/_/CloudcastPortalFeWebUi/data/batchexecute
+    // https://kovatch.medium.com/deciphering-google-batchexecute-74991e4e446c
   } else if ($type === 'xbox') {
     $url = 'https://account.xbox.com/en-us/profile?gamertag='.$name;
   } else if ($type === 'steam') {
@@ -131,10 +133,9 @@ function get_number_span($number, $color='lightgrey') { // royalblue?
   return $result;
 }
 
-// Requires extra login. Not sure how to do that.
-// $result = bungie_api::api('/User/GetCredentialTypesForTargetAccount/4611686018495301011/'); // cpTylor stadia
-// echo_pretty_json($result);
-// $result = bungie_api::api('/User/GetCredentialTypesForTargetAccount/4611686018518157364/'); // cpTylor steam
+// Requires extra login. Not sure how to do that. Contains real name (facebook) for self. Does include steam id (credentialAsString) and twitch name for others.
+// credentialType is different than membership type. https://bungie-net.github.io/multi/schema_BungieCredentialType.html#schema_BungieCredentialType
+// $result = bungie_api::api('/User/GetCredentialTypesForTargetAccount/31110/'); // kalium bungie
 // echo_pretty_json($result);
 // $result = bungie_api::api('/User/GetMembershipFromHardLinkedCredential/SteamId/76561198057090403/'); # kalium. Wrong direction: Steam => Bungie.
 // echo_pretty_json($result);

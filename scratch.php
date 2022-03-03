@@ -25,9 +25,11 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // "activeSealsRootNodeHash": 616318467,
 // "legacyTriumphsRootNodeHash": 3215903653,
 // "legacySealsRootNodeHash": 1881970629,
+// "exoticCatalystsRootNodeHash": 2642502414,
 // "medalsRootNodeHash": 3901403713,
 // "exoticCatalystsRootNodeHash": 511607103,
 // "loreRootNodeHash": 1993337477,
+// "craftingRootNodeHash": 3937826784,
 // "seasonalChallengesPresentationNodeHash": 3443694067,
 display_node_hierarchy(1866538467, 2);
 

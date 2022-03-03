@@ -131,6 +131,19 @@
       "1995412174": {}, // Anti-Praetorian
     },
   },
+  "vow": {
+    "name": "Vow of the Disciple",
+    "category": "Seals",
+    "subcategory": "Raid",
+    "seal_node_hash": 2886738008,
+    "badge_node_hash": 1809003442,
+    "other_node_hashes": [null], // TODO
+    "records": {
+    },
+    "collectibles": { // mods TODO
+    },
+    "disable_reason": "triumphs not available",
+  },
   "crucible": {
     "name": "Crucible",
     "category": "Seals",
@@ -272,106 +285,40 @@
       "2708727662": {}, // No Time to Explain catalyst
     },
   },
-  "season_12": {
-    "name": "Season of the Hunt",
+  "witch_queen": {
+    "name": "Witch Queen", // Throne World
     "category": "Seals",
     "subcategory": "Seasonal",
-    "seal_node_hash": 1321008463,
+    "seal_node_hash": 3061040177,
+    "badge_node_hash": 3016040694,
+    "hide_badge_unless_explicit": true,
     "other_node_hashes": [
-      3669331558, // quests
-      3937870096, // activities
-      2802812434, // gear
-      1808459779, // general
+      882064875, // campaign
+      2430016828, // wellspring
+      3333204392, // exploration
+      1346478920, // quests
+      3880215604, // secrets
     ],
-    "collectibles": {
-      "2705309061": {}, // Icefall Mantle
-      "3551011276": {}, // Precious Scars
-      "117301517": {}, // Athrys's Embrace
-      "1244896500": {}, // Mask of Bakris
-      "1128765419": {}, // Necrotic Grip
-      "1789224066": {}, // Dawn Chorus
-    },
     "records": {
-      "2135780490": {}, // Duality catalyst
+      // "2708727662": {}, // No Time to Explain catalyst
     },
   },
-  "season_13": {
-    "name": "Season of the Chosen",
+  "season_16": {
+    "name": "Season of the Risen",
     "category": "Seals",
     "subcategory": "Seasonal",
-    "seal_node_hash": 1321008462,
+    "seal_node_hash": 1321008459,
     "other_node_hashes": [
-      643487148, // quests
-      1071337794, // activities
-      121075568, // gear
-      3006777794, // general
+      1147698909, // quests
+      1541092394, // PsiOps
+      3802714325, // gear
+      2860804863, // general
     ],
     "collectibles": {
-      "3972162588": {}, // cuirass of the falling star
-      "1434922082": {}, // omnioculus
-      "2208687510": {}, // mantle of battle harmony
+      // "2705309061": {}, // TODO exotics
     },
     "records": {
-      "1833569807": {}, // Ticuu's Divination catalyst
-    },
-  },
-  "season_14": {
-    "name": "Season of the Splicer",
-    "category": "Seals",
-    "subcategory": "Seasonal",
-    "seal_node_hash": 1321008457,
-    "other_node_hashes": [
-      1134387311, // quests
-      2826444925, // activities
-      529389631, // gear
-      3807851309, // prismatic lenses
-      933409053, // general
-    ],
-    "collectibles": {
-      "2333070885": {}, // the path of burning steps
-      "2522582325": {}, // star-eater scales
-      "80672475": {}, // boots of the assembler
-    },
-    "records": {
-      "250211794": {}, // Cryosthesia catalyst
-    },
-  },
-  "season_15": {
-    "name": "Season of the Lost",
-    "category": "Seals",
-    "subcategory": "Seasonal",
-    "seal_node_hash": 1321008456,
-    "other_node_hashes": [
-      1202345386, // quests
-      3027737790, // gear
-      3735727166, // astral alignment
-      1949199957, // shattered realm
-      2619080017, // forest of echoes
-      1926009491, // debris of dreams
-      2479490220, // the ruins of wrath
-      230744312, // prismatic lenses
-      1961109500, // general
-      1158320377, // tracing the stars
-    ],
-    "collectibles": {
-      "4259407797": {}, // no backup plans
-      "182540649": {}, // radiant dance machines
-      "720772515": {}, // nothing manacles
-    },
-    "records": {
-      "868748392": {"number_objectives": true}, // unsolved mysteries
-      "2503471062": {"number_objectives": true}, // techeun's gifts
-      "839992506": {"number_objectives": true}, // wayfinding echoes
-      "576592584": {"number_objectives": true}, // trivial wayfinding echoes
-      "1184842701": {"number_objectives": true}, // caches of echoes
-      "3950834212": {"number_objectives": true}, // wayfinding dreams
-      "2939070754": {"number_objectives": true}, // trivial wayfinding dreams
-      "1767438219": {"number_objectives": true}, // caches of dreams
-      "4078726305": {"number_objectives": true}, // wayfinding wrath
-      "3430706981": {"number_objectives": true}, // trivial wayfinding wrath
-      "543030486": {"number_objectives": true}, // caches of wrath
-      "478443982": {}, // Ager's Scepter catalyst
-      "2329638530": {}, // Lorentz Driver catalyst
+      // "2135780490": {}, // TODO catalysts
     },
   },
   "30th": {
@@ -385,12 +332,6 @@
       "3574136388": {}, // Forerunner catalyst
       "3835718947": {}, // Arbalest catalyst
     },
-  },
-  "mmxxi": {
-    "name": "Moments of Triumph 2021",
-    "category": "Seals",
-    "subcategory": "Seasonal",
-    "seal_node_hash": 1210906311,
   },
 
   "dreaming_city": {
@@ -556,6 +497,32 @@
     ],
   },
 
+  "blueprints": {
+    "name": "Blueprints",
+    "category": "Collections",
+    "subcategory": null,
+    "other_node_hashes": [
+      611448447, //  Auto Rifles
+      648503481, //  Bows
+      3279301738, // Hand Cannons
+      1627216493, // Pulse Rifles
+      1943229586, // Scout Rifles
+      2906423302, // Sidearms
+      195234890, //  Submachine Guns
+      1946502267, // Fusion Rifles
+      2406434090, // Glaives
+      3003009297, // Grenade Launchers
+      4266106702, // Shotguns
+      3657601640, // Sniper Rifles
+      2338347769, // Grenade Launchers
+      2607637677, // Linear Fusion Rifles
+      95950383, //   Machine Guns
+      3722648865, // Rocket Launchers
+      3021177861, // Swords
+    ],
+    "disable_reason": "Work in progress",
+  },
+
   // Lost Sectors
   // Region Chests
   "corrupted_eggs": {
@@ -596,12 +563,12 @@
     "subcategory": null,
     "checklist_hash": 2568476210,
   },
-  "glykon_clues": {
-    "name": "Glykon Clues",
-    "category": "Checklists",
-    "subcategory": null,
-    "checklist_hash": 3975225462,
-  },
+  // "glykon_clues": { // This mission and its checklist entries were removed
+  //   "name": "Glykon Clues",
+  //   "category": "Checklists",
+  //   "subcategory": null,
+  //   "checklist_hash": 3975225462,
+  // },
 
   "shattered_throne": {
     "name": "Shattered Throne",
@@ -642,22 +609,13 @@
     },
   },
 
-  "harbinger": {
-    "name": "Harbinger",
+  "vox_obscura": {
+    "name": "Vox Obscura",
     "category": "Quests",
     "subcategory": null,
-    "other_node_hashes": [1460167656],
+    "other_node_hashes": [3419158345],
     "records": {
-      "1107121513": {"order": -1} // Hawkmoon catalyst
-    }
-  },
-  "presage": {
-    "name": "Presage",
-    "category": "Quests",
-    "subcategory": null,
-    "other_node_hashes": [3108806378],
-    "records": {
-      "15917031": {"order": -1} // DMT catalyst
+      // "1107121513": {"order": -1} // Hawkmoon catalyst
     }
   },
 
@@ -803,29 +761,36 @@
       "737130625": {"column_name": "Riven's Curse", "suppress": true}, // not acquireable
     },
   },
-  "seasonal_challenges_15": {
-    "name": "Seasonal Challenges (Lost)",
+  "seasonal_challenges_16": {
+    "name": "Seasonal Challenges (Risen)",
     "category": "Other",
     "subcategory": null,
-    "other_node_hashes": [3608142460, 4143126230, 4143126229, 4143126228, 4143126227, 4143126226, 4143126225, 4143126224, 4143126239, 4143126238, 2527916754],
+    "other_node_hashes": [2385149757, 2385149758, 2385149759, 2385149752, 2385149753, 2385149754, 2385149755, 2385149748, 2385149749, 166087991],
     "records": {},
   },
-  "seasonal_challenges_14": {
-    "name": "Seasonal Challenges (Splicer)",
-    "category": "Other",
-    "subcategory": null,
-    "other_node_hashes": [2119135358],
-    // "other_node_hashes": [1243102869, 2412404671, 2412404668, 2412404669, 2412404666, 2412404667, 2412404664, 2412404665, 2412404662, 2412404663, 445954461],
-    "records": {},
-  },
-  "seasonal_challenges_13": {
-    "name": "Seasonal Challenges (Chosen)",
-    "category": "Other",
-    "subcategory": null,
-    "other_node_hashes": [2119135353],
-    // "other_node_hashes": [193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696],
-    "records": {},
-  },
+  // "seasonal_challenges_15": { // Removed with start of Season 16
+  //   "name": "Seasonal Challenges (Lost)",
+  //   "category": "Other",
+  //   "subcategory": null,
+  //   "other_node_hashes": [3608142460, 4143126230, 4143126229, 4143126228, 4143126227, 4143126226, 4143126225, 4143126224, 4143126239, 4143126238, 2527916754],
+  //   "records": {},
+  // },
+  // "seasonal_challenges_14": { // Removed with start of Season 16
+  //   "name": "Seasonal Challenges (Splicer)",
+  //   "category": "Other",
+  //   "subcategory": null,
+  //   "other_node_hashes": [2119135358],
+  //   // "other_node_hashes": [1243102869, 2412404671, 2412404668, 2412404669, 2412404666, 2412404667, 2412404664, 2412404665, 2412404662, 2412404663, 445954461],
+  //   "records": {},
+  // },
+  // "seasonal_challenges_13": { // Removed with start of Season 16
+  //   "name": "Seasonal Challenges (Chosen)",
+  //   "category": "Other",
+  //   "subcategory": null,
+  //   "other_node_hashes": [2119135353],
+  //   // "other_node_hashes": [193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696],
+  //   "records": {},
+  // },
   "dawning_2020": {
     "name": "Dawning 2020",
     "category": "Events",
@@ -857,10 +822,17 @@
     "other_node_hashes": [4277365833],
   },
 
+  "mmxxi": {
+    "name": "Moments of Triumph 2021",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1210906311,
+  },
+
   "leviathan": {
     "name": "Leviathan",
     "category": "Legacy",
-    "subcategory": null,
+    "subcategory": "Leviathan",
     "other_node_hashes": [
       2558323083,
     ],
@@ -868,7 +840,7 @@
   "crown": {
     "name": "Crown of Sorrow",
     "category": "Legacy",
-    "subcategory": null,
+    "subcategory": "Leviathan",
     "other_node_hashes": [
       2481808943,
     ],
@@ -879,7 +851,7 @@
   "menagerie": {
     "name": "Menagerie",
     "category": "Legacy",
-    "subcategory": null,
+    "subcategory": "Leviathan",
     "other_node_hashes": [
       297242190,
     ],
@@ -887,9 +859,131 @@
   "tribute_hall": {
     "name": "Tribute Hall",
     "category": "Legacy",
-    "subcategory": null,
+    "subcategory": "Leviathan",
     "other_node_hashes": [
       1519064131,
     ],
+  },
+
+  "season_12": {
+    "name": "Season of the Hunt",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008463,
+    "other_node_hashes": [
+      3669331558, // quests
+      3937870096, // activities
+      2802812434, // gear
+      1808459779, // general
+    ],
+    "collectibles": {
+      "2705309061": {}, // Icefall Mantle
+      "3551011276": {}, // Precious Scars
+      "117301517": {}, // Athrys's Embrace
+      "1244896500": {}, // Mask of Bakris
+      "1128765419": {}, // Necrotic Grip
+      "1789224066": {}, // Dawn Chorus
+    },
+    "records": {
+      "2135780490": {}, // Duality catalyst
+    },
+  },
+  "season_13": {
+    "name": "Season of the Chosen",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008462,
+    "other_node_hashes": [
+      643487148, // quests
+      1071337794, // activities
+      121075568, // gear
+      3006777794, // general
+    ],
+    "collectibles": {
+      "3972162588": {}, // cuirass of the falling star
+      "1434922082": {}, // omnioculus
+      "2208687510": {}, // mantle of battle harmony
+    },
+    "records": {
+      "1833569807": {}, // Ticuu's Divination catalyst
+    },
+  },
+  "season_14": {
+    "name": "Season of the Splicer",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008457,
+    "other_node_hashes": [
+      1134387311, // quests
+      2826444925, // activities
+      529389631, // gear
+      3807851309, // prismatic lenses
+      933409053, // general
+    ],
+    "collectibles": {
+      "2333070885": {}, // the path of burning steps
+      "2522582325": {}, // star-eater scales
+      "80672475": {}, // boots of the assembler
+    },
+    "records": {
+      "250211794": {}, // Cryosthesia catalyst
+    },
+  },
+  "season_15": {
+    "name": "Season of the Lost",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008456,
+    "other_node_hashes": [
+      1202345386, // quests
+      3027737790, // gear
+      3735727166, // astral alignment
+      1949199957, // shattered realm
+      2619080017, // forest of echoes
+      1926009491, // debris of dreams
+      2479490220, // the ruins of wrath
+      230744312, // prismatic lenses
+      1961109500, // general
+      1158320377, // tracing the stars
+    ],
+    "collectibles": {
+      "4259407797": {}, // no backup plans
+      "182540649": {}, // radiant dance machines
+      "720772515": {}, // nothing manacles
+    },
+    "records": {
+      "868748392": {"number_objectives": true}, // unsolved mysteries
+      "2503471062": {"number_objectives": true}, // techeun's gifts
+      "839992506": {"number_objectives": true}, // wayfinding echoes
+      "576592584": {"number_objectives": true}, // trivial wayfinding echoes
+      "1184842701": {"number_objectives": true}, // caches of echoes
+      "3950834212": {"number_objectives": true}, // wayfinding dreams
+      "2939070754": {"number_objectives": true}, // trivial wayfinding dreams
+      "1767438219": {"number_objectives": true}, // caches of dreams
+      "4078726305": {"number_objectives": true}, // wayfinding wrath
+      "3430706981": {"number_objectives": true}, // trivial wayfinding wrath
+      "543030486": {"number_objectives": true}, // caches of wrath
+      "478443982": {}, // Ager's Scepter catalyst
+      "2329638530": {}, // Lorentz Driver catalyst
+    },
+  },
+
+  "harbinger": {
+    "name": "Harbinger",
+    "category": "Legacy",
+    "subcategory": "Quests",
+    "other_node_hashes": [1460167656],
+    "records": {
+      "1107121513": {"order": -1} // Hawkmoon catalyst
+    }
+  },
+  "presage": {
+    "name": "Presage",
+    "category": "Legacy",
+    "subcategory": "Quests",
+    "other_node_hashes": [3108806378],
+    "records": {
+      "15917031": {"order": -1} // DMT catalyst
+    }
   },
 }
