@@ -503,7 +503,10 @@ function get_headings($page, $type = null) {
     foreach ($collectible_hash_lists as $collectible_hash_list) {
       foreach ($collectible_hash_list as $collectible_hash) {
         $collectible = $collectibles[$collectible_hash];
-        $item = $items[$collectible['itemHash']];
+        if (!empty($items[$collectible['itemHash']])) {
+          // Note: Classified items will have an itemHash of 0. E.g. Classified mods from a new raid
+          $item = $items[$collectible['itemHash']];
+        }
 
         if (!empty($page['collectibles'][$collectible_hash]['suppress'])) {
           continue;
@@ -519,8 +522,8 @@ function get_headings($page, $type = null) {
           continue;
         }
 
-        $description = $item['itemTypeDisplayName'];
-        foreach ($item['perks'] as $perk_info) {
+        $description = $item['itemTypeDisplayName'] ?? $collectible['displayProperties']['name'];
+        foreach ($item['perks'] ?? [] as $perk_info) {
           $perk = $perks[$perk_info['perkHash']];
           if (!$perk['isDisplayable']) { // example: second perk on fusion rifle ammo finder (collectible 4017415783)
             continue;
@@ -531,7 +534,7 @@ function get_headings($page, $type = null) {
           }
           $description .= "\nPerk: " . $perk['displayProperties']['description'];
         }
-        if ($collectible['sourceString']) {
+        if (!empty($collectible['sourceString'])) {
           $description .= "\n" . $collectible['sourceString'];
         }
 

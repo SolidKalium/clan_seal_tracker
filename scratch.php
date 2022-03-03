@@ -18,7 +18,7 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
 
-// "collectionRootNode": 3790247699, emblems: 2381001021
+// "collectionRootNode": 3790247699, emblems: 2381001021, mods: 3509235358, exotic armor: 1789205056
 // "badgesRootNode": 498211331,
 // "metricsRootNode": 1074663644,
 // "activeTriumphsRootNodeHash": 1866538467,

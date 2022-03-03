@@ -137,13 +137,28 @@
     "subcategory": "Raid",
     "seal_node_hash": 2886738008,
     "badge_node_hash": 1809003442,
-    "other_node_hashes": [null], // TODO
+    "other_node_hashes": [ // TODO not sure which is correct
+      1734254471, // Season
+      3779087602, // Expansion
+    ],
     "records": {
+      // Hide first 24 hours? Hopefully not
+      // Better names for long triumphs, number some objectives
     },
-    "collectibles": { // mods TODO
+    "collectibles": { // mods
+      "1029704925": {},
+      "286736914": {},
+      "937581026": {},
+      "131769494": {},
+      "2963782329": {},
+      "3932921591": {},
+      "1477727935": {},
+      "1808843605": {},
+      "2687147700": {},
     },
     "disable_reason": "triumphs not available",
   },
+
   "crucible": {
     "name": "Crucible",
     "category": "Seals",
@@ -192,14 +207,17 @@
     "other_node_hashes": [
       1954283988, // account nightfalls
       1990811028, // account strikes
-      636644708, // chosen/13 strikes
-      2675905563, // hunt/12 strikes
       4285884347, // dreaming city strikes
-      1427965125, // tangled shore strikes
       69244313, //  nessus strikes
       245634203, // edz strikes
       2973304209, // cosmodrome strikes
+      3520248493, // prison of elders
     ],
+    "records": {
+      "2111785377": {}, // Break the Glass
+      "1891852050": {}, // The Lightblade
+      "1004971789": {}, // Birthplace of the Vile
+    }
   },
   // "conqueror": array( // season 14 doesn't have triumphs for strikes/crucible/gambit
   //   "name": 'Conqueror + season 13 strikes',
@@ -299,8 +317,15 @@
       1346478920, // quests
       3880215604, // secrets
     ],
+    "collectibles": {
+      "4028619089": {}, // Parasite
+      "328283190": {}, // Edge of Concurrence
+      "3810283242": {}, // Edge of Action
+      "1089205875": {}, // Edge of Intent 
+    },
     "records": {
-      // "2708727662": {}, // No Time to Explain catalyst
+      // "403175710": {}, // osteo striga pattern
+      "494981303": {}, // osteo striga catalyst
     },
   },
   "season_16": {
@@ -315,10 +340,19 @@
       2860804863, // general
     ],
     "collectibles": {
-      // "2705309061": {}, // TODO exotics
+      "1140859956": {}, // hoarfrost-z
+      "2897560445": {}, // loreley splendor
+      "2218977062": {}, // renewal grasps
+      "2243533023": {}, // blight ranger
+      "1813764890": {}, // osmiomancy
+      "3536167764": {}, // secant filament
+      "1256729926": {}, // grand overture
+      "4028619088": {}, // dead messenger
     },
     "records": {
-      // "2135780490": {}, // TODO catalysts
+      "263158944": {}, // grand overture catalysts
+      "1163649614": {}, // dead messenger catalysts
+      "3628100770": {}, // le monarque catalysts
     },
   },
   "30th": {
@@ -409,6 +443,11 @@
     "category": "Seals",
     "subcategory": "Destination",
     "records": { // TODO it would be better if these were grouped
+      "4146006034": {}, // Misc Europa
+      "3838089785": {},
+      "3411040634": {},
+      "1794685284": {},
+      "860708386": {},
       "520634566": {}, // Concealed Void
       "2854743101": {},
       "1416307185": {},
@@ -457,6 +496,16 @@
       "549937976": {}, // The Quearry
       "2065841479": {},
       "3992532131": {},
+      "326823079": {}, // Any throne world on master
+      "3139513784": {}, // Metamorphosis
+      "360449991": {},
+      "1024748579": {},
+      "3069389409": {}, // Sepulcher
+      "4110051606": {},
+      "1203728788": {},
+      "2027297570": {}, // Extraction
+      "2188781025": {},
+      "2691903949": {},
     },
   },
 
@@ -496,79 +545,6 @@
       1424071291,
     ],
   },
-
-  "blueprints": {
-    "name": "Blueprints",
-    "category": "Collections",
-    "subcategory": null,
-    "other_node_hashes": [
-      611448447, //  Auto Rifles
-      648503481, //  Bows
-      3279301738, // Hand Cannons
-      1627216493, // Pulse Rifles
-      1943229586, // Scout Rifles
-      2906423302, // Sidearms
-      195234890, //  Submachine Guns
-      1946502267, // Fusion Rifles
-      2406434090, // Glaives
-      3003009297, // Grenade Launchers
-      4266106702, // Shotguns
-      3657601640, // Sniper Rifles
-      2338347769, // Grenade Launchers
-      2607637677, // Linear Fusion Rifles
-      95950383, //   Machine Guns
-      3722648865, // Rocket Launchers
-      3021177861, // Swords
-    ],
-    "disable_reason": "Work in progress",
-  },
-
-  // Lost Sectors
-  // Region Chests
-  "corrupted_eggs": {
-    "name": "Corrupted Eggs",
-    "category": "Checklists",
-    "subcategory": null,
-    "checklist_hash": 2609997025,
-  },
-  "ahamkara_bones": {
-    "name": "Ahamkara Bones",
-    "category": "Checklists",
-    "subcategory": null,
-    "checklist_hash": 1297424116,
-  },
-  // Jade Rabbits
-  // Dead Ghosts
-  "cat_statues": {
-    "name": "Cat Statues",
-    "category": "Checklists",
-    "subcategory": null,
-    "checklist_hash": 2726513366,
-  },
-  "penguins": {
-    "name": "Penguin Souvenirs",
-    "category": "Checklists",
-    "subcategory": null,
-    "checklist_hash": 817948795,
-  },
-  "entropic_shards": {
-    "name": "Entropic Shards",
-    "category": "Checklists",
-    "subcategory": null,
-    "checklist_hash": 1885088224,
-  },
-  "dead_exos": {
-    "name": "Dead Exos",
-    "category": "Checklists",
-    "subcategory": null,
-    "checklist_hash": 2568476210,
-  },
-  // "glykon_clues": { // This mission and its checklist entries were removed
-  //   "name": "Glykon Clues",
-  //   "category": "Checklists",
-  //   "subcategory": null,
-  //   "checklist_hash": 3975225462,
-  // },
 
   "shattered_throne": {
     "name": "Shattered Throne",
@@ -618,109 +594,6 @@
       // "1107121513": {"order": -1} // Hawkmoon catalyst
     }
   },
-
-  "season_10_badge": {
-    "name": "Season of Arrivals",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 3459575786,
-  },
-  "season_9_badge": {
-    "name": "Season of Dawn",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 4257248973,
-  },
-  "season_8_badge": {
-    "name": "Season of the Undying",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 3267852685,
-  },
-  "season_7_badge": {
-    "name": "Season of Opulence",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 2759158924,
-  },
-  "season_6_badge": {
-    "name": "Season of the Drifter",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 2503214417,
-  },
-  "season_5_badge": {
-    "name": "Season of the Forge",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 2399267278,
-  },
-  "destination_forsaken_badge": {
-    "name": "Forsaken",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 2881240068,
-  },
-  "exotics_forsaken_badge": {
-    "name": "Forsaken Exotics",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 3333531796,
-  },
-  "destination_curse_badge": {
-    "name": "Curse of Osiris and Warmind",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 1331476689,
-  },
-  "exotics_curse_badge": {
-    "name": "Curse of Osiris and Warmind Exotics",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 1419883649,
-  },
-  "destination_red_war_badge": {
-    "name": "Red War",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 2904806741,
-  },
-  "exotics_red_war_badge": {
-    "name": "Red War Exotics",
-    "category": "Badges",
-    "subcategory": null,
-    "type": "badge",
-    "badge_node_hash": 3241617029,
-  },
-
-  // TODO collectibles
-  // emblems (filter out empty names)
-  // shaders
-  // transmat effects
-  // ghost shells
-  // sparrows
-  // ships
-  // masks
-  // finishers
-  // collectibles
-  // ghost mods
-  // seasonal mods
-  // weapons (per type?) (show season?)
-  // exotic weapons
-  // exotic armor
-  // ornaments?
-  // medals?
 
   "milestones": {
     "name": "Milestones",
@@ -814,6 +687,7 @@
     "category": "Events",
     "subcategory": null,
     "other_node_hashes": [1488084792],
+    "disable_reason": "triumphs deleted",
   },
   "dawning_2021": {
     "name": "Dawning 2021",
@@ -822,49 +696,212 @@
     "other_node_hashes": [4277365833],
   },
 
+  "patterns": {
+    "name": "Patterns",
+    "category": "Collections",
+    "subcategory": null,
+    "other_node_hashes": [
+      611448447, //  Auto Rifles
+      648503481, //  Bows
+      3279301738, // Hand Cannons
+      1627216493, // Pulse Rifles
+      1943229586, // Scout Rifles
+      2906423302, // Sidearms
+      195234890, //  Submachine Guns
+      1946502267, // Fusion Rifles
+      2406434090, // Glaives
+      3003009297, // Grenade Launchers
+      4266106702, // Shotguns
+      3657601640, // Sniper Rifles
+      2338347769, // Grenade Launchers
+      2607637677, // Linear Fusion Rifles
+      95950383, //   Machine Guns
+      3722648865, // Rocket Launchers
+      3021177861, // Swords
+    ],
+    "disable_reason": "Work in progress",
+  },
+
+  // TODO collectibles
+  // emblems (filter out empty names)
+  // shaders
+  // transmat effects
+  // ghost shells
+  // sparrows
+  // ships
+  // masks
+  // finishers
+  // collectibles
+  // ghost mods
+  // seasonal mods
+  // weapons (per type?) (show season?)
+  // exotic weapons
+  // exotic armor
+  // ornaments?
+  // medals?
+
+  // Lost Sectors
+  // Region Chests
+  "corrupted_eggs": {
+    "name": "Corrupted Eggs",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 2609997025,
+  },
+  "ahamkara_bones": {
+    "name": "Ahamkara Bones",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 1297424116,
+  },
+  // Jade Rabbits
+  // Dead Ghosts
+  "cat_statues": {
+    "name": "Cat Statues",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 2726513366,
+  },
+  "penguins": {
+    "name": "Penguin Souvenirs",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 817948795,
+  },
+  "entropic_shards": {
+    "name": "Entropic Shards",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 1885088224,
+  },
+  "dead_exos": {
+    "name": "Dead Exos",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 2568476210,
+  },
+  // "glykon_clues": { // This mission and its checklist entries were removed
+  //   "name": "Glykon Clues",
+  //   "category": "Checklists",
+  //   "subcategory": null,
+  //   "checklist_hash": 3975225462,
+  // },
+
   "mmxxi": {
     "name": "Moments of Triumph 2021",
     "category": "Legacy",
-    "subcategory": "Seasonal",
+    "subcategory": "Seals",
     "seal_node_hash": 1210906311,
   },
+  "mmxx": {
+    "name": "Moments of Triumph 2020",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 1210906310,
+  },
+  "mmxix": {
+    "name": "Moments of Triumph 2019",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 1194128730,
+  },
+  "destinations": {
+    "name": "Destinations",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 1106177979,
+  },
+  "lore": {
+    "name": "Lore",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 3680676656,
+  },
+  "conqueror_12": { // Hunt
+    "name": "Conqueror (Season 12)",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 581214566,
+  },
+  "conqueror_11": { // Arrivals
+    "name": "Conqueror (Season 11)",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 3212358005,
+  },
+  "conqueror_10": { // Worthy
+    "name": "Conqueror (Season 10)",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 1376640684,
+  },
+  "flawless_12": { // Hunt
+    "name": "Flawless (Season 12)",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 1276693937,
+  },
+  "flawless_11": { // Arrivals
+    "name": "Flawless (Season 11)",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 3251218484,
+  },
+  "flawless_10": { // Worthy
+    "name": "Flawless (Season 10)",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 2086100423,
+  },
 
-  "leviathan": {
-    "name": "Leviathan",
+  "season_5": {
+    "name": "Season of the Forge",
     "category": "Legacy",
-    "subcategory": "Leviathan",
-    "other_node_hashes": [
-      2558323083,
-    ],
+    "subcategory": "Seasonal",
+    "seal_node_hash": 450166688,
+    "badge_node_hash": 2399267278,
   },
-  "crown": {
-    "name": "Crown of Sorrow",
+  "season_6": {
+    "name": "Season of the Drifter",
     "category": "Legacy",
-    "subcategory": "Leviathan",
-    "other_node_hashes": [
-      2481808943,
-    ],
-    "records": {
-      "3292013044": {"suppress": true}, // First 24 hours
-    }
+    "subcategory": "Seasonal",
+    "seal_node_hash": 2978379966,
+    "badge_node_hash": 2503214417,
   },
-  "menagerie": {
-    "name": "Menagerie",
+  "season_7": {
+    "name": "Season of Opulence",
     "category": "Legacy",
-    "subcategory": "Leviathan",
-    "other_node_hashes": [
-      297242190,
-    ],
+    "subcategory": "Seasonal",
+    "seal_node_hash": 717225803,
+    "badge_node_hash": 2759158924,
   },
-  "tribute_hall": {
-    "name": "Tribute Hall",
+  "season_8": {
+    "name": "Season of the Undying",
     "category": "Legacy",
-    "subcategory": "Leviathan",
-    "other_node_hashes": [
-      1519064131,
-    ],
+    "subcategory": "Seasonal",
+    "seal_node_hash": 955166374,
+    "badge_node_hash": 3267852685,
   },
-
+  "season_9": {
+    "name": "Season of Dawn",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 955166375,
+    "badge_node_hash": 4257248973,
+  },
+  "season_10": {
+    "name": "Season of the Worthy",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008461,
+  },
+  "season_11": {
+    "name": "Season of Arrivals",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008460,
+    "badge_node_hash": 3459575786,
+  },
   "season_12": {
     "name": "Season of the Hunt",
     "category": "Legacy",
@@ -985,5 +1022,95 @@
     "records": {
       "15917031": {"order": -1} // DMT catalyst
     }
+  },
+
+  "strikes_legacy": {
+    "name": "Strikes (Legacy)",
+    "category": "Legacy",
+    "subcategory": "Activities",
+    "other_node_hashes": [
+      636644708, // chosen/13 strikes
+      2675905563, // hunt/12 strikes
+      1427965125, // tangled shore strikes
+    ],
+  },
+
+  "leviathan": {
+    "name": "Leviathan",
+    "category": "Legacy",
+    "subcategory": "Leviathan",
+    "other_node_hashes": [
+      2558323083,
+    ],
+  },
+  "crown": {
+    "name": "Crown of Sorrow",
+    "category": "Legacy",
+    "subcategory": "Leviathan",
+    "other_node_hashes": [
+      2481808943,
+    ],
+    "records": {
+      "3292013044": {"suppress": true}, // First 24 hours
+    }
+  },
+  "menagerie": {
+    "name": "Menagerie",
+    "category": "Legacy",
+    "subcategory": "Leviathan",
+    "other_node_hashes": [
+      297242190,
+    ],
+  },
+  "tribute_hall": {
+    "name": "Tribute Hall",
+    "category": "Legacy",
+    "subcategory": "Leviathan",
+    "other_node_hashes": [
+      1519064131,
+    ],
+  },
+
+  "destination_forsaken_badge": {
+    "name": "Forsaken",
+    "category": "Legacy",
+    "subcategory": "Badges",
+    "type": "badge",
+    "badge_node_hash": 2881240068,
+  },
+  "exotics_forsaken_badge": {
+    "name": "Forsaken Exotics",
+    "category": "Legacy",
+    "subcategory": "Badges",
+    "type": "badge",
+    "badge_node_hash": 3333531796,
+  },
+  "destination_curse_badge": {
+    "name": "Curse of Osiris and Warmind",
+    "category": "Legacy",
+    "subcategory": "Badges",
+    "type": "badge",
+    "badge_node_hash": 1331476689,
+  },
+  "exotics_curse_badge": {
+    "name": "Curse of Osiris and Warmind Exotics",
+    "category": "Legacy",
+    "subcategory": "Badges",
+    "type": "badge",
+    "badge_node_hash": 1419883649,
+  },
+  "destination_red_war_badge": {
+    "name": "Red War",
+    "category": "Legacy",
+    "subcategory": "Badges",
+    "type": "badge",
+    "badge_node_hash": 2904806741,
+  },
+  "exotics_red_war_badge": {
+    "name": "Red War Exotics",
+    "category": "Legacy",
+    "subcategory": "Badges",
+    "type": "badge",
+    "badge_node_hash": 3241617029,
   },
 }
