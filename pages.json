@@ -137,16 +137,31 @@
     "subcategory": "Raid",
     "seal_node_hash": 2886738008,
     "badge_node_hash": 1809003442,
-    "other_node_hashes": [ // TODO not sure which is correct
-      1734254471, // Season
-      3779087602, // Expansion
+    "other_node_hashes": [
+      3779087602,
     ],
     "records": {
-      // Hide first 24 hours? Hopefully not
-      // Better names for long triumphs, number some objectives
+      "922211732": {"column_name": "Day 1",  "number_objectives": true},
+      "4019717242": {"column_name": "Flawless"},
+      "1729647218": {"column_name": "Badge"},
+      "3330343477": {"column_name": "Clan"},
+      "610864524": {"column_name": "Master Difficulty"},
+      "486676807": {"column_name": "Lore Book Unlocks"},
+      "1053120087": {"column_name": "Arc",  "number_objectives": true},
+      "4241035147": {"column_name": "Void",  "number_objectives": true},
+      "3620246150": {"column_name": "Solar",  "number_objectives": true},
+      "1607471906": {"column_name": "Stasis",  "number_objectives": true},
+      "2383291155": {"column_name": "Class",  "number_objectives": true},
+      "3991904123": {"column_name": "Master Challenges",  "number_objectives": true},
+      "876397380": {}, // Lubrae's Ruin pattern
+      "1057921323": {}, // Submission pattern
+      "989023188": {}, // Cataclysmic pattern
+      "3868889639": {}, // Insidious pattern
+      "422252754": {}, // Forbearance pattern
+      "2896258222": {}, // Deliverance pattern
     },
-    "collectibles": { // mods
-      "1029704925": {},
+    "collectibles": {
+      "1029704925": {}, // mods
       "286736914": {},
       "937581026": {},
       "131769494": {},
@@ -155,8 +170,8 @@
       "1477727935": {},
       "1808843605": {},
       "2687147700": {},
+      "2817568609": {}, // Collective Obligation
     },
-    "disable_reason": "triumphs not available",
   },
 
   "crucible": {
