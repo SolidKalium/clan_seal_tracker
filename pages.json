@@ -185,7 +185,18 @@
       3973313476, // account crucible
       339137305, // chosen/13 crucible
       1667143694, // hunt/12 crucible
-      3049172190 // iron banner
+      // 3049172190 // iron banner
+    ],
+  },
+  "iron_banner": {
+    "name": "Iron Banner",
+    "category": "Seals",
+    "subcategory": "Activity",
+    "seal_node_hash": 2161171268,
+    // "badge_node_hash": null,
+    // "hide_badge_unless_explicit": true,
+    "other_node_hashes": [
+      3049172190 // all iron banner
     ],
   },
   "gambit": {
@@ -374,12 +385,35 @@
       "1813764890": {}, // osmiomancy
       "3536167764": {}, // secant filament
       "1256729926": {}, // grand overture
-      "4028619088": {}, // dead messenger
+      // "4028619088": {}, // dead messenger
     },
     "records": {
       "263158944": {}, // grand overture catalysts
-      "1163649614": {}, // dead messenger catalysts
+      // "1163649614": {}, // dead messenger catalysts
       "3628100770": {}, // le monarque catalysts
+    },
+  },
+  "season_17": {
+    "name": "Season of the Haunted",
+    "category": "Seals",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008458,
+    "other_node_hashes": [
+      1267192217, // quests
+      1321501307, // derelict leviathan
+      3212312368, // sever
+      4154823524, // gear
+      2551992318, // general
+    ],
+    "collectibles": {
+      "2589037677": {}, // second chance
+      "3436952293": {}, // caliban's hand
+      "1179882117": {}, // rain of fire
+      // "TODO": {}, // trespasser
+    },
+    "records": {
+      // "3022631571": {}, // trespasser catalyst
+      // "1060652297": {}, // jotunn catalyst
     },
   },
 
@@ -406,25 +440,6 @@
       // "4188684306": {}, // Ennead emblem (part of Remember Your Manners triumph)
       "1469913803": {}, // Harbinger's Echo sparrow (destroy all eggs, may get count of 40 for triumph before actually shooting them all)
       "1469913807": {}, // Silver Tercel Sparrow
-    },
-  },
-  "tangled_shore": {
-    "name": "Tangled Shore",
-    "category": "Seals",
-    "subcategory": "Destination",
-    "other_node_hashes": [
-      1128540555, // baron hunts
-      1764843934, // challenges
-      4294103237, // exploration
-      1876261587, // public events
-    ],
-    "collectibles": {
-      "1335453329": {}, // Wing of the Crow emblem
-      "326386367": {}, // Eye for an Eye emblem
-      "1335453328": {}, // Untangled emblem
-      "2712527116": {}, // Secret Treasure emblem
-      "1282368191": {}, // Tangled Rust shader
-      "1282368190": {}, // Tangled Bronze shader
     },
   },
   "nessus": {
@@ -508,9 +523,16 @@
       "327081021": {}, // Excavation Site XII
       "3685948858": {},
       "984829568": {},
-      "549937976": {}, // The Quearry
+      "1826406083": {}, // Skydock IV
+      "3797565680": {},
+      "4188160886": {},
+      "549937976": {}, // The Quarry
       "2065841479": {},
       "3992532131": {},
+      "826199137": {}, // Discover all nessus lost sectors
+      "1921813179": {}, // The Conflux
+      "2326997944": {},
+      "2763188030": {},
       "326823079": {}, // Any throne world on master
       "3139513784": {}, // Metamorphosis
       "360449991": {},
@@ -599,6 +621,17 @@
       "1855685192": {}, // Gjallarhorn catalyst
     },
   },
+  "duality": {
+    "name": "Duality",
+    "category": "Dungeons",
+    "subcategory": null,
+    "other_node_hashes": [854126634],
+    "badge_node_hash": 3487512928,
+    "records": {
+      "1629497825": {}, // likely the exotic catalyst
+      // TODO catalyts, patterns, rename or number anything, collections, etc.
+    },
+  },
 
   "vox_obscura": {
     "name": "Vox Obscura",
@@ -617,6 +650,30 @@
     "other_node_hashes": [],
     "records": {},
     "disable_reason": "in development",
+  },
+  "patterns": {
+    "name": "Patterns",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [
+      2466515452, //  Auto Rifles
+      562256900, //  Bows
+      2174454731, // Hand Cannons
+      1815606972, // Pulse Rifles
+      2771358255, // Scout Rifles
+      2643617127, // Sidearms
+      3422198227, //  Submachine Guns
+      763392524, // Fusion Rifles
+      504540513, // Glaives
+      3041083254, // Grenade Launchers
+      2214033295, // Shotguns
+      1976161427, // Sniper Rifles
+      2274332758, // Grenade Launchers
+      2974919686, // Linear Fusion Rifles
+      2522335688, //   Machine Guns
+      809824136, // Rocket Launchers
+      1685993152, // Swords
+    ],
   },
   "catalysts": {
     "name": "Catalysts",
@@ -649,11 +706,19 @@
       "737130625": {"column_name": "Riven's Curse", "suppress": true}, // not acquireable
     },
   },
+  "seasonal_challenges_17": {
+    "name": "Seasonal Challenges (Haunted)",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [797819882, 3127313204, 1140727173, 3127313206, 3127313201, 3127313200, 3127313203, 3127313202, 3127313213, 3127313212, 2754218732],
+    "records": {},
+  },
   "seasonal_challenges_16": {
     "name": "Seasonal Challenges (Risen)",
     "category": "Other",
     "subcategory": null,
-    "other_node_hashes": [2385149757, 2385149758, 2385149759, 2385149752, 2385149753, 2385149754, 2385149755, 2385149748, 2385149749, 166087991],
+    "other_node_hashes": [2119135356],
+    // "other_node_hashes": [2385149757, 2385149758, 2385149759, 2385149752, 2385149753, 2385149754, 2385149755, 2385149748, 2385149749, 166087991],
     "records": {},
   },
   // "seasonal_challenges_15": { // Removed with start of Season 16
@@ -710,30 +775,17 @@
     "subcategory": null,
     "other_node_hashes": [4277365833],
   },
-
-  "patterns": {
-    "name": "Patterns",
-    "category": "Collections",
+  "guardian_games_2022": {
+    "name": "Guardian Games 2022",
+    "category": "Events",
     "subcategory": null,
-    "other_node_hashes": [
-      2466515452, //  Auto Rifles
-      562256900, //  Bows
-      2174454731, // Hand Cannons
-      1815606972, // Pulse Rifles
-      2771358255, // Scout Rifles
-      2643617127, // Sidearms
-      3422198227, //  Submachine Guns
-      763392524, // Fusion Rifles
-      504540513, // Glaives
-      3041083254, // Grenade Launchers
-      2214033295, // Shotguns
-      1976161427, // Sniper Rifles
-      2274332758, // Grenade Launchers
-      2974919686, // Linear Fusion Rifles
-      2522335688, //   Machine Guns
-      809824136, // Rocket Launchers
-      1685993152, // Swords
-    ],
+    "other_node_hashes": [1734254471],
+  },
+  "guardian_games_2022_medals": {
+    "name": "Guardian Games 2022 Medals",
+    "category": "Events",
+    "subcategory": null,
+    "other_node_hashes": [3856185547],
   },
 
   // TODO collectibles
@@ -800,6 +852,18 @@
   //   "subcategory": null,
   //   "checklist_hash": 3975225462,
   // },
+  "lucent_moths": {
+    "name": "Lucent Moths",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 3373333905,
+  },
+  "darkness_rifts": {
+    "name": "Darkness Rifts",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 3089927156,
+  },
 
   "mmxxi": {
     "name": "Moments of Triumph 2021",
@@ -1047,6 +1111,26 @@
       2675905563, // hunt/12 strikes
       1427965125, // tangled shore strikes
     ],
+  },
+
+  "tangled_shore": {
+    "name": "Tangled Shore",
+    "category": "Legacy",
+    "subcategory": "Destination",
+    "other_node_hashes": [
+      1128540555, // baron hunts
+      1764843934, // challenges
+      4294103237, // exploration
+      1876261587, // public events
+    ],
+    "collectibles": {
+      "1335453329": {}, // Wing of the Crow emblem
+      "326386367": {}, // Eye for an Eye emblem
+      "1335453328": {}, // Untangled emblem
+      "2712527116": {}, // Secret Treasure emblem
+      "1282368191": {}, // Tangled Rust shader
+      "1282368190": {}, // Tangled Bronze shader
+    },
   },
 
   "leviathan": {

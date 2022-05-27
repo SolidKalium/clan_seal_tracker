@@ -75,6 +75,8 @@ rewrite front end to provide better realtime info in browser? (use js)
 track historical triumph values?
 look into php 7 features
 if automatically checking player data frequently, could add custom events to send to discord
+  For example, notify users of mods they are missing being on sale
+  Integration with Charlemagne LFG to show progress for the relevant activity and users that have joined (plus maybe those who have commented)
 
 --- Other project ideas
 Charlemagne calendar link?

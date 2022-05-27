@@ -920,7 +920,7 @@ function estimate_player_record_progress($record) {
   } else if (!empty($record['intervalObjectives'])) {
     $count = 1;
     $objective = end($record['intervalObjectives']);
-    $progress += min(1, $objective['progress'] / max(1, $objective['completionValue']));
+    $progress += min(1, $objective['progress'] ?? 0 / max(1, $objective['completionValue']));
   } else if (isset($record['state'])) {
     // state is not normally on a record.
     // example: season 12 trials confidence is high.
@@ -1023,7 +1023,7 @@ function get_player_objective_state($record, $key) {
   if (
     !empty($record['intervalObjectives']) &&
     !$objective['complete'] &&
-    $objective['progress']
+    ($objective['progress'] ?? 0)
   ) {
     // sometimes a particular record with one interval complete will return state 7 instead of state 6 for all such players
     // example: EDZ lost sectors
@@ -1042,7 +1042,7 @@ function get_player_objective_state($record, $key) {
     'hidden' => ($record['state'] & 16) && !$complete,
     'unowned' => $record['state'] & 32,
     // 'title' => $record['state'] & 64,
-    'progress' => !$complete && ($objective['progress'] > 0),
+    'progress' => !$complete && (($objective['progress'] ?? 0) > 0),
   );
 
   return implode(' ', array_keys(array_filter($enums)));
