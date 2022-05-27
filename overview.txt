@@ -31,6 +31,7 @@
 - Several ids are automatically populated on column and row headings
 - There are some useful functions in include.php
 - Run the server locally with `php -S localhost:8000` in the project folder
+- If some profiles have old data, you can force an update for all clan members with: `members.php?refresh`
 
 
 ////////// Key concepts

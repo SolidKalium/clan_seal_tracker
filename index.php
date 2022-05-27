@@ -957,7 +957,7 @@ function update_player_data_for_collectible_heading(&$player_data, $profile, $he
       $state = $profile['profileCollectibles']['data']['collectibles'][$heading['collectible_hash']]['state'] ?? 3;
     } else {
       $character_collectibles = reset($profile['characterCollectibles']['data']);
-      $state = $character_collectibles['collectibles'][$heading['collectible_hash']]['state'];
+      $state = $character_collectibles['collectibles'][$heading['collectible_hash']]['state'] ?? 1;
     }
 
     $state_text += array_filter(array(

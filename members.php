@@ -2,20 +2,25 @@
 
 include 'include.php';
 
-// $get_csv = 
-$members = get_clan_members();
+$format = strtolower($_GET['format'] ?? 'member_table');
+$force_refresh = isset($_GET['refresh']);
 
+$members = get_clan_members($force_refresh);
 array_multisort(array_column($members, 'joined_clan'), SORT_ASC, $members);
 
-// TODO make sorting or view type configurable via url?
-// echo get_csv($members), PHP_EOL;
-// display_table($members);
-display_member_table($members);
+if ($format === 'csv') {
+  echo get_csv($members), PHP_EOL;
+} else if ($format === 'table') {
+  display_table($members);
+} else if ($format === 'member_table') {
+  display_member_table($members);
+}
 
 
 
-function get_clan_members() {
-  $members = groups::get_group_members(4331943);
+function get_clan_members($force_refresh) {
+  $members = groups::get_group_members(get_setting("group_id"));
+  profiles::precache_players($members, $force_refresh);
 
   $membership_types = array(
     1 => array('name' => 'xbox', 'icon' => 'xboxLiveLogo'),

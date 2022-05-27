@@ -225,11 +225,11 @@ class profiles {
   }
 
 
-  public static function precache_players($players) {
-    self::_precache_players($players);
+  public static function precache_players($players, $force_refresh = false) {
+    self::_precache_players($players, $force_refresh);
     gc_collect_cycles(); // bonus magic
   }
-  private static function _precache_players($players) {
+  private static function _precache_players($players, $force_refresh) {
     $queue = array();
 
     foreach ($players as $player) {
@@ -237,7 +237,7 @@ class profiles {
       if (!empty($player['isOnline'])) {
         $last_seen = time(); // last seen now
       }
-      if (!self::_use_cache($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId'], $last_seen)) {
+      if ($force_refresh || !self::_use_cache($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId'], $last_seen)) {
         $queue[] = $player;
       }
     }
