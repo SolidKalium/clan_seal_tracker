@@ -625,10 +625,12 @@
     "name": "Duality",
     "category": "Dungeons",
     "subcategory": null,
-    "other_node_hashes": [854126634],
+    "seal_node_hash": 854126634,
+    "other_node_hashes": [4032492628],
     "badge_node_hash": 3487512928,
     "records": {
-      "911294620": {"number_objectives": true}, // mind hesit (collectibles)
+      "2105786548": {"column_name": "Badge"},
+      "911294620": {"number_objectives": true}, // mind heist (collectibles)
       "2388189655": {"column_name": "Clan"}, // united in secrecy
       "3952021245": {"column_name": "Arc"},
       "1801613309": {"column_name": "Void"},
@@ -636,7 +638,7 @@
       "3200960029": {"column_name": "Class"},
       "1968204778": {}, // epicurean
       "2547048326": {}, // fixed odds
-      "1629497825": {}, // likely the exotic catalyst
+      "1629497825": {}, // exotic catalyst
     },
   },
 
