@@ -517,9 +517,9 @@
       "2425653583": {}, // The Empty Tank
       "797277988": {},
       "1085039026": {},
-      "566963956": {}, // Scavenger's Den
-      "1282520811": {},
-      "2462339247": {},
+      // "566963956": {}, // Scavenger's Den
+      // "1282520811": {},
+      // "2462339247": {},
       "327081021": {}, // Excavation Site XII
       "3685948858": {},
       "984829568": {},
@@ -628,8 +628,15 @@
     "other_node_hashes": [854126634],
     "badge_node_hash": 3487512928,
     "records": {
+      "911294620": {"number_objectives": true}, // mind hesit (collectibles)
+      "2388189655": {"column_name": "Clan"}, // united in secrecy
+      "3952021245": {"column_name": "Arc"},
+      "1801613309": {"column_name": "Void"},
+      "1864837600": {"column_name": "Solar"},
+      "3200960029": {"column_name": "Class"},
+      "1968204778": {}, // epicurean
+      "2547048326": {}, // fixed odds
       "1629497825": {}, // likely the exotic catalyst
-      // TODO catalyts, patterns, rename or number anything, collections, etc.
     },
   },
 
