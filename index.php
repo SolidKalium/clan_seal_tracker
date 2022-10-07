@@ -74,6 +74,7 @@ route();
 
 // Low priority list
   // for sets of gear in a collection, change text color to gold for each letter representing a class with a complete set
+  // Page for moon collectibles? Can check using vendor bounties (Per character)
 
 // Not fixing list
   // certain gear sets have very different names from each other and should be normalized to just the gear type
