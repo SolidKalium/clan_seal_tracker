@@ -29,7 +29,7 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // "medalsRootNodeHash": 3901403713,
 // "exoticCatalystsRootNodeHash": 511607103, // just catalysts (old view)
 // "loreRootNodeHash": 1993337477,
-// "craftingRootNodeHash": 3937826784,
+// "craftingRootNodeHash": 3937826784, // does not have unlock progress
 // "seasonalChallengesPresentationNodeHash": 3443694067,
 display_node_hierarchy(1866538467, 2);
 

@@ -470,7 +470,7 @@ function get_headings($page, $type = null) {
           ($intervals_text) .
           (!empty($record['expirationInfo']['description']) ? "\n" . $record['expirationInfo']['description'] : '') .
           (!empty($record['requirements']['entitlementUnavailableMessage']) ? "\n" . $record['requirements']['entitlementUnavailableMessage'] : ''),
-        'icon' => $record['displayProperties']['icon'],
+        'icon' => $record['displayProperties']['icon'] ?? null,
         'objectives' => $heading_objectives,
         'interval_objectives' => $heading_interval_objectives,
         'scope' => $record['scope'], // 0 account, 1 character

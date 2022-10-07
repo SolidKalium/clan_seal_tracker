@@ -2,7 +2,8 @@
 --- Setup this project to run on your own server
 - Checkout this git repository on your server
 - Register for a developer app at https://www.bungie.net/en/Application
-- Select public auth to enable a few features (TODO in development. private might allow longer times between authorizations)
+  - Select public auth to enable a few features (TODO in development. private might allow longer times between authorizations)
+  - The application is automatically approved and can be edited later.
 - Create settings.json and add your api key and clan group_id
 - There are no dependencies to install, put you'll need PHP with CURL
 - Each profile fetch API call needs seconds and megabytes of data, so everything is cached in files. You may need to enable folder and file creation/editing for the profiles/ and definitions/ directories.

@@ -173,6 +173,48 @@
       "2817568609": {}, // Collective Obligation
     },
   },
+  "kings_fall": {
+    "name": "King's Fall",
+    "category": "Seals",
+    "subcategory": "Raid",
+    "seal_node_hash": 2613142083,
+    "badge_node_hash": 3509969063,
+    "other_node_hashes": [
+      3596566041,
+    ],
+    "records": {
+      "4268824781": {"column_name": "Badge"},
+      "1594888684": {"column_name": "Chests", "number_objectives": true},
+      "2579096068": {"column_name": "Day 1",  "number_objectives": true},
+      "1360511082": {"column_name": "Flawless"},
+      "70932677": {"column_name": "Clan"},
+      "1760261415": {"column_name": "Arc", "number_objectives": true},
+      "3147255355": {"column_name": "Void", "number_objectives": true},
+      "3666607158": {"column_name": "Solar", "number_objectives": true},
+      "3539714738": {"column_name": "Stasis", "number_objectives": true},
+      "1329091971": {"column_name": "Class", "number_objectives": true},
+      "3388215749": {"column_name": "Master Difficulty"},
+      "2120297138": {"column_name": "Master Challenges", "number_objectives": true},
+      "2069837521": {}, // smite of merain pattern
+      "3650227809": {}, // doom of chelchis pattern
+      "437884069": {}, // zaouli's bane pattern
+      "2546821156": {}, // midha's reckoning pattern
+      "3255215894": {}, // defiance of yasmin pattern
+      "750389420": {}, // qullim's terminus pattern
+      "773758208": {}, // Touch of Malice catalyst
+    },
+    "collectibles": {
+      "2408235829": {}, // mods
+      "2408235828": {},
+      "2408235831": {},
+      "2408235830": {},
+      "1734594003": {},
+      "3956066174": {},
+      "38314821": {},
+      "2180234436": {},
+      "192937277": {}, // Touch of Malice
+    },
+  },
 
   "crucible": {
     "name": "Crucible",
@@ -336,6 +378,12 @@
     "seal_node_hash": 2185719388,
     "records": {
       "1770021330": {"number_objectives": true}, // richest dead man alive
+      "385553757": {}, // BxR-55 Battler pattern
+      "834963888": {}, // Pardon Our Dust pattern
+      "631089354": {}, // Wastelander M5 pattern
+      "1254331510": {}, // Retraced Path pattern
+      "3735490332": {}, // Half-truths pattern
+      "3735490333": {}, // The Other Half pattern
       "1855685192": {}, // Gjallarhorn catalyst
       "3574136388": {}, // Forerunner catalyst
       "3835718947": {}, // Arbalest catalyst
@@ -414,6 +462,30 @@
     "records": {
       "3022631571": {}, // trespasser catalyst
       "1060652297": {}, // jotunn catalyst
+    },
+  },
+  "season_18": {
+    "name": "Season of Plunder",
+    "category": "Seals",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008453,
+    "other_node_hashes": [
+      2994180523, // quests
+      155343661, // ketchcrash
+      104852044, // expedition
+      823209491, // gear
+      3564406313, // community event
+      3598863561, // general
+    ],
+    "collectibles": {
+      "3849432554": {}, // point-contact cannon brace
+      "2330682964": {}, // gyrfalcon's hauberk
+      "3161668545": {}, // fallen sunstar
+      "1977134032": {}, // delicate tomb
+    },
+    "records": {
+      "3318895306": {}, // delicate tomb catalyst
+      "2571854597": {}, // thunderlord catalyst
     },
   },
 
@@ -517,9 +589,9 @@
       "2425653583": {}, // The Empty Tank
       "797277988": {},
       "1085039026": {},
-      // "566963956": {}, // Scavenger's Den
-      // "1282520811": {},
-      // "2462339247": {},
+      "566963956": {}, // Scavenger's Den
+      "1282520811": {},
+      "2462339247": {},
       "327081021": {}, // Excavation Site XII
       "3685948858": {},
       "984829568": {},
@@ -665,21 +737,22 @@
     "category": "Other",
     "subcategory": null,
     "other_node_hashes": [
-      2466515452, //  Auto Rifles
-      562256900, //  Bows
+      2466515452, // Auto Rifles
+      562256900, // Bows
       2174454731, // Hand Cannons
       1815606972, // Pulse Rifles
       2771358255, // Scout Rifles
       2643617127, // Sidearms
-      3422198227, //  Submachine Guns
+      3422198227, // Submachine Guns
       763392524, // Fusion Rifles
       504540513, // Glaives
       3041083254, // Grenade Launchers
       2214033295, // Shotguns
       1976161427, // Sniper Rifles
+      2692213777, // Trace Rifles
       2274332758, // Grenade Launchers
       2974919686, // Linear Fusion Rifles
-      2522335688, //   Machine Guns
+      2522335688, // Machine Guns
       809824136, // Rocket Launchers
       1685993152, // Swords
     ],
@@ -715,11 +788,41 @@
       "737130625": {"column_name": "Riven's Curse", "suppress": true}, // not acquireable
     },
   },
+  "exotic_weapons": {
+    "name": "Exotic Weapons",
+    "category": "Other",
+    "subcategory": null,
+    "suppress_seasonal_mods": true,
+    "other_node_hashes": [
+      2969886327, // kinetic
+      3919988882, // energy
+      1139971093, // power
+    ],
+  },
+  "exotic_armor": {
+    "name": "Exotic Armor",
+    "category": "Other",
+    "subcategory": null,
+    "suppress_seasonal_mods": true,
+    "other_node_hashes": [
+      2598675734, // titan
+      2765771634, // hunter
+      1573256543, // warlock
+    ],
+  },
+  "seasonal_challenges_18": {
+    "name": "Seasonal Challenges (Plunder)",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [1911772891, 1911772888, 1911772889, 1911772894, 1911772895, 1911772892, 1911772893, 1911772882, 1911772883, 1024572145],
+    "records": {},
+  },
   "seasonal_challenges_17": {
     "name": "Seasonal Challenges (Haunted)",
     "category": "Other",
     "subcategory": null,
-    "other_node_hashes": [797819882, 3127313204, 1140727173, 3127313206, 3127313201, 3127313200, 3127313203, 3127313202, 3127313213, 3127313212, 2754218732],
+    "other_node_hashes": [2119135357],
+    // "other_node_hashes": [797819882, 3127313204, 1140727173, 3127313206, 3127313201, 3127313200, 3127313203, 3127313202, 3127313213, 3127313212, 2754218732],
     "records": {},
   },
   "seasonal_challenges_16": {
@@ -796,6 +899,19 @@
     "subcategory": null,
     "other_node_hashes": [3856185547],
   },
+  "reveler": {
+    "name": "Events",
+    "category": "Events",
+    "subcategory": null,
+    "seal_node_hash": 2594486939, // For some reason, these triumphs don't have icons
+  },
+  "solstice": {
+    "name": "Solstice",
+    "category": "Events",
+    "subcategory": null,
+    "seal_node_hash": 3598951881,
+  },
+  // TODO challenge card? (per character?) Challenge completion count is already on the seal
 
   // TODO collectibles
   // emblems (filter out empty names)

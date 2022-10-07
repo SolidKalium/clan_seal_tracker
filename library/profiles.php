@@ -208,6 +208,7 @@ class profiles {
       3 => 'Steam',
       4 => 'Blizzard',
       5 => 'Stadia',
+      6 => 'Epic',
       10 => 'Demon',
       254 => 'BungieNext',
     );

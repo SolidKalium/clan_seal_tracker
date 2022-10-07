@@ -23,25 +23,33 @@ function get_clan_members($force_refresh) {
   profiles::precache_players($members, $force_refresh);
 
   $membership_types = array(
+    // https://www.bungie.net/img/theme/destiny/icons/{icon}.png // color logos on profile page
+    // https://www.bungie.net/7/ca/bungie/icons/logos/egs/icon.png // white logos on identity settings page
     1 => array('name' => 'xbox', 'icon' => 'xboxLiveLogo'),
     2 => array('name' => 'playstation', 'icon' =>  'psnLogo'),
     3 => array('name' => 'steam', 'icon' =>  'steamLogo'),
     4 => array('name' => 'blizzard', 'icon' =>  ''), // DEPRECATED. This info is no longer returned
-    5 => array('name' => 'stadia', 'icon' => 'icon_stadia'),
+    5 => array('name' => 'stadia', 'icon' => 'icon_stadia'), // will be deprecated :(
+    6 => array('name' => 'epic', 'icon' => 'icon_egs'), // Epic Game Store
+    // 10 => array('name' => 'demon', 'icon' => ''), // ?
+    // 254 => array('name' => 'bungie next', 'icon' => ''), // bungie.net
   );
 
   foreach ($members as $member) {
+    // echo_pretty_json($member);
     $row = array(
       // 'member_type' => $member['destinyUserInfo']['membershipType'],
       // 'member_id' => $member['destinyUserInfo']['membershipId'],
-      'bungie_name' => $member['bungieNetUserInfo']['displayName'],
+      'bungie_name' => $member['bungieNetUserInfo']['displayName'] ?? '',
       // 'bungie_name2' => $member['bungieNetUserInfo']['bungieGlobalDisplayName'] ?? '', // gwsar14 and cobolkevb don't have this. I don't know why. The two names are otherwise the same
+      // cobolkevb no longer has bungieNetUserInfo
       'bungie_number' => $member['bungieNetUserInfo']['bungieGlobalDisplayNameCode'] ?? '',
-      'bungie_url' => 'https://www.bungie.net/7/en/User/Profile/' . $member['bungieNetUserInfo']['membershipType'] . '/' . $member['bungieNetUserInfo']['membershipId'], // type should always 254?
+      'bungie_url' => isset($member['bungieNetUserInfo']) ? 'https://www.bungie.net/7/en/User/Profile/' . $member['bungieNetUserInfo']['membershipType'] . '/' . $member['bungieNetUserInfo']['membershipId'] : null, // type should always 254?
       'stadia_name' => '',
       'xbox_name' => '',
       'playstation_name' => '',
       'steam_name' => '',
+      'epic_name' => '',
       // 'blizzard_name' => '',
       'last_seen' => date('Y-m-d H:i:s', $member['lastOnlineStatusChange']),
       'joined_clan' => date('Y-m-d H:i:s', strtotime($member['joinDate'])),
@@ -80,6 +88,7 @@ function display_member_table($members) {
       'Xbox' => get_name_span($member, 'xbox'),
       'PlayStation' => get_name_span($member, 'playstation'),
       'Steam' => get_name_span($member, 'steam'),
+      'Epic' => get_name_span($member, 'epic'),
     );
   }
 
