@@ -44,7 +44,8 @@ function get_clan_members($force_refresh) {
       // 'bungie_name2' => $member['bungieNetUserInfo']['bungieGlobalDisplayName'] ?? '', // gwsar14 and cobolkevb don't have this. I don't know why. The two names are otherwise the same
       // cobolkevb no longer has bungieNetUserInfo
       'bungie_number' => $member['bungieNetUserInfo']['bungieGlobalDisplayNameCode'] ?? '',
-      'bungie_url' => isset($member['bungieNetUserInfo']) ? 'https://www.bungie.net/7/en/User/Profile/' . $member['bungieNetUserInfo']['membershipType'] . '/' . $member['bungieNetUserInfo']['membershipId'] : null, // type should always 254?
+      'bungie_url' => isset($member['bungieNetUserInfo']) ? 'https://www.bungie.net/7/en/User/Profile/' . $member['bungieNetUserInfo']['membershipType'] . '/' . $member['bungieNetUserInfo']['membershipId'] : '', // type should always be 254?
+      'cross_save' => $member['destinyUserInfo']['crossSaveOverride'] ? $membership_types[$member['destinyUserInfo']['crossSaveOverride']]['name'] : '',
       'stadia_name' => '',
       'xbox_name' => '',
       'playstation_name' => '',
@@ -62,7 +63,7 @@ function get_clan_members($force_refresh) {
     //   echo_pretty_json($member);
     //   echo_pretty_json($profile['destinyMemberships']);
     // }
-    
+
 
     foreach ($profile['destinyMemberships'] as $membership) {
       $platform = $membership_types[$membership['membershipType']]['name'];
@@ -84,6 +85,7 @@ function display_member_table($members) {
   foreach($members as $member) {
     $rows[] = array(
       'Bungie' => get_name_span($member, 'bungie'),
+      'Cross-save' => ucfirst($member['cross_save']),
       'Stadia' => get_name_span($member, 'stadia'),
       'Xbox' => get_name_span($member, 'xbox'),
       'PlayStation' => get_name_span($member, 'playstation'),

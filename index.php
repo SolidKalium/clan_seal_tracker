@@ -55,6 +55,12 @@ route();
     // link from charlemagne lfg to that activity for those players (differentiate: joined/alt/maybe other commenters)
   // export as csv/excel?
 
+  // Some sort of clan dashboard?
+    // DLC ownership?
+    // Cross-save
+    // Wears helmet: profile.characterRenderData.data[{id}].customization.wearHelmet boolean
+    // Popular cosmetics: sparrows, ships, ghosts, emblems
+
   // table for each raid badge where the headers are encounters and subheaders are classes.
   //   Cell colors indicate status for completed that week, collected all drops for that encounter.
   //     Dark border and color if done that week?

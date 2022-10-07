@@ -195,12 +195,12 @@
       "1329091971": {"column_name": "Class", "number_objectives": true},
       "3388215749": {"column_name": "Master Difficulty"},
       "2120297138": {"column_name": "Master Challenges", "number_objectives": true},
-      "2069837521": {}, // smite of merain pattern
-      "3650227809": {}, // doom of chelchis pattern
-      "437884069": {}, // zaouli's bane pattern
-      "2546821156": {}, // midha's reckoning pattern
-      "3255215894": {}, // defiance of yasmin pattern
-      "750389420": {}, // qullim's terminus pattern
+      "2069837521": {}, // Smite of Merain pattern
+      "3650227809": {}, // Doom of Chelchis pattern
+      "437884069": {}, // Zaouli's Bane pattern
+      "2546821156": {}, // Midha's Reckoning pattern
+      "3255215894": {}, // Defiance of Yasmin pattern
+      "750389420": {}, // Qullim's Terminus pattern
       "773758208": {}, // Touch of Malice catalyst
     },
     "collectibles": {
@@ -410,6 +410,19 @@
       "1089205875": {}, // Edge of Intent 
     },
     "records": {
+      "311360599": {}, // Father's Sins pattern (Wellspring patterns)
+      "1507884969": {}, // Tarnation pattern
+      "3907981638": {}, // Fel Taradiddle pattern
+      "3863516258": {}, // Come to Pass pattern
+      "953028525": {}, // Syncopation-53 pattern (other patterns)
+      "689439417": {}, // Pointed Inquiry pattern
+      "4205772441": {}, // Empirical Evidence pattern
+      "1615038969": {}, // Forensic Nightmare pattern
+      "2107474614": {}, // Likely Suspect pattern
+      "1446423643": {}, // The Enigma pattern
+      "220342896": {}, // Ragnhild-D pattern
+      "3770251030": {}, // Red Herring pattern
+      "292832740": {}, // Palmyra-B pattern
       // "403175710": {}, // osteo striga pattern
       "494981303": {}, // osteo striga catalyst
     },
@@ -436,6 +449,12 @@
       // "4028619088": {}, // dead messenger
     },
     "records": {
+      "2115207174": {}, // Explosive Personality pattern
+      "3357460834": {}, // Recurrent Impact pattern
+      "930979915": {}, // Under Your Skin pattern
+      "1701593813": {}, // Sweeet Sorrow pattern
+      "3842442685": {}, // Thoughtless pattern
+      "3343946430": {}, // Piece of Mind pattern
       "263158944": {}, // grand overture catalysts
       // "1163649614": {}, // dead messenger catalysts
       "3628100770": {}, // le monarque catalysts
@@ -460,6 +479,18 @@
       "77226437": {}, // trespasser
     },
     "records": {
+      "3693097974": {}, // Tears of Contrition pattern (Haunted weapons)
+      "2177815995": {}, // Hollow Denial pattern
+      "1691359215": {}, // Nezarec's Whisper pattern
+      "2330294643": {}, // Bump in the Night pattern
+      "2511032639": {}, // Firefright pattern
+      "2126241222": {}, // Without Remorse pattern
+      "1444412985": {}, // Austringer pattern (Opulent weapons)
+      "826543773": {}, // Drang (Baroque) pattern
+      "2258742229": {}, // CALUS Mini-Tool pattern
+      "1968204778": {}, // Epicurean pattern
+      "662547074": {}, // Beloved pattern
+      "2547048326": {}, // Fixed Odds pattern
       "3022631571": {}, // trespasser catalyst
       "1060652297": {}, // jotunn catalyst
     },
@@ -484,6 +515,18 @@
       "1977134032": {}, // delicate tomb
     },
     "records": {
+      "146759633": {}, // Tarnished Mettle pattern (Plunder weapons)
+      "2158979729": {}, // Blood Fued pattern
+      "1544481626": {}, // Brigand's Law pattern
+      "3587005520": {}, // No Reprieve pattern
+      "1389390726": {}, // Sailspy Pitchglass pattern
+      "3257403871": {}, // Planck's Stride pattern
+      "122415725": {}, // Ammit AR2 pattern (other new weapons)
+      "4013775975": {}, // Taipan-4fr pattern
+      // "1388873285": {}, // Imperial Decree pattern (new but not available weapons)
+      // "3091520691": {}, // Goldtusk pattern
+      // "3091520690": {}, // Death's Razor pattern
+      // "3091520689": {}, // Throne-Cleaver pattern
       "3318895306": {}, // delicate tomb catalyst
       "2571854597": {}, // thunderlord catalyst
     },
@@ -708,9 +751,9 @@
       "1801613309": {"column_name": "Void"},
       "1864837600": {"column_name": "Solar"},
       "3200960029": {"column_name": "Class"},
-      "1968204778": {}, // epicurean
-      "2547048326": {}, // fixed odds
-      "1629497825": {}, // exotic catalyst
+      "1968204778": {}, // The Epicurean pattern
+      "2547048326": {}, // Fixed Odds pattern
+      "1629497825": {}, // Heartshadow catalyst
     },
   },
 
@@ -931,8 +974,20 @@
   // ornaments?
   // medals?
 
-  // Lost Sectors
-  // Region Chests
+  "region_chests": {
+    "name": "Region Chests",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 1697465175,
+  },
+  // "lost_sector_checklist": {
+  //   "name": "Lost Sectors",
+  //   "category": "Checklists",
+  //   "subcategory": null,
+  //   "checklist_hash": 3142056444,
+  //   // Override names?
+  //   // Deal with per-character info?
+  // },
   "corrupted_eggs": {
     "name": "Corrupted Eggs",
     "category": "Checklists",
@@ -945,8 +1000,19 @@
     "subcategory": null,
     "checklist_hash": 1297424116,
   },
-  // Jade Rabbits
-  // Dead Ghosts
+  // "jade_rabbits": {
+  //   "name": "Jade Rabbits",
+  //   "category": "Checklists",
+  //   "subcategory": null,
+  //   "checklist_hash": 1912364094,
+  //   // Deal with per-character info?
+  // },
+  "dead_ghosts": {
+    "name": "Dead Ghosts",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 1856270404,
+  },
   "cat_statues": {
     "name": "Cat Statues",
     "category": "Checklists",
