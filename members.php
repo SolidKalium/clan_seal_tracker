@@ -9,6 +9,7 @@ $members = get_clan_members($force_refresh);
 array_multisort(array_column($members, 'joined_clan'), SORT_ASC, $members);
 
 if ($format === 'csv') {
+  header("Content-disposition: attachment; filename=\"members.csv\"");
   echo get_csv($members), PHP_EOL;
 } else if ($format === 'table') {
   display_table($members);
@@ -36,7 +37,15 @@ function get_clan_members($force_refresh) {
   );
 
   foreach ($members as $member) {
-    // echo_pretty_json($member);
+    // echo_pretty_json($member); exit();
+
+    $profile = profiles::get($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
+    // echo_pretty_json($profile); exit();
+
+    $versions_owned = $profile['profile']['data']['versionsOwned'];
+    $season_hashes = $profile['profile']['data']['seasonHashes'] ?? array();
+    $event_card_hashes = $profile['profile']['data']['eventCardHashesOwned'] ?? array();
+
     $row = array(
       // 'member_type' => $member['destinyUserInfo']['membershipType'],
       // 'member_id' => $member['destinyUserInfo']['membershipId'],
@@ -45,18 +54,55 @@ function get_clan_members($force_refresh) {
       // cobolkevb no longer has bungieNetUserInfo
       'bungie_number' => $member['bungieNetUserInfo']['bungieGlobalDisplayNameCode'] ?? '',
       'bungie_url' => isset($member['bungieNetUserInfo']) ? 'https://www.bungie.net/7/en/User/Profile/' . $member['bungieNetUserInfo']['membershipType'] . '/' . $member['bungieNetUserInfo']['membershipId'] : '', // type should always be 254?
-      'cross_save' => $member['destinyUserInfo']['crossSaveOverride'] ? $membership_types[$member['destinyUserInfo']['crossSaveOverride']]['name'] : '',
       'stadia_name' => '',
       'xbox_name' => '',
       'playstation_name' => '',
       'steam_name' => '',
       'epic_name' => '',
       // 'blizzard_name' => '',
+      'twitch_name' => $profile['bungieNetUser']['twitchDisplayName'] ?? '',
+      'cross_save' => $member['destinyUserInfo']['crossSaveOverride'] ? $membership_types[$member['destinyUserInfo']['crossSaveOverride']]['name'] : '',
+      'last_platform' => $membership_types[$member['destinyUserInfo']['LastSeenDisplayNameType']]['name'],
       'last_seen' => date('Y-m-d H:i:s', $member['lastOnlineStatusChange']),
       'joined_clan' => date('Y-m-d H:i:s', strtotime($member['joinDate'])),
+      // https://bungie-net.github.io/multi/schema_Destiny-DestinyGameVersions.html
+      'owns_destiny2' => ($versions_owned & 1) && true,
+      'owns_dlc_1' => ($versions_owned & 2) && true,
+      'owns_dlc_2' => ($versions_owned & 4) && true,
+      'owns_forsaken' => ($versions_owned & 8) && true,
+      'owns_year_2_annual_pass' => ($versions_owned & 16) && true,
+      'owns_shadowkeep' => ($versions_owned & 32) && true,
+      'owns_beyond_light' => ($versions_owned & 64) && true,
+      'owns_30th_anniversary' => ($versions_owned & 128) && true,
+      'owns_witch_queen' => ($versions_owned & 256) && true,
+      'owns_light_fall' => ($versions_owned & 512) && true,
+      // 'owns_???' => ($versions_owned & 1024) && true, // just checking
+      // No one has the first 7 seasons.
+      // 'owns_season_1' => in_array('965757574', $season_hashes), // <No name>
+      // 'owns_season_2' => in_array('2973407602', $season_hashes), // Curse of Osiris
+      // 'owns_season_3' => in_array('4033618594', $season_hashes), // Resurgence
+      // 'owns_season_4' => in_array('2026773320', $season_hashes), // Outlaw
+      // 'owns_season_5' => in_array('2236269318', $season_hashes), // Forge
+      // 'owns_season_6' => in_array('2891088360', $season_hashes), // Drifter
+      // 'owns_season_7' => in_array('4275747712', $season_hashes), // Opulence
+      'owns_season_8' => in_array('1743682818', $season_hashes), // Undying
+      'owns_season_9' => in_array('1743682819', $season_hashes), // Dawn
+      'owns_season_10' => in_array('2809059425', $season_hashes), // Worthy
+      'owns_season_11' => in_array('2809059424', $season_hashes), // Arrivals
+      'owns_season_12' => in_array('2809059427', $season_hashes), // Hunt
+      'owns_season_13' => in_array('2809059426', $season_hashes), // Chosen
+      'owns_season_14' => in_array('2809059429', $season_hashes), // Splicer
+      'owns_season_15' => in_array('2809059428', $season_hashes), // Lost
+      'owns_season_16' => in_array('2809059431', $season_hashes), // Risen
+      'owns_season_17' => in_array('2809059430', $season_hashes), // Haunted
+      'owns_season_18' => in_array('2809059433', $season_hashes), // Plunder
+      'owns_season_19' => in_array('2809059432', $season_hashes), // ???
+      // Currently no other seasons in the dictionary (10/10/2022)
+      'owns_solstice_2022' => in_array('3841872876', $event_card_hashes),
+      // Fake solstice event cards? 3461628897, 2302439334. Fake event for new players? 3265920761.
+      // silver is only returned for logged-in profiles. $profile['platformSilver']['data'][membershipType]. Component 105
+      // Find ids using: https://data.destinysets.com/
     );
-
-    $profile = profiles::get($member['destinyUserInfo']['membershipType'], $member['destinyUserInfo']['membershipId']);
 
     // if ($member['bungieNetUserInfo']['displayName'] === '') {
     //   echo_pretty_json($row);
@@ -85,17 +131,54 @@ function display_member_table($members) {
   foreach($members as $member) {
     $rows[] = array(
       'Bungie' => get_name_span($member, 'bungie'),
-      'Cross-save' => ucfirst($member['cross_save']),
       'Stadia' => get_name_span($member, 'stadia'),
       'Xbox' => get_name_span($member, 'xbox'),
       'PlayStation' => get_name_span($member, 'playstation'),
       'Steam' => get_name_span($member, 'steam'),
       'Epic' => get_name_span($member, 'epic'),
+      'Twitch' => get_name_span($member, 'twitch'),
+      'Cross-save' => ucfirst($member['cross_save']),
+      'Last Platform' => ucfirst($member['last_platform']),
+      'Destiny 2' => $member['owns_destiny2'] ? 'Yes' : '',
+      'DLC1' => $member['owns_dlc_1'] ? 'Yes' : '',
+      'DLC2' => $member['owns_dlc_2'] ? 'Yes' : '',
+      'Forsaken' => $member['owns_forsaken'] ? 'Yes' : '',
+      'Year 2 Annual Pass' => $member['owns_year_2_annual_pass'] ? 'Yes' : '',
+      'Shadowkeep' => $member['owns_shadowkeep'] ? 'Yes' : '',
+      'Beyond Light' => $member['owns_beyond_light'] ? 'Yes' : '',
+      '30th Anniversary' => $member['owns_30th_anniversary'] ? 'Yes' : '',
+      'Witch Queen' => $member['owns_witch_queen'] ? 'Yes' : '',
+      'Light Fall' => $member['owns_light_fall'] ? 'Yes' : '',
+      // 'Owns ???' => $member['owns_???'] ? 'Yes' : '',
+      // 'Season 1' => $member['owns_season_1'] ? 'Yes' : '',
+      // 'Season 2' => $member['owns_season_2'] ? 'Yes' : '',
+      // 'Season 3' => $member['owns_season_3'] ? 'Yes' : '',
+      // 'Season 4' => $member['owns_season_4'] ? 'Yes' : '',
+      // 'Season 5' => $member['owns_season_5'] ? 'Yes' : '',
+      // 'Season 6' => $member['owns_season_6'] ? 'Yes' : '',
+      // 'Season 7' => $member['owns_season_7'] ? 'Yes' : '',
+      'Season 8' => $member['owns_season_8'] ? 'Yes' : '',
+      'Season 9' => $member['owns_season_9'] ? 'Yes' : '',
+      'Season 10' => $member['owns_season_10'] ? 'Yes' : '',
+      'Season 11' => $member['owns_season_11'] ? 'Yes' : '',
+      'Season 12' => $member['owns_season_12'] ? 'Yes' : '',
+      'Season 13' => $member['owns_season_13'] ? 'Yes' : '',
+      'Season 14' => $member['owns_season_14'] ? 'Yes' : '',
+      'Season 15' => $member['owns_season_15'] ? 'Yes' : '',
+      'Season 16' => $member['owns_season_16'] ? 'Yes' : '',
+      'Season 17' => $member['owns_season_17'] ? 'Yes' : '',
+      'Season 18' => $member['owns_season_18'] ? 'Yes' : '',
+      'Season 19' => $member['owns_season_19'] ? 'Yes' : '',
+      'Solstice 2022' => $member['owns_solstice_2022'] ? 'Yes' : '',
     );
   }
 
   // TODO Put icons in the header?
   display_table($rows);
+
+  echo "</br>" . PHP_EOL;
+  echo "Note: Entitlements are for the most recently logged-in platform </br>" . PHP_EOL;
+  echo "Stadia pro seasons may not show up when not on stadia or there is no stadia pro active" . PHP_EOL;
 }
 
 
@@ -124,6 +207,8 @@ function get_name_span($member, $type) {
   } else if ($type === 'steam') {
     // $url = 'https://steamcommunity.com/id/'.$name; // This won't always work
     $url = 'https://steamcommunity.com/search/users/#text='.$name;
+  } else if ($type === 'twitch') {
+    $url = 'https://www.twitch.tv/'.$name;
   }
   // PlayStation does not have profiles on the web
 

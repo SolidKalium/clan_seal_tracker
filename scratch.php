@@ -90,6 +90,7 @@ $activityHash = 548750096;
 // $result = bungie_api::api('/UserSystemOverrides/');
 // $result = bungie_api::api('/GlobalAlerts/');
 // $result = bungie_api::api('/Trending/Categories/'); // news
+// $result = bungie_api::api('/Content/Rss/NewsArticles/');
 // $result = bungie_api::api('/Destiny2/Milestones/'); // general milestone list
 // $result = bungie_api::api('/Destiny2/Milestones/{milestoneHash}/Content/'); // TODO
 // $result = bungie_api::api('/Destiny2/SearchDestinyPlayer/-1/SolidKalium/');
