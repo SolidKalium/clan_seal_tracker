@@ -954,7 +954,15 @@
     "subcategory": null,
     "seal_node_hash": 3598951881,
   },
-  // TODO challenge card? (per character?) Challenge completion count is already on the seal
+  "festival_of_the_lost": {
+    "name": "Festival of the Lost",
+    "category": "Events",
+    "subcategory": null,
+    "other_node_hashes": [2330977699],
+    "seal_node_hash": 2592822840,
+  },
+  // TODO challenge/event card? (per character?) Challenge completion count is already on the seal
+  // TODO seasonal vendor upgrades unlocked?
 
   // TODO collectibles
   // emblems (filter out empty names)

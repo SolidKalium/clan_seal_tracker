@@ -99,6 +99,7 @@ function get_clan_members($force_refresh) {
       'owns_season_19' => in_array('2809059432', $season_hashes), // ???
       // Currently no other seasons in the dictionary (10/10/2022)
       'owns_solstice_2022' => in_array('3841872876', $event_card_hashes),
+      'owns_festival_of_the_lost_2022' => in_array('3265920761', $event_card_hashes),
       // Fake solstice event cards? 3461628897, 2302439334. Fake event for new players? 3265920761.
       // silver is only returned for logged-in profiles. $profile['platformSilver']['data'][membershipType]. Component 105
       // Find ids using: https://data.destinysets.com/
@@ -170,6 +171,7 @@ function display_member_table($members) {
       'Season 18' => $member['owns_season_18'] ? 'Yes' : '',
       'Season 19' => $member['owns_season_19'] ? 'Yes' : '',
       'Solstice 2022' => $member['owns_solstice_2022'] ? 'Yes' : '',
+      'FotL 2022' => $member['owns_festival_of_the_lost_2022'] ? 'Yes' : '',
     );
   }
 

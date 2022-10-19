@@ -18,6 +18,7 @@
 - https://bungie-net.github.io/multi/index.html
 - https://github.com/Bungie-net/api/wiki/
 - https://www.light.gg/db/changes/
+- https://data.destinysets.com/
 - Destiny API Discussion: https://discord.gg/E5uB4BW
 
 --- Sites to compare against or look at for inspiration
@@ -26,6 +27,9 @@
 - https://bray.tech
   - Voluspa commonality data: https://b.vlsp.network/Common
 - https://destinysets.com/
+  - https://data.destinysets.com/api
+- https://altbdoor.github.io/d2-memento/
+- https://engram.blue/crafting
 - https://www.bungie.net/7/en/User/Profile/
 - https://github.com/vpzed/Destiny2-API-Info/wiki/Destiny-2-Open-Source-Projects (old)
 - https://www.reddit.com/r/DestinyTheGame/comments/jitt09/a_comprehensive_list_of_useful_external_destiny_2/
