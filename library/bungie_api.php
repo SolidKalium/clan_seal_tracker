@@ -207,6 +207,7 @@ class bungie_api {
       foreach ($expected as $key => $value) {
         if ($result[$key] !== $value) {
           echo_pretty_json($result);
+          echo_pretty_json($path);
           throw new Exception("Expected " . $key . " => " . json_encode($value) . ", but received " . json_encode($result[$key]));
         }
       }

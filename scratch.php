@@ -189,8 +189,6 @@ if (!empty($result)) {
   echo_pretty_json($result);
 }
 
-// list_clan_members();
-
 
 /** Quick dictionary reference 
  * presentationNodeType: 1 Category, 2 Collectibles, 3 Record. Note: The triumph for the GoS seal for completing the badge is of type record.

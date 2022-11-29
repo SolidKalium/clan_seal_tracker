@@ -331,6 +331,7 @@ class profiles {
       foreach ($profile_chs as $i => $ch) {
         $profile_text = curl_multi_getcontent($ch);
         if ($profile_text === false) {
+          echo_pretty_json(curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
           throw new Exception("curl_exec error for pre-cache profile $i " . curl_errno($ch) . ": " . curl_error($ch));
         }
         curl_multi_remove_handle($mh, $ch);
@@ -338,12 +339,33 @@ class profiles {
         if ($profile === null) {
           // NOTE: if the server isn't working, the response will be html
           echo htmlspecialchars($profile_text);
+          echo_pretty_json(curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
           throw new Exception("json_decode error for pre-cache profile $i " . json_last_error() . ": " . json_last_error_msg());
         }
         // unset($profile_text);
         foreach ($expected as $key => $value) {
           if ($profile[$key] !== $value) {
+            // if ($key === 'ErrorCode' && $profile[$key] === 1618) {
+            //   // Skip over the DestinyUnexpectedError, because there's nothing we can do about it
+            //   // Previously happened when the character data was unavailable due to the emblems on a character, possibly messed up by an update
+            //   // https://www.bungie.net/en/Forums/Post/262050968
+            //   $url_parts = explode('/', curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
+            //   $profile = array(
+            //     'Response' => array(
+            //       'profile' => array(
+            //         'data' => array(
+            //           'userInfo' => array(
+            //             'membershipType' => $url_parts[count($url_parts) - 4],
+            //             'membershipId' => $url_parts[count($url_parts) - 2]
+            //           )
+            //         )
+            //       )
+            //     )
+            //   );
+            //   break;
+            // }
             echo_pretty_json($profile);
+            echo_pretty_json(curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
             throw new Exception("pre-cache profile $i expected " . $key . " => " . json_encode($value) . ", but received " . json_encode($profile[$key]));
           }
         }
