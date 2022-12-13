@@ -7,6 +7,8 @@
   // Collectibles are handled a little awkwardly. In a more complex system, they might be a separate category that could optionally be combined with the badge, triumphs, an overall view, etc. Could be able to hide items that a reward for triumphs, to only show random drops, etc. Might use a separate mapping for collectible source data. Could tie raid/dungeon weapons to encounters at the same time.
   // Could also split/combine different pages of triumphs in custom ways? E.g. all Moon triumphs, nightmare hunt triumphs only, nightmare hunt triumphs + collectibles/mods, etc.
 
+  // Could add season ownership?
+
   "last_wish": {
     "name": "Last Wish",
     "category": "Seals",
@@ -90,6 +92,12 @@
       "3323713181": {"column_name": "Exo Logs", "number_objectives": true},
       "2699580344": {"column_name": "Day One", "number_objectives": true, "suppress": true},
       "3560923614": {"column_name": "Flawless", "suppress": true},
+      "924334687": {}, // Succession pattern
+      "399865831": {}, // Bequest pattern
+      "3370786210": {}, // Trustee pattern
+      "200612470": {}, // Posterity pattern
+      "4170453731": {}, // Heritage pattern
+      "633869177": {}, // Commemoration pattern
     },
     "collectibles": { // mods
       "2802279446": {}, // Herd Thinner
@@ -220,7 +228,7 @@
     "name": "Crucible",
     "category": "Seals",
     "subcategory": "Activity",
-    "seal_node_hash": 2107507397,
+    "seal_node_hash": 475207334,
     "badge_node_hash": 701100740,
     "hide_badge_unless_explicit": true,
     "other_node_hashes": [
@@ -531,6 +539,53 @@
       "2571854597": {}, // thunderlord catalyst
     },
   },
+  "season_19": {
+    "name": "Season of the Seraph",
+    "category": "Seals",
+    "subcategory": "Seasonal",
+    // "seal_node_hash": 1321008452, // TODO
+    "other_node_hashes": [
+      3563671414, // quests
+      1425512290, // gear
+      1356402617, // heist battlegrounds
+      3968203274, // exotic mission
+      2379774266, // secrets
+      172285384, // general
+    ],
+    "collectibles": {
+      "985132347": {}, // the manticore
+      // revision zero. There are two of these? 1161231112,760708739
+    },
+    "records": {
+      "2468174803": {"number_objectives": true}, // armor focus
+      "1554146513": {"number_objectives": true}, // weapon focus
+      "51293100": {"number_objectives": true}, // ikelos focus
+      "3394471563": {"number_objectives": true}, // armor collection
+      "4022708297": {"number_objectives": true}, // weapon collection
+      "929245926": {"number_objectives": true}, // ikelos collection
+      "3257786891": {"number_objectives": true}, // music theory I
+      "3257786888": {"number_objectives": true}, // music theory II
+      "3257786889": {"number_objectives": true}, // music theory III
+      "500197332": {"number_objectives": true}, // drone destruction I
+      "500197329": {"number_objectives": true}, // drone destruction II
+      "500197335": {"number_objectives": true}, // drone destruction III
+      "500197328": {"number_objectives": true}, // drone destruction IV
+      "500197331": {"number_objectives": true}, // drone destruction V
+      "500197334": {"number_objectives": true}, // drone destruction VI
+      "3172595571": {}, // Fire and Forget pattern (Seraph weapons)
+      "204031420": {}, // Tripwire Canary pattern
+      "3835559140": {}, // Disparity pattern
+      "1506999309": {}, // Path of Least Resistance pattern
+      "1778902326": {}, // Judgement of Kelgorath pattern
+      "3862297426": {}, // Retrofit Escapade pattern
+      "4070327399": {}, // HC pattern (Ikelos weapons)
+      "1366529950": {}, // SG pattern
+      "622035212": {}, // SR pattern
+      "692035983": {}, // SMG pattern
+      // "": {}, // flying monster catalyst. there are two classified catalysts: 1439993428, 1144463862
+      "1226048594": {}, // cloud strike catalyst
+    },
+  },
 
   "dreaming_city": {
     "name": "Dreaming City",
@@ -756,6 +811,24 @@
       "1629497825": {}, // Heartshadow catalyst
     },
   },
+  "spire": {
+    "name": "Spire of the Watcher",
+    "category": "Dungeons",
+    "subcategory": null,
+    "seal_node_hash": 4183969062,
+    "other_node_hashes": [3846053700],
+    "badge_node_hash": 2268797508,
+    "records": {
+      "905181048": {"column_name": "Badge"},
+      "3610349332": {"number_objectives": true}, // collectibles
+      "3006836031": {"column_name": "Clan", "number_objectives": true},
+      "3561230229": {"column_name": "Arc", "number_objectives": true},
+      "466074981": {"column_name": "Void", "number_objectives": true},
+      "1990962776": {"column_name": "Solar", "number_objectives": true},
+      "395235013": {"column_name": "Class", "number_objectives": true},
+      "185032465": {}, // Hierarchy of Needs catalyst
+    },
+  },
 
   "vox_obscura": {
     "name": "Vox Obscura",
@@ -853,11 +926,19 @@
       1573256543, // warlock
     ],
   },
+  "seasonal_challenges_19": {
+    "name": "Seasonal Challenges (Seraph)",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [2123469730, 2123469729, 2123469728, 2123469735, 2123469734, 2123469733, 2123469732, 2123469739, 2123469738, 3777718326],
+    "records": {},
+  },
   "seasonal_challenges_18": {
     "name": "Seasonal Challenges (Plunder)",
     "category": "Other",
     "subcategory": null,
-    "other_node_hashes": [1911772891, 1911772888, 1911772889, 1911772894, 1911772895, 1911772892, 1911772893, 1911772882, 1911772883, 1024572145],
+    "other_node_hashes": [2119135346],
+    // "other_node_hashes": [1911772891, 1911772888, 1911772889, 1911772894, 1911772895, 1911772892, 1911772893, 1911772882, 1911772883, 1024572145],
     "records": {},
   },
   "seasonal_challenges_17": {
@@ -960,6 +1041,12 @@
     "subcategory": null,
     "other_node_hashes": [2330977699],
     "seal_node_hash": 2592822840,
+  },
+  "dawning": {
+    "name": "The Dawning",
+    "category": "Events",
+    "subcategory": null,
+    "seal_node_hash": 3896035657,
   },
   // TODO challenge/event card? (per character?) Challenge completion count is already on the seal
   // TODO seasonal vendor upgrades unlocked?
@@ -1064,6 +1151,12 @@
     "checklist_hash": 3089927156,
   },
 
+  "mmxxii": {
+    "name": "Moments of Triumph 2022",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 1210906308,
+  },
   "mmxxi": {
     "name": "Moments of Triumph 2021",
     "category": "Legacy",
@@ -1093,6 +1186,12 @@
     "category": "Legacy",
     "subcategory": "Seals",
     "seal_node_hash": 3680676656,
+  },
+  "unbroken": {
+    "name": "Unbroken (through season 18)",
+    "category": "Legacy",
+    "subcategory": "Seals",
+    "seal_node_hash": 2107507397,
   },
   "conqueror_12": { // Hunt
     "name": "Conqueror (Season 12)",
