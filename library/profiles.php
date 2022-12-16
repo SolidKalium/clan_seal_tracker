@@ -222,6 +222,10 @@ class profiles {
       }
     }
 
+    if (!empty($profile_data['bungieNetUser']['twitchDisplayName'])) {
+      $names['Twitch'] = $profile_data['bungieNetUser']['twitchDisplayName'];
+    }
+
     return $names;
   }
 
