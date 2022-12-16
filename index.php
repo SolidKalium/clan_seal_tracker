@@ -38,6 +38,7 @@ route();
   //  some of these might be specified per page. E.g. has base seal.
   // easy option to disable sort complete to bottom? might support multiple sort orders in js
   // sort hidden to the bottom. tie-break on collections for all characters.
+  // Improve options to include/exclude triumphs that "don't count" in the totals
 
   // make a page that can select users?
   // pin one or more users to the top? (or just highlight them orange)
@@ -51,12 +52,12 @@ route();
 
   // a settings page where users can login and control which pages they show up on?
   // connect to discord?
-    // bot to ping people who don't have a mod when it is for sale
+    // bot to ping people who don't have a mod when it is for sale (braytech has a notification feature for this now)
     // link from charlemagne lfg to that activity for those players (differentiate: joined/alt/maybe other commenters)
   // export as csv/excel?
 
-  // Some sort of clan dashboard?
-    // DLC ownership?
+  // Some sort of clan dashboard? (this is the members page, but keeping ideas here for what a future version should include)
+    // DLC ownership? (add % members owning to column hover?)
     // Cross-save
     // Wears helmet: profile.characterRenderData.data[{id}].customization.wearHelmet boolean
     // Popular cosmetics: sparrows, ships, ghosts, emblems
