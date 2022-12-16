@@ -124,7 +124,7 @@ $membershipType = 5; $destinyMembershipId = 4611686018500895898;
 // display_hash_info(1661734046); // last wish activity, but old version
 // display_hash_info(3789021730); // group clan rewards milestone. two different lists? not found
 
-// display_hash_info(); // 
+// display_hash_info(); //
 // display_profile_milestones(5, 4611686018500895898);
 
 
@@ -190,7 +190,7 @@ if (!empty($result)) {
 }
 
 
-/** Quick dictionary reference 
+/** Quick dictionary reference
  * presentationNodeType: 1 Category, 2 Collectibles, 3 Record. Note: The triumph for the GoS seal for completing the badge is of type record.
  * toastStyle: 1 Record, 3 Badge, 4 MetaRecord, 7 GildedTitleComplete
  * privacy: 0 none, 1 public, 2 private
@@ -221,7 +221,7 @@ function list_all_seals($active = true) {
 
   $nodes = definitions::get('PresentationNode');
   $records = definitions::get('Record');
-  
+
   $root_hash = $active ? 616318467 : 1881970629;
 
   $root_seal_node = $nodes[$root_hash];

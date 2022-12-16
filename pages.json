@@ -417,7 +417,7 @@
       "4028619089": {}, // Parasite
       "328283190": {}, // Edge of Concurrence
       "3810283242": {}, // Edge of Action
-      "1089205875": {}, // Edge of Intent 
+      "1089205875": {}, // Edge of Intent
     },
     "records": {
       "311360599": {}, // Father's Sins pattern (Wellspring patterns)
@@ -545,7 +545,7 @@
     "name": "Season of the Seraph",
     "category": "Seals",
     "subcategory": "Seasonal",
-    // "seal_node_hash": 1321008452, // TODO
+    "seal_node_hash": 1321008452,
     "other_node_hashes": [
       3563671414, // quests
       1425512290, // gear

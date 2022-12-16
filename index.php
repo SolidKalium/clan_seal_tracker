@@ -135,7 +135,9 @@ function list_pages() {
           if (!empty($page['seal_node_hash'])) {
             $seal_node = $nodes[$page['seal_node_hash']];
             $seal_record = $records[$seal_node['completionRecordHash']];  // has title. ignore objective
-            $other_pages .= ' (<a href="?page=' . $page['key'] . '&type=seal">' . reset($seal_record['titleInfo']['titlesByGender']) . ' seal</a>)';
+            $seal_titles = $seal_record['titleInfo']['titlesByGender'] ?? array();
+            $seal_title = !empty($seal_titles) ? reset($seal_titles) : $seal_record['displayProperties']['name']; // Classified seals don't have titles
+            $other_pages .= ' (<a href="?page=' . $page['key'] . '&type=seal">' . $seal_title . ' seal</a>)';
           }
           if (
             !empty($page['badge_node_hash']) &&
@@ -175,7 +177,9 @@ function show_page($page_key, $type = null) {
     $seal_node = $nodes[$page['seal_node_hash']];
     $seal_record = $records[$seal_node['completionRecordHash']];
 
-    $title = reset($seal_record['titleInfo']['titlesByGender']) . ' (' . $page['name'] . ' Seal)';
+    $seal_titles = $seal_record['titleInfo']['titlesByGender'] ?? array();
+    $seal_title = !empty($seal_titles) ? reset($seal_titles) : $seal_record['displayProperties']['name']; // Classified seals don't have titles
+    $title = $seal_title . ' (' . $page['name'] . ' Seal)';
   } else if ($type === 'badge') {
     $nodes = definitions::get('PresentationNode');
 
@@ -198,7 +202,7 @@ function show_page($page_key, $type = null) {
   $rows = get_rows($page_key, $headings, $players);
   $max_completion = count($headings) - 1;
 
-  
+
   $th1 = '';
   $th2 = '';
   // $th_bg = '<tr><th colspan="' . count($headings) . '"" id="header-bg"></th</tr>'; // display none until loaded table-row?
@@ -364,7 +368,7 @@ function get_player_checklist_entry_td($player_data, $heading) {
 }
 function get_player_collectible_td($player_data, $heading) {
   // echo_pretty_json($heading, $player_data);
-  
+
   if (!empty($heading['collectible_hash'])) {
     $key = $heading['collectible_hash'];
   } else {
@@ -666,7 +670,7 @@ function get_normalized_item_name($item) {
     // Warlock: 2
     // Unknown: 3
 
-  // Note: this won't necessarily convert all three related items to the same name. E.g. Temptation's Mark and Cloak of Temptation 
+  // Note: this won't necessarily convert all three related items to the same name. E.g. Temptation's Mark and Cloak of Temptation
 
   if ($item['classType'] === 3) {
     return $item['displayProperties']['name'];
@@ -714,11 +718,11 @@ function get_normalized_item_name($item) {
       break;
     }
   }
-    
+
   if (!$normalized) {
     // Note: some of the older sets have completely different names for each class. Examples: crucible, forge
     // Exotics don't even remotely have a pattern
-    
+
     // echo 'possible name issue: ';
     // echo implode(' | ', array(
     //   'name: ' . $item['displayProperties']['name'],
@@ -811,7 +815,7 @@ function get_rows($page_key, $headings, $players) {
         echo_pretty_json($heading);
         throw new Exception('unhandled heading');
       }
-      
+
     }
     // if (
     //   ($page['require_at_least_one_record_hash'] ?? []) &&
