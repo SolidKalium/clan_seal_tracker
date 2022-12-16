@@ -7,7 +7,9 @@
   // Collectibles are handled a little awkwardly. In a more complex system, they might be a separate category that could optionally be combined with the badge, triumphs, an overall view, etc. Could be able to hide items that a reward for triumphs, to only show random drops, etc. Might use a separate mapping for collectible source data. Could tie raid/dungeon weapons to encounters at the same time.
   // Could also split/combine different pages of triumphs in custom ways? E.g. all Moon triumphs, nightmare hunt triumphs only, nightmare hunt triumphs + collectibles/mods, etc.
 
-  // Could add season ownership?
+  // Could add season ownership to each season page?
+  // Could add pages for season reward track being unlocked/claimed
+  // Could add page for artifact mods unlocked
 
   "last_wish": {
     "name": "Last Wish",

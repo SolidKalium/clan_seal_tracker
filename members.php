@@ -45,6 +45,8 @@ function get_clan_members($force_refresh) {
     $versions_owned = $profile['profile']['data']['versionsOwned'];
     $season_hashes = $profile['profile']['data']['seasonHashes'] ?? array();
     $event_card_hashes = $profile['profile']['data']['eventCardHashesOwned'] ?? array();
+    $character_progressions = $profile['characterProgressions']['data'] ?? array();
+    $character_progression = reset($character_progressions); // first character. Should be mostly the same across all characters
 
     $row = array(
       // 'member_type' => $member['destinyUserInfo']['membershipType'],
@@ -104,6 +106,9 @@ function get_clan_members($force_refresh) {
       // Fake solstice event cards? 3461628897.
       // silver is only returned for logged-in profiles. $profile['platformSilver']['data'][membershipType]. Component 105
       // Find ids using: https://data.destinysets.com/
+      'season_xp' => $profile['profileProgression']['data']['seasonalArtifact']['powerBonusProgression']['currentProgress'] ?? '',
+      'gifted_subs' => $character_progression['progressions']['2350534509']['currentProgress'] ?? '',
+      'match_reactions' => $character_progression['progressions']['1345591265']['currentProgress'] ?? '',
     );
 
     // if ($member['bungieNetUserInfo']['displayName'] === '') {
@@ -174,6 +179,9 @@ function display_member_table($members) {
       'Solstice 2022' => $member['owns_solstice_2022'] ? 'Yes' : '',
       'FotL 2022' => $member['owns_festival_of_the_lost_2022'] ? 'Yes' : '',
       'Dawning 2022' => $member['owns_dawning_2022'] ? 'Yes' : '',
+      'Seasonal Level' => is_numeric($member['season_xp']) ? number_format($member['season_xp'] / 100000, 2) : $member['season_xp'],
+      'Gifted Subs' => $member['gifted_subs'],
+      'Match Reactions' => $member['match_reactions'],
     );
   }
 
