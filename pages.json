@@ -226,6 +226,49 @@
       "192937277": {}, // Touch of Malice
     },
   },
+  // "root_of_nightmares": {
+  //   "name": "Root of Nightmares",
+  //   "category": "Seals",
+  //   "subcategory": "Raid",
+  //   "seal_node_hash": 1976056830,
+  //   "badge_node_hash": 1968454484,
+  //   "other_node_hashes": [
+  //     4114450368,
+  //   ],
+  //   "records": { // TODO
+  //     // "4268824781": {"column_name": "Badge"},
+  //     // "1594888684": {"column_name": "Chests", "number_objectives": true},
+  //     // "2579096068": {"column_name": "Day 1",  "number_objectives": true},
+  //     // "1360511082": {"column_name": "Flawless"},
+  //     // "70932677": {"column_name": "Clan"},
+  //     // "1760261415": {"column_name": "Arc", "number_objectives": true},
+  //     // "3147255355": {"column_name": "Void", "number_objectives": true},
+  //     // "3666607158": {"column_name": "Solar", "number_objectives": true},
+  //     // "3539714738": {"column_name": "Stasis", "number_objectives": true},
+  //     // "1329091971": {"column_name": "Class", "number_objectives": true},
+  //     // "3388215749": {"column_name": "Master Difficulty"},
+  //     // "2120297138": {"column_name": "Master Challenges", "number_objectives": true},
+  //     // "2069837521": {}, // Smite of Merain pattern
+  //     // "3650227809": {}, // Doom of Chelchis pattern
+  //     // "437884069": {}, // Zaouli's Bane pattern
+  //     // "2546821156": {}, // Midha's Reckoning pattern
+  //     // "3255215894": {}, // Defiance of Yasmin pattern
+  //     // "750389420": {}, // Qullim's Terminus pattern
+  //     // "773758208": {}, // Touch of Malice catalyst
+  //   },
+  //   "collectibles": {
+  //     // "2408235829": {}, // mods
+  //     // "2408235828": {},
+  //     // "2408235831": {},
+  //     // "2408235830": {},
+  //     // "1734594003": {},
+  //     // "3956066174": {},
+  //     // "38314821": {},
+  //     // "2180234436": {},
+  //     // "192937277": {}, // Touch of Malice
+  //     // TODO twitch emblems (but leave commented)
+  //   },
+  // },
 
   "crucible": {
     "name": "Crucible",
@@ -319,14 +362,14 @@
   //     3663146391, // devil's lair
   //     3176422761, // arms dealer
   //     2483704578, // proving grounds
-  //     2589774932, // warden
-  //     371577627, // saber
+  //     2589774932, // warden of nothing
+  //     371577627, // fallen saber
   //     2117601105, // insight terminus
   //     1820446245, // devil's lair
   //     1404404279, // arms dealer
   //     2867134615, // proving grounds
-  //     4018693329, // warden
-  //     8651357, // saber
+  //     4018693329, // warden of nothing
+  //     8651357, // fallen saber
   //     1451485767, // insight terminus
   //   [,
   // },
@@ -338,10 +381,10 @@
     "other_node_hashes": [],
   },
 
-  "shadowkeep": {
+  "shadowkeep": { // Moon
     "name": "Shadowkeep", // seal name is harbinger, not to be confused with the harbinger exotic quest
     "category": "Seals",
-    "subcategory": "Seasonal",
+    "subcategory": "Expansion",
     "seal_node_hash": 379405979,
     "badge_node_hash": 2388540594,
     "hide_badge_unless_explicit": true,
@@ -365,10 +408,10 @@
       // "1552790513": {}, // Lunar Gloom shader (In badge)
     },
   },
-  "beyond_light": {
+  "beyond_light": { // Europa
     "name": "Beyond Light",
     "category": "Seals",
-    "subcategory": "Seasonal",
+    "subcategory": "Expansion",
     "seal_node_hash": 79180995,
     "badge_node_hash": 2078340986,
     "hide_badge_unless_explicit": true,
@@ -385,7 +428,7 @@
   "30th": {
     "name": "30th Anniversary",
     "category": "Seals",
-    "subcategory": "Seasonal",
+    "subcategory": "Expansion",
     "seal_node_hash": 2185719388,
     "records": {
       "1770021330": {"number_objectives": true}, // richest dead man alive
@@ -403,7 +446,7 @@
   "witch_queen": {
     "name": "Witch Queen", // Throne World
     "category": "Seals",
-    "subcategory": "Seasonal",
+    "subcategory": "Expansion",
     "seal_node_hash": 3061040177,
     "badge_node_hash": 3016040694,
     "hide_badge_unless_explicit": true,
@@ -438,157 +481,74 @@
       "494981303": {}, // osteo striga catalyst
     },
   },
-  "season_16": {
-    "name": "Season of the Risen",
+  "light_fall": {
+    "name": "Light Fall", // Neptune
     "category": "Seals",
-    "subcategory": "Seasonal",
-    "seal_node_hash": 1321008459,
+    "subcategory": "Expansion",
+    "seal_node_hash": 4186496383,
+    "badge_node_hash": 1074030956,
+    "hide_badge_unless_explicit": true,
     "other_node_hashes": [
-      1147698909, // quests
-      1541092394, // PsiOps
-      3802714325, // gear
-      2860804863, // general
+      3352340500, // campaign
+      1391513288, // ritual (Terminal Overload)
+      1192509750, // exploration
+      2429963846, // quests
+      376062746, // secrets
+      842301675, // strand
     ],
     "collectibles": {
-      "1140859956": {}, // hoarfrost-z
-      "2897560445": {}, // loreley splendor
-      "2218977062": {}, // renewal grasps
-      "2243533023": {}, // blight ranger
-      "1813764890": {}, // osmiomancy
-      "3536167764": {}, // secant filament
-      "1256729926": {}, // grand overture
-      // "4028619088": {}, // dead messenger
+      "3709294547": {}, // Quicksilver Storm
+      "2843753795": {}, // Final Warning
+      "4226434173": {}, // Deterministic Chaos
+      "2629609053": {}, // Winterbite
     },
     "records": {
-      "2115207174": {}, // Explosive Personality pattern
-      "3357460834": {}, // Recurrent Impact pattern
-      "930979915": {}, // Under Your Skin pattern
-      "1701593813": {}, // Sweeet Sorrow pattern
-      "3842442685": {}, // Thoughtless pattern
-      "3343946430": {}, // Piece of Mind pattern
-      "263158944": {}, // grand overture catalysts
-      // "1163649614": {}, // dead messenger catalysts
-      "3628100770": {}, // le monarque catalysts
+      "170523067": {}, // Dimensional Hypotrochoid pattern (Expansion patterns)
+      "777254375": {}, // Iterative Loop pattern
+      "1167176444": {}, // Phyllotactic Spiral pattern
+      "1517724383": {}, // Volta Bracket pattern
+      "2839479882": {}, // Round Robin pattern
+      "2292557505": {}, // Marsilion-C pattern (other patterns)
+      "2618920720": {}, // Quicksilver Storm catalyst
     },
   },
-  "season_17": {
-    "name": "Season of the Haunted",
+  "season_20": {
+    "name": "Season of Defiance",
     "category": "Seals",
     "subcategory": "Seasonal",
-    "seal_node_hash": 1321008458,
+    "seal_node_hash": 1270675700,
     "other_node_hashes": [
-      1267192217, // quests
-      1321501307, // derelict leviathan
-      3212312368, // sever
-      4154823524, // gear
-      2551992318, // general
+      3805032166, // quests
+      1723339410, // gear
+      2363027913, // defiant battlegrounds
+      // 4017297210, // exotic mission (vexcalibur)
+      638109944, // general
     ],
     "collectibles": {
-      "2589037677": {}, // second chance
-      "3436952293": {}, // caliban's hand
-      "1179882117": {}, // rain of fire
-      "77226437": {}, // trespasser
+      "1028128210": {}, // Cadmus Ridge Lancecap
+      "1298489117": {}, // Abeyant Leap
+      "1339968002": {}, // Cyrtarachne's Facade
+      "761958733": {}, // Speedloader Slacks
+      "2035616561": {}, // Ballidorse Wrathweavers
+      "198847559": {}, // Swarmers
+      "1184569884": {}, // Verglas Curve
+      // "": {}, // Vexcalibur. Two collectibles: 2629609052, 2689028695
     },
     "records": {
-      "3693097974": {}, // Tears of Contrition pattern (Haunted weapons)
-      "2177815995": {}, // Hollow Denial pattern
-      "1691359215": {}, // Nezarec's Whisper pattern
-      "2330294643": {}, // Bump in the Night pattern
-      "2511032639": {}, // Firefright pattern
-      "2126241222": {}, // Without Remorse pattern
-      "1444412985": {}, // Austringer pattern (Opulent weapons)
-      "826543773": {}, // Drang (Baroque) pattern
-      "2258742229": {}, // CALUS Mini-Tool pattern
-      "1968204778": {}, // Epicurean pattern
-      "662547074": {}, // Beloved pattern
-      "2547048326": {}, // Fixed Odds pattern
-      "3022631571": {}, // trespasser catalyst
-      "1060652297": {}, // jotunn catalyst
-    },
-  },
-  "season_18": {
-    "name": "Season of Plunder",
-    "category": "Seals",
-    "subcategory": "Seasonal",
-    "seal_node_hash": 1321008453,
-    "other_node_hashes": [
-      2994180523, // quests
-      155343661, // ketchcrash
-      104852044, // expedition
-      823209491, // gear
-      3564406313, // community event
-      3598863561, // general
-    ],
-    "collectibles": {
-      "3849432554": {}, // point-contact cannon brace
-      "2330682964": {}, // gyrfalcon's hauberk
-      "3161668545": {}, // fallen sunstar
-      "1977134032": {}, // delicate tomb
-    },
-    "records": {
-      "146759633": {}, // Tarnished Mettle pattern (Plunder weapons)
-      "2158979729": {}, // Blood Fued pattern
-      "1544481626": {}, // Brigand's Law pattern
-      "3587005520": {}, // No Reprieve pattern
-      "1389390726": {}, // Sailspy Pitchglass pattern
-      "3257403871": {}, // Planck's Stride pattern
-      "122415725": {}, // Ammit AR2 pattern (other new weapons)
-      "4013775975": {}, // Taipan-4fr pattern
-      // "1388873285": {}, // Imperial Decree pattern (new but not available weapons)
-      // "3091520691": {}, // Goldtusk pattern
-      // "3091520690": {}, // Death's Razor pattern
-      // "3091520689": {}, // Throne-Cleaver pattern
-      "3318895306": {}, // delicate tomb catalyst
-      "2571854597": {}, // thunderlord catalyst
-    },
-  },
-  "season_19": {
-    "name": "Season of the Seraph",
-    "category": "Seals",
-    "subcategory": "Seasonal",
-    "seal_node_hash": 1321008452,
-    "other_node_hashes": [
-      3563671414, // quests
-      1425512290, // gear
-      1356402617, // heist battlegrounds
-      3968203274, // exotic mission
-      2379774266, // secrets
-      172285384, // general
-    ],
-    "collectibles": {
-      "985132347": {}, // the manticore
-      "1161231112": {}, // Revision zero
-      // "760708739": {}, // Also revision zero. TODO. This one is less common but mutually exclusive. User can have neither, of course.
-    },
-    "records": {
-      "2468174803": {"number_objectives": true}, // armor focus
-      "1554146513": {"number_objectives": true}, // weapon focus
-      "51293100": {"number_objectives": true}, // ikelos focus
-      "3394471563": {"number_objectives": true}, // armor collection
-      "4022708297": {"number_objectives": true}, // weapon collection
-      "929245926": {"number_objectives": true}, // ikelos collection
-      "3257786891": {"number_objectives": true}, // music theory I
-      "3257786888": {"number_objectives": true}, // music theory II
-      "3257786889": {"number_objectives": true}, // music theory III
-      "500197332": {"number_objectives": true}, // drone destruction I
-      "500197329": {"number_objectives": true}, // drone destruction II
-      "500197335": {"number_objectives": true}, // drone destruction III
-      "500197328": {"number_objectives": true}, // drone destruction IV
-      "500197331": {"number_objectives": true}, // drone destruction V
-      "500197334": {"number_objectives": true}, // drone destruction VI
-      "3172595571": {}, // Fire and Forget pattern (Seraph weapons)
-      "204031420": {}, // Tripwire Canary pattern
-      "3835559140": {}, // Disparity pattern
-      "1506999309": {}, // Path of Least Resistance pattern
-      "1778902326": {}, // Judgement of Kelgorath pattern
-      "3862297426": {}, // Retrofit Escapade pattern
-      "4070327399": {}, // HC pattern (Ikelos weapons)
-      "1366529950": {}, // SG pattern
-      "622035212": {}, // SR pattern
-      "692035983": {}, // SMG pattern
-      "1144463862": {}, // flying monster catalyst (manticore)
-      "1439993428": {}, // Revision zero
-      "1226048594": {}, // cloud strike catalyst
+      "2514059564": {}, // Perpetualis pattern (Seasonal patterns)
+      "2324218515": {}, // Prodigal Return pattern
+      "752104278": {}, // Regnant pattern
+      "3171877617": {}, // Caretaker pattern
+      "3845305795": {}, // Raconteur pattern
+      "3393054854": {}, // Royal Executioner pattern
+      "3091520689": {}, // Throne-Cleaver pattern (Recovered Leviathan patterns)
+      "3091520691": {}, // Goldtusk pattern
+      "3091520690": {}, // Death's Razor pattern
+      "1388873285": {}, // Imperial Decree pattern
+      // "2627701916": {}, // Vexcalibur pattern
+      "788492661": {}, // Verglas Curve catalyst
+      // "3787307395": {}, // Vexcalibur shaped with catalyst
+      "310266584": {}, // Two-Tailed Fox catalyst
     },
   },
 
@@ -718,6 +678,17 @@
       "2027297570": {}, // Extraction
       "2188781025": {},
       "2691903949": {},
+      "2113842213": {}, // Neptune champions
+      "3779113009": {}, // Neptune any master
+      "987583142": {}, // Hydroponics Delta
+      "2950526365": {},
+      "3999944721": {},
+      "3951548177": {}, // Gilded Precept
+      "1478134502": {},
+      "3965949828": {},
+      "3814890698": {}, // Thrilladrome
+      "1364118393": {},
+      "3100330213": {},
     },
   },
 
@@ -835,14 +806,11 @@
     },
   },
 
-  "vox_obscura": {
-    "name": "Vox Obscura",
+  "node.ovrd.avalon": {
+    "name": "\/\/node.ovrd.AVALON\/\/ (Vexcalibur)",
     "category": "Quests",
     "subcategory": null,
-    "other_node_hashes": [3419158345],
-    "records": {
-      // "1107121513": {"order": -1} // Hawkmoon catalyst
-    }
+    "other_node_hashes": [4017297210],
   },
 
   "milestones": {
@@ -931,37 +899,44 @@
       1573256543, // warlock
     ],
   },
-  "seasonal_challenges_19": {
-    "name": "Seasonal Challenges (Seraph)",
+  "seasonal_challenges_20": {
+    "name": "Seasonal Challenges (Defiance)",
     "category": "Other",
     "subcategory": null,
-    "other_node_hashes": [2123469730, 2123469729, 2123469728, 2123469735, 2123469734, 2123469733, 2123469732, 2123469739, 2123469738, 3777718326],
+    "other_node_hashes": [101130376, 4189078114, 4189078113, 4189078112, 4189078119, 4189078118, 4189078117, 4189078116, 4189078123, 4189078122, 1920499830],
     "records": {},
   },
-  "seasonal_challenges_18": {
-    "name": "Seasonal Challenges (Plunder)",
-    "category": "Other",
-    "subcategory": null,
-    "other_node_hashes": [2119135346],
-    // "other_node_hashes": [1911772891, 1911772888, 1911772889, 1911772894, 1911772895, 1911772892, 1911772893, 1911772882, 1911772883, 1024572145],
-    "records": {},
-  },
-  "seasonal_challenges_17": {
-    "name": "Seasonal Challenges (Haunted)",
-    "category": "Other",
-    "subcategory": null,
-    "other_node_hashes": [2119135357],
-    // "other_node_hashes": [797819882, 3127313204, 1140727173, 3127313206, 3127313201, 3127313200, 3127313203, 3127313202, 3127313213, 3127313212, 2754218732],
-    "records": {},
-  },
-  "seasonal_challenges_16": {
-    "name": "Seasonal Challenges (Risen)",
-    "category": "Other",
-    "subcategory": null,
-    "other_node_hashes": [2119135356],
-    // "other_node_hashes": [2385149757, 2385149758, 2385149759, 2385149752, 2385149753, 2385149754, 2385149755, 2385149748, 2385149749, 166087991],
-    "records": {},
-  },
+  // "seasonal_challenges_19": {
+  //   "name": "Seasonal Challenges (Seraph)",
+  //   "category": "Other",
+  //   "subcategory": null,
+  //   "other_node_hashes": [2123469730, 2123469729, 2123469728, 2123469735, 2123469734, 2123469733, 2123469732, 2123469739, 2123469738, 3777718326],
+  //   "records": {},
+  // },
+  // "seasonal_challenges_18": {
+  //   "name": "Seasonal Challenges (Plunder)",
+  //   "category": "Other",
+  //   "subcategory": null,
+  //   "other_node_hashes": [2119135346],
+  //   // "other_node_hashes": [1911772891, 1911772888, 1911772889, 1911772894, 1911772895, 1911772892, 1911772893, 1911772882, 1911772883, 1024572145],
+  //   "records": {},
+  // },
+  // "seasonal_challenges_17": {
+  //   "name": "Seasonal Challenges (Haunted)",
+  //   "category": "Other",
+  //   "subcategory": null,
+  //   "other_node_hashes": [2119135357],
+  //   // "other_node_hashes": [797819882, 3127313204, 1140727173, 3127313206, 3127313201, 3127313200, 3127313203, 3127313202, 3127313213, 3127313212, 2754218732],
+  //   "records": {},
+  // },
+  // "seasonal_challenges_16": {
+  //   "name": "Seasonal Challenges (Risen)",
+  //   "category": "Other",
+  //   "subcategory": null,
+  //   "other_node_hashes": [2119135356],
+  //   // "other_node_hashes": [2385149757, 2385149758, 2385149759, 2385149752, 2385149753, 2385149754, 2385149755, 2385149748, 2385149749, 166087991],
+  //   "records": {},
+  // },
   // "seasonal_challenges_15": { // Removed with start of Season 16
   //   "name": "Seasonal Challenges (Lost)",
   //   "category": "Other",
@@ -1386,6 +1361,159 @@
       "2329638530": {}, // Lorentz Driver catalyst
     },
   },
+  "season_16": {
+    "name": "Season of the Risen",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008459,
+    "other_node_hashes": [
+      1147698909, // quests
+      1541092394, // PsiOps
+      3802714325, // gear
+      2860804863, // general
+    ],
+    "collectibles": {
+      "1140859956": {}, // hoarfrost-z
+      "2897560445": {}, // loreley splendor
+      "2218977062": {}, // renewal grasps
+      "2243533023": {}, // blight ranger
+      "1813764890": {}, // osmiomancy
+      "3536167764": {}, // secant filament
+      "1256729926": {}, // grand overture
+      // "4028619088": {}, // dead messenger
+    },
+    "records": {
+      "2115207174": {}, // Explosive Personality pattern
+      "3357460834": {}, // Recurrent Impact pattern
+      "930979915": {}, // Under Your Skin pattern
+      "1701593813": {}, // Sweeet Sorrow pattern
+      "3842442685": {}, // Thoughtless pattern
+      "3343946430": {}, // Piece of Mind pattern
+      "263158944": {}, // grand overture catalyst
+      // "1163649614": {}, // dead messenger catalyst
+      "3628100770": {}, // le monarque catalyst
+    },
+  },
+  "season_17": {
+    "name": "Season of the Haunted",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008458,
+    "other_node_hashes": [
+      1267192217, // quests
+      1321501307, // derelict leviathan
+      3212312368, // sever
+      4154823524, // gear
+      2551992318, // general
+    ],
+    "collectibles": {
+      "2589037677": {}, // second chance
+      "3436952293": {}, // caliban's hand
+      "1179882117": {}, // rain of fire
+      "77226437": {}, // trespasser
+    },
+    "records": {
+      "3693097974": {}, // Tears of Contrition pattern (Haunted weapons)
+      "2177815995": {}, // Hollow Denial pattern
+      "1691359215": {}, // Nezarec's Whisper pattern
+      "2330294643": {}, // Bump in the Night pattern
+      "2511032639": {}, // Firefright pattern
+      "2126241222": {}, // Without Remorse pattern
+      "1444412985": {}, // Austringer pattern (Opulent weapons)
+      "826543773": {}, // Drang (Baroque) pattern
+      "2258742229": {}, // CALUS Mini-Tool pattern
+      "1968204778": {}, // Epicurean pattern
+      "662547074": {}, // Beloved pattern
+      "2547048326": {}, // Fixed Odds pattern
+      "3022631571": {}, // trespasser catalyst
+      "1060652297": {}, // jotunn catalyst
+    },
+  },
+  "season_18": {
+    "name": "Season of Plunder",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008453,
+    "other_node_hashes": [
+      2994180523, // quests
+      155343661, // ketchcrash
+      104852044, // expedition
+      823209491, // gear
+      3564406313, // community event
+      3598863561, // general
+    ],
+    "collectibles": {
+      "3849432554": {}, // point-contact cannon brace
+      "2330682964": {}, // gyrfalcon's hauberk
+      "3161668545": {}, // fallen sunstar
+      "1977134032": {}, // delicate tomb
+    },
+    "records": {
+      "146759633": {}, // Tarnished Mettle pattern (Plunder weapons)
+      "2158979729": {}, // Blood Fued pattern
+      "1544481626": {}, // Brigand's Law pattern
+      "3587005520": {}, // No Reprieve pattern
+      "1389390726": {}, // Sailspy Pitchglass pattern
+      "3257403871": {}, // Planck's Stride pattern
+      "122415725": {}, // Ammit AR2 pattern (other new weapons)
+      "4013775975": {}, // Taipan-4fr pattern
+      // "1388873285": {}, // Imperial Decree pattern (new but not available weapons)
+      // "3091520691": {}, // Goldtusk pattern
+      // "3091520690": {}, // Death's Razor pattern
+      // "3091520689": {}, // Throne-Cleaver pattern
+      "3318895306": {}, // delicate tomb catalyst
+      "2571854597": {}, // thunderlord catalyst
+    },
+  },
+  "season_19": {
+    "name": "Season of the Seraph",
+    "category": "Legacy",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1321008452,
+    "other_node_hashes": [
+      3563671414, // quests
+      1425512290, // gear
+      1356402617, // heist battlegrounds
+      // 3968203274, // exotic mission
+      2379774266, // secrets
+      172285384, // general
+    ],
+    "collectibles": {
+      "985132347": {}, // Manticore
+      // "1161231112": {}, // Revision zero
+      // "760708739": {}, // Also revision zero. This one is less common but mutually exclusive. User can have neither, of course.
+    },
+    "records": {
+      "2468174803": {"number_objectives": true}, // armor focus
+      "1554146513": {"number_objectives": true}, // weapon focus
+      "51293100": {"number_objectives": true}, // ikelos focus
+      "3394471563": {"number_objectives": true}, // armor collection
+      "4022708297": {"number_objectives": true}, // weapon collection
+      "929245926": {"number_objectives": true}, // ikelos collection
+      "3257786891": {"number_objectives": true}, // music theory I
+      "3257786888": {"number_objectives": true}, // music theory II
+      "3257786889": {"number_objectives": true}, // music theory III
+      "500197332": {"number_objectives": true}, // drone destruction I
+      "500197329": {"number_objectives": true}, // drone destruction II
+      "500197335": {"number_objectives": true}, // drone destruction III
+      "500197328": {"number_objectives": true}, // drone destruction IV
+      "500197331": {"number_objectives": true}, // drone destruction V
+      "500197334": {"number_objectives": true}, // drone destruction VI
+      "3172595571": {}, // Fire and Forget pattern (Seraph weapons)
+      "204031420": {}, // Tripwire Canary pattern
+      "3835559140": {}, // Disparity pattern
+      "1506999309": {}, // Path of Least Resistance pattern
+      "1778902326": {}, // Judgement of Kelgorath pattern
+      "3862297426": {}, // Retrofit Escapade pattern
+      "4070327399": {}, // HC pattern (Ikelos weapons)
+      "1366529950": {}, // SG pattern
+      "622035212": {}, // SR pattern
+      "692035983": {}, // SMG pattern
+      "1144463862": {}, // flying monster catalyst (manticore)
+      // "1439993428": {}, // Revision zero
+      "1226048594": {}, // cloud strike catalyst
+    },
+  },
 
   "harbinger": {
     "name": "Harbinger",
@@ -1404,6 +1532,18 @@
     "records": {
       "15917031": {"order": -1} // DMT catalyst
     }
+  },
+  "vox_obscura": {
+    "name": "Vox Obscura",
+    "category": "Legacy",
+    "subcategory": "Quests",
+    "other_node_hashes": [3419158345],
+  },
+  "seraphs_shield": {
+    "name": "Seraph's Shield",
+    "category": "Legacy",
+    "subcategory": "Quests",
+    "other_node_hashes": [3968203274],
   },
 
   "strikes_legacy": {
