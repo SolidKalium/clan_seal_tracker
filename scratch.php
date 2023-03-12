@@ -31,7 +31,7 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // "loreRootNodeHash": 1993337477,
 // "craftingRootNodeHash": 3937826784, // does not have unlock progress
 // "seasonalChallengesPresentationNodeHash": 3443694067,
-display_node_hierarchy(1866538467, 2);
+display_node_hierarchy(3509235358, 2);
 
 // display_node_hierarchy_reverse(199171388);
 // display_node_hierarchy(3509235358);
@@ -227,8 +227,18 @@ function list_all_seals($active = true) {
   $root_seal_node = $nodes[$root_hash];
   foreach ($root_seal_node['children']['presentationNodes'] as $node) {
     $seal_node = $nodes[$node['presentationNodeHash']];
-    $seal_record = $records[$seal_node['completionRecordHash']];
-    echo 'node ' . str_pad($seal_node['hash'], 10) . ' | record ' . str_pad($seal_record['hash'], 10) . ' | ' . $seal_node['displayProperties']['name'] . ' | ' . reset($seal_record['titleInfo']['titlesByGender']) . PHP_EOL;
+    $details = array(
+      'node_id' => 'node ' . str_pad($seal_node['hash'], 10),
+      'record_id' => '< no completion record id >',
+      'seal_name' => $seal_node['displayProperties']['name'],
+      'title' => '< no title >',
+    );
+    if (isset($seal_node['completionRecordHash'])) {
+      $seal_record = $records[$seal_node['completionRecordHash']];
+      $details['record_id'] = 'record ' . str_pad($seal_record['hash'], 10);
+      $details['title'] = reset($seal_record['titleInfo']['titlesByGender']);
+    }
+    echo implode(' | ', $details) . PHP_EOL;
   }
   echo PHP_EOL;
 }
