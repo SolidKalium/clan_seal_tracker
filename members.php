@@ -77,7 +77,9 @@ function get_clan_members($force_refresh) {
       'owns_beyond_light' => ($versions_owned & 64) && true,
       'owns_30th_anniversary' => ($versions_owned & 128) && true,
       'owns_witch_queen' => ($versions_owned & 256) && true,
+      // 'owns_witch_queen_dungeons' => 47843291 (dummy item id), // TODO where is this reported?
       'owns_light_fall' => ($versions_owned & 512) && true,
+      // 'owns_light_fall_dungeons' => , // TODO
       // 'owns_???' => ($versions_owned & 1024) && true, // just checking
       // No one has the first 7 seasons.
       // 'owns_season_1' => in_array('965757574', $season_hashes), // <No name>
@@ -98,8 +100,12 @@ function get_clan_members($force_refresh) {
       'owns_season_16' => in_array('2809059431', $season_hashes), // Risen
       'owns_season_17' => in_array('2809059430', $season_hashes), // Haunted
       'owns_season_18' => in_array('2809059433', $season_hashes), // Plunder
-      'owns_season_19' => in_array('2809059432', $season_hashes), // ???
-      // Currently no other seasons in the dictionary (10/10/2022)
+      'owns_season_19' => in_array('2809059432', $season_hashes), // Seraph
+      'owns_season_20' => in_array('2758726568', $season_hashes), // Defiance
+      'owns_season_21' => in_array('2758726569', $season_hashes), // Deep
+      'owns_season_22' => in_array('2758726570', $season_hashes), // ???
+      'owns_season_23' => in_array('2758726571', $season_hashes), // ???
+      // Currently no other seasons in the dictionary (3/12/2023)
       'owns_solstice_2022' => in_array('3841872876', $event_card_hashes),
       'owns_festival_of_the_lost_2022' => in_array('3265920761', $event_card_hashes),
       'owns_dawning_2022' => in_array('2302439334', $event_card_hashes),
@@ -155,7 +161,9 @@ function display_member_table($members) {
       'Beyond Light' => $member['owns_beyond_light'] ? 'Yes' : '',
       '30th Anniversary' => $member['owns_30th_anniversary'] ? 'Yes' : '',
       'Witch Queen' => $member['owns_witch_queen'] ? 'Yes' : '',
+      // 'WQ Dungeons' => $member['owns_witch_queen_dungeons'] ? 'Yes' : '',
       'Light Fall' => $member['owns_light_fall'] ? 'Yes' : '',
+      // 'LF Dungeons' => $member['owns_light_fall_dungeons'] ? 'Yes' : '',
       // 'Owns ???' => $member['owns_???'] ? 'Yes' : '',
       // 'Season 1' => $member['owns_season_1'] ? 'Yes' : '',
       // 'Season 2' => $member['owns_season_2'] ? 'Yes' : '',
@@ -176,6 +184,10 @@ function display_member_table($members) {
       'Season 17' => $member['owns_season_17'] ? 'Yes' : '',
       'Season 18' => $member['owns_season_18'] ? 'Yes' : '',
       'Season 19' => $member['owns_season_19'] ? 'Yes' : '',
+      'Season 20' => $member['owns_season_20'] ? 'Yes' : '',
+      'Season 21' => $member['owns_season_21'] ? 'Yes' : '',
+      'Season 22' => $member['owns_season_22'] ? 'Yes' : '',
+      'Season 23' => $member['owns_season_23'] ? 'Yes' : '',
       'Solstice 2022' => $member['owns_solstice_2022'] ? 'Yes' : '',
       'FotL 2022' => $member['owns_festival_of_the_lost_2022'] ? 'Yes' : '',
       'Dawning 2022' => $member['owns_dawning_2022'] ? 'Yes' : '',
