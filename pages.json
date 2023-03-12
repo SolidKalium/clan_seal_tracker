@@ -557,7 +557,8 @@
     ],
     "collectibles": {
       "985132347": {}, // the manticore
-      // revision zero. There are two of these? 1161231112,760708739
+      "1161231112": {}, // Revision zero
+      // "760708739": {}, // Also revision zero. TODO. This one is less common but mutually exclusive. User can have neither, of course.
     },
     "records": {
       "2468174803": {"number_objectives": true}, // armor focus
@@ -585,7 +586,8 @@
       "1366529950": {}, // SG pattern
       "622035212": {}, // SR pattern
       "692035983": {}, // SMG pattern
-      // "": {}, // flying monster catalyst. there are two classified catalysts: 1439993428, 1144463862
+      "1144463862": {}, // flying monster catalyst (manticore)
+      "1439993428": {}, // Revision zero
       "1226048594": {}, // cloud strike catalyst
     },
   },
@@ -1050,6 +1052,7 @@
     "category": "Events",
     "subcategory": null,
     "seal_node_hash": 3896035657,
+    // cosmic hearth emblem (2022, from bungie rewards)
   },
   // TODO challenge/event card? (per character?) Challenge completion count is already on the seal
   // TODO seasonal vendor upgrades unlocked?

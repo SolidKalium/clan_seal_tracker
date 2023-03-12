@@ -182,8 +182,8 @@ class profiles {
     return false;
   }
 
-  public static function get_display_name($profile_data, $type = 5) {
-    if (!empty($profile_data['destinyMemberships'])) {
+  public static function get_display_name($profile_data, $type = null) {
+    if ($type && !empty($profile_data['destinyMemberships'])) {
       foreach ($profile_data['destinyMemberships'] as $membership) {
         if ($membership['membershipType'] === $type) {
           return self::normalize_name($membership['displayName']);
@@ -191,7 +191,10 @@ class profiles {
       }
     }
 
-    return self::normalize_name($profile_data['profile']['data']['userInfo']['displayName']);
+    $user_info = $profile_data['profile']['data']['userInfo'];
+    return $user_info['bungieGlobalDisplayName'];
+
+    // return self::normalize_name($profile_data['profile']['data']['userInfo']['displayName']);
   }
   public static function get_display_names($profile_data) {
     $names = array();
@@ -217,7 +220,7 @@ class profiles {
       foreach ($profile_data['destinyMemberships'] as $membership) {
         $names[$type_name[$membership['membershipType']]] = self::normalize_name($membership['displayName']);
         if ($membership['membershipType'] === $user_info['membershipType']) {
-          $names[$type_name[$membership['membershipType']]] .= ' (default)';
+          $names[$type_name[$membership['membershipType']]] .= ' (cross-save)';
         }
       }
     }

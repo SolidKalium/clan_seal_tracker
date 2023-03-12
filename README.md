@@ -29,7 +29,7 @@
 ### Sites to compare against or look at for inspiration
 - [Destiny Item Manager](https://app.destinyitemmanager.com/): DIM is great for moving gear and setting up loadots. Also see most profile data.
 - [D2 Checklist](https://www.d2checklist.com/): See the weeklies you've completed on each character. Also see most profile data.
-- [Braytech](https://bray.tech): 
+- [Braytech](https://bray.tech):
   - [Voluspa commonality data](https://b.vlsp.network/Common): Get approximate number of players with gear or triumphs unlocked.
 - [Destiny Sets](https://destinysets.com/): See what you've collected (might be abandoned from Season 18 onwards)
 - [Blue Engram](https://engram.blue/crafting): a simple site for weapon crafting unlock progress
@@ -39,6 +39,8 @@
 - [Charlemagne](https://warmind.io/): discord bot for LFGs, clan member seal and raid notifications, and leaderboards
 - [Bungie's user profile page](https://www.bungie.net/7/en/User/Profile/): the official web-based representation of data
   - There are iOS and Android apps too. Those also let you buy bounties.
+- [D2 Foundry](https://d2foundry.gg/)
+- [Season pass extension](https://github.com/joshhunt/season-pass-extension): allows players to claim older season pass rewards
 - Some old lists of sites
   - https://github.com/vpzed/Destiny2-API-Info/wiki/Destiny-2-Open-Source-Projects
   - https://www.reddit.com/r/DestinyTheGame/comments/jitt09/a_comprehensive_list_of_useful_external_destiny_2/
@@ -50,7 +52,7 @@
 - [Rich Destiny App](https://richdestiny.app/): an exe that provides "rich presence" data to discord (PC only)
 - [Redrix.io](https://redrix.io/): mobile app for crucible
 - [Little Light](https://www.littlelight.club/): Mobile app for destiny
-- [Hawthorne](https://www.hawthornebot.tech/hawthorne/home]: A discord bot, somewhat like Charlemagne
+- [Hawthorne](https://www.hawthornebot.tech/hawthorne/home): A discord bot, somewhat like Charlemagne
 - [.Net Bungie API wrapper](https://github.com/EndGameGl/DotNetBungieAPI) (unofficial)
 - [Seasonal predictions](https://predict.wastedondestiny.com/): guess what you think the next season will bring
 - [Destiny Tracker](https://destinytracker.com/)
@@ -106,11 +108,11 @@ A main area, like the EDZ. A location is more specific. I don't know what a bubb
 **EquipmentSlot** (19 objects): These are essentially the singular form of buckets. The concept of a place where one thing can exist. These are all things that go directly on the player, with the exception of shaders and auras. Examples: finishers, gauntlets, emblems, subclass, vehicle (note that the use of singular vs plural is not consistent)
 
 Entries for "kinetic"
-  - https://bungie-net.github.io/multi/schema_Destiny-DamageType.html#schema_Destiny-DamageType
-  - https://data.destinysets.com/i/ItemCategory:2
-  - https://data.destinysets.com/i/InventoryBucket:1498876634
-  - https://data.destinysets.com/i/EquipmentSlot:1498876634
-  - You can use filters on https://data.destinysets.com/ to see the lists 
+- https://bungie-net.github.io/multi/schema_Destiny-DamageType.html#schema_Destiny-DamageType
+- https://data.destinysets.com/i/ItemCategory:2
+- https://data.destinysets.com/i/InventoryBucket:1498876634
+- https://data.destinysets.com/i/EquipmentSlot:1498876634
+- You can use filters on https://data.destinysets.com/ to see the lists
 
 -----
 
