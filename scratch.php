@@ -17,6 +17,7 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // definitions::update();
 // list_all_seals($active = false);
 // list_all_checklists($verbose = true);
+// echo_pretty_json(bungie_api::api('/Settings/')); // destiny2CoreSettings has useful top-level hashes
 
 // "collectionRootNode": 3790247699, emblems: 2381001021, mods: 3509235358, exotic armor: 1789205056
 // "badgesRootNode": 498211331,
@@ -26,12 +27,13 @@ echo "SCRIPT START" . PHP_EOL . PHP_EOL;
 // "legacyTriumphsRootNodeHash": 3215903653,
 // "legacySealsRootNodeHash": 1881970629,
 // "exoticCatalystsRootNodeHash": 2642502414, // also includes patterns
-// "medalsRootNodeHash": 3901403713,
 // "exoticCatalystsRootNodeHash": 511607103, // just catalysts (old view)
+// "medalsRootNodeHash": 3901403713,
 // "loreRootNodeHash": 1993337477,
 // "craftingRootNodeHash": 3937826784, // does not have unlock progress
 // "seasonalChallengesPresentationNodeHash": 3443694067,
-display_node_hierarchy(3509235358, 2);
+// "guardianRanksRootNodeHash": 3741753466
+display_node_hierarchy(1866538467, 2);
 
 // display_node_hierarchy_reverse(199171388);
 // display_node_hierarchy(3509235358);

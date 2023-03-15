@@ -226,49 +226,53 @@
       "192937277": {}, // Touch of Malice
     },
   },
-  // "root_of_nightmares": {
-  //   "name": "Root of Nightmares",
-  //   "category": "Seals",
-  //   "subcategory": "Raid",
-  //   "seal_node_hash": 1976056830,
-  //   "badge_node_hash": 1968454484,
-  //   "other_node_hashes": [
-  //     4114450368,
-  //   ],
-  //   "records": { // TODO
-  //     // "4268824781": {"column_name": "Badge"},
-  //     // "1594888684": {"column_name": "Chests", "number_objectives": true},
-  //     // "2579096068": {"column_name": "Day 1",  "number_objectives": true},
-  //     // "1360511082": {"column_name": "Flawless"},
-  //     // "70932677": {"column_name": "Clan"},
-  //     // "1760261415": {"column_name": "Arc", "number_objectives": true},
-  //     // "3147255355": {"column_name": "Void", "number_objectives": true},
-  //     // "3666607158": {"column_name": "Solar", "number_objectives": true},
-  //     // "3539714738": {"column_name": "Stasis", "number_objectives": true},
-  //     // "1329091971": {"column_name": "Class", "number_objectives": true},
-  //     // "3388215749": {"column_name": "Master Difficulty"},
-  //     // "2120297138": {"column_name": "Master Challenges", "number_objectives": true},
-  //     // "2069837521": {}, // Smite of Merain pattern
-  //     // "3650227809": {}, // Doom of Chelchis pattern
-  //     // "437884069": {}, // Zaouli's Bane pattern
-  //     // "2546821156": {}, // Midha's Reckoning pattern
-  //     // "3255215894": {}, // Defiance of Yasmin pattern
-  //     // "750389420": {}, // Qullim's Terminus pattern
-  //     // "773758208": {}, // Touch of Malice catalyst
-  //   },
-  //   "collectibles": {
-  //     // "2408235829": {}, // mods
-  //     // "2408235828": {},
-  //     // "2408235831": {},
-  //     // "2408235830": {},
-  //     // "1734594003": {},
-  //     // "3956066174": {},
-  //     // "38314821": {},
-  //     // "2180234436": {},
-  //     // "192937277": {}, // Touch of Malice
-  //     // TODO twitch emblems (but leave commented)
-  //   },
-  // },
+  "root_of_nightmares": {
+    "name": "Root of Nightmares",
+    "category": "Seals",
+    "subcategory": "Raid",
+    "seal_node_hash": 1976056830,
+    "badge_node_hash": 1968454484,
+    "other_node_hashes": [
+      4114450368,
+    ],
+    "records": {
+      "674616608": {"column_name": "Badge"},
+      "921507736": {"column_name": "Chests", "number_objectives": true},
+      "3025362184": {"column_name": "Contest Mode",  "number_objectives": true},
+      "397062446": {"column_name": "Flawless"},
+      "4293716153": {"column_name": "Clan"},
+      "4162933187": {"column_name": "Arc", "number_objectives": true},
+      "31076871": {"column_name": "Void", "number_objectives": true},
+      "2656634354": {"column_name": "Solar", "number_objectives": true},
+      "3413963390": {"column_name": "Stasis", "number_objectives": true},
+      "1982000933": {"column_name": "Strand", "number_objectives": true},
+      "1160810407": {"column_name": "Class", "number_objectives": true},
+      "391307104": {"column_name": "Master Difficulty"},
+      "4149006431": {"column_name": "Master Challenges", "number_objectives": true},
+      "139617739": {"column_name": "Lore Book"},
+      "3743137436": {}, // Rufus's Fury pattern
+      "2742412203": {}, // Koraxis's Distress pattern
+      "417302779": {}, // Briar's Contempt pattern
+      "700218081": {}, // Nessa's Oblation pattern
+      "1164396532": {}, // Mykel's Reverence pattern
+      "3838502045": {}, // Acasia's Dejection pattern
+      // "": {}, // No catalyst
+    },
+    "collectibles": {
+      "1856547363": {}, // mods
+      "1856547362": {},
+      "1856547361": {},
+      "1856547360": {},
+      "1346566213": {},
+      "2098333676": {},
+      "556817462": {},
+      "2677253635": {},
+      "2487502837": {},
+      "2553509474": {}, // Conditional Finality
+      "3383113994": {}, // Dim Italics emblem (2 hours on Twitch during raid race)
+      "1805281840": {}, // Particle Acceleration emblem (2 hours on Twitch during contest mode)
+    },
+  },
 
   "crucible": {
     "name": "Crucible",
@@ -1031,6 +1035,93 @@
   },
   // TODO challenge/event card? (per character?) Challenge completion count is already on the seal
   // TODO seasonal vendor upgrades unlocked?
+
+  "rank_2-6": {
+    "name": "New Light through Veteran",
+    "category": "Guardian Ranks",
+    "subcategory": null,
+    "other_node_hashes": [
+      1661428704, // explorer
+      1634098773, // initiate
+      1299243076,
+      149091036,
+      2125973956, // scout
+      1992631833,
+      297184034,
+      2890778319, // adventurer
+      1006170986,
+      2386755644,
+      3440238121, // veteran
+      1136207523,
+      472859807,
+    ],
+  },
+  "rank_7": {
+    "name": "Elite",
+    "category": "Guardian Ranks",
+    "subcategory": null,
+    "other_node_hashes": [
+      1574029529,
+      2237910703,
+      3825143465,
+      3022015892,
+      1635301565,
+      1614697748,
+      2064198093,
+      1890133162,
+    ],
+  },
+  "rank_8": {
+    "name": "Justiciar",
+    "category": "Guardian Ranks",
+    "subcategory": null,
+    "other_node_hashes": [
+      1705890062,
+      1056236424,
+      2547167937,
+      1854176989,
+      759794351,
+      2117867809,
+    ],
+  },
+  "rank_9": {
+    "name": "Vanquisher",
+    "category": "Guardian Ranks",
+    "subcategory": null,
+    "other_node_hashes": [
+      194243121,
+      607142094,
+      1680595431,
+      153324004,
+      3569789392,
+      107154916,
+      1715006394,
+      3095296416,
+    ],
+  },
+  "rank_10": {
+    "name": "Exemplar",
+    "category": "Guardian Ranks",
+    "subcategory": null,
+    "other_node_hashes": [
+      3647485491,
+      2177540076,
+      2588033650,
+      1995676814,
+      198006370,
+    ],
+  },
+  "rank_11": {
+    "name": "Paragon",
+    "category": "Guardian Ranks",
+    "subcategory": null,
+    "other_node_hashes": [
+      2190040502,
+      3034053226,
+      21319293,
+      1460726975,
+    ],
+  },
 
   // TODO collectibles
   // emblems (filter out empty names)
