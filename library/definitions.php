@@ -54,6 +54,9 @@ class definitions {
       // 'RewardSheet',
       // 'RewardItemList',
       // 'SackRewardItemList',
+
+      'SocialCommendation',
+      'SocialCommendationNode',
     );
 
     $current_filenames = self::get_current_filenames();
@@ -82,7 +85,7 @@ class definitions {
 
     self::$definitions_updated = true;
     file_put_contents(self::$dir . '/' . self::$manifest_filename, json_encode($manifest));
-  } 
+  }
 
   private static $memo = array();
   public static function get($type, $only_warn_if_missing = false) {

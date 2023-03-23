@@ -237,6 +237,9 @@ function show_page($page_key, $type = null) {
     if (!empty($heading['collectible_hash_set'])) {
       $heading_attributes .= ' collectible_hash="' . implode(' ', $heading['collectible_hash_set']) . '"';
     }
+    if (!empty($heading['metric_hash'])) {
+      $heading_attributes .= " metric_hash='{$heading['metric_hash']}'";
+    }
 
     if (empty($heading['objectives']) || count($heading['objectives']) === 1) {
       $th1 .= "<th rowspan='2' $heading_attributes>{$column_name}</th>";
@@ -279,6 +282,8 @@ function show_page($page_key, $type = null) {
         $table .= get_player_checklist_entry_td($player_data, $heading);
       } else if (!empty($heading['collectible_hash']) || !empty($heading['collectible_hash_set'])) {
         $table .= get_player_collectible_td($player_data, $heading);
+      } else if (!empty($heading['metric_hash'])) {
+        $table .= get_player_metric_td($player_data, $heading);
       } else {
         echo_pretty_json($heading);
         throw new Exception('unhandled heading');
@@ -385,6 +390,12 @@ function get_player_collectible_td($player_data, $heading) {
   // exit();
 
   return "<td recordState='{$player_collectible['state_text']}'>{$player_collectible['description']}</td>";
+}
+function get_player_metric_td($player_data, $heading) { // including commendations
+  $metric_hash = $heading['metric_hash'];
+  $player_metric = $player_data['metrics'][$metric_hash];
+  $text = $player_metric > 0 ? $player_metric : '';
+  return "<td recordState='metric'>{$text}</td>";
 }
 
 function get_headings($page, $type = null) {
@@ -664,6 +675,58 @@ function get_headings($page, $type = null) {
     }
   }
 
+  // COMMENDATION HEADINGS
+  if (!empty($page['type']) && $page['type'] === 'commendations') {
+    $sc_nodes = definitions::get('SocialCommendationNode');
+    $scs = definitions::get('SocialCommendation');
+
+    $headings[] = array(
+      'metric_hash' => 'commendations_total_score',
+      'name' => 'Total',
+      'description' => 'Total commendation score',
+      'type' => 'commendation',
+      'skip_for_completion' => true,
+      'scope' => 0,
+      'order' => ($next_default_order++),
+    );
+    $headings[] = array(
+      'metric_hash' => 'commendations_given',
+      'name' => 'Given',
+      'description' => 'Number of commendations given',
+      'type' => 'commendation',
+      'skip_for_completion' => true,
+      'scope' => 0,
+      'order' => ($next_default_order++),
+    );
+    $headings[] = array(
+      'metric_hash' => 'commendations_received',
+      'name' => 'Received',
+      'description' => 'Number of commendations received',
+      'type' => 'commendation',
+      'skip_for_completion' => true,
+      'scope' => 0,
+      'order' => ($next_default_order++),
+    );
+
+    $sc_parent_node = $sc_nodes[1062358355];
+    foreach ($sc_parent_node['childCommendationNodeHashes'] as $middle_node_hash) {
+      $middle_node = $sc_nodes[$middle_node_hash];
+      foreach ($middle_node['childCommendationHashes'] as $sc_hash) {
+        $sc = $scs[$sc_hash];
+        $headings[] = array(
+          'metric_hash' => $sc_hash,
+          'name' => $sc['displayProperties']['name'],
+          'description' => $sc['displayProperties']['description'],
+          'type' => 'commendation',
+          'skip_for_completion' => true,
+           // TODO color?
+          'scope' => 0,
+          'order' => ($next_default_order++),
+        );
+      }
+    }
+  }
+
   usort($headings, 'column_sorter');
   // echo_pretty_json($headings);
   return $headings;
@@ -807,9 +870,11 @@ function get_rows($page_key, $headings, $players) {
       'records' => array(),
       'checklist_entries' => array(),
       'collectibles' => array(),
+      'metrics' => array(),
     );
     // $has_record_from_list = false;
     // echo_pretty_json($headings);
+    $added_commendations = false;
     foreach ($headings as $heading) {
       if ($heading['name'] === 'Player') {
         continue;
@@ -821,6 +886,11 @@ function get_rows($page_key, $headings, $players) {
         update_player_data_for_checklist_heading($player_data, $profile, $heading);
       } else if (!empty($heading['collectible_hash']) || !empty($heading['collectible_hash_set'])) {
         update_player_data_for_collectible_heading($player_data, $profile, $heading);
+      } else if (!empty($heading['type']) && $heading['type'] == 'commendation') {
+        if (!$added_commendations) {
+          update_player_data_for_commendations($player_data, $profile);
+          $added_commendations = true;
+        }
       } else {
         echo_pretty_json($heading);
         throw new Exception('unhandled heading');
@@ -837,8 +907,18 @@ function get_rows($page_key, $headings, $players) {
     // echo_pretty_json($player_data);
   }
 
-  $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
-  usort($rows, get_row_sorter($max_completion));
+  // $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
+  $max_completion = 0;
+  foreach ($headings as $heading) {
+    if ($heading['name'] !== 'Player' && empty($heading['skip_for_completion'])) { // TODO this flag isn't fully implemented
+      $max_completion++;
+    }
+  }
+  if ($max_completion) {
+    usort($rows, get_row_sorter($max_completion));
+  } else if ($page_key === 'commendations') {
+    array_multisort(array_column(array_column($rows, 'metrics'), 'commendations_total_score'), SORT_DESC, $rows);
+  }
 
   // echo 'Private players:'; echo_pretty_json($private_players);
 
@@ -1028,6 +1108,14 @@ function update_player_data_for_collectible_heading(&$player_data, $profile, $he
     'state_text' => implode(' ', array_keys($state_text)),
   );
   $player_data['total_completion'] += (empty($state_text['complete']) ? 0 : 1);
+}
+function update_player_data_for_commendations(&$player_data, $profile) { // one call for all values
+  $commendations = $profile['profileCommendations']['data'];
+  $player_data['metrics'] += $commendations['commendationScoresByHash'] + array(
+    'commendations_total_score' => $commendations['totalScore'],
+    'commendations_given' => $commendations['scoreDetailValues'][0],
+    'commendations_received' => $commendations['scoreDetailValues'][1],
+  );
 }
 
 

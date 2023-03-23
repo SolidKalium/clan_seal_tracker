@@ -1067,7 +1067,6 @@
       3022015892,
       1635301565,
       1614697748,
-      2064198093,
       1890133162,
     ],
   },
@@ -1080,6 +1079,7 @@
       1056236424,
       2547167937,
       1854176989,
+      2427983160,
       759794351,
       2117867809,
     ],
@@ -1091,7 +1091,6 @@
     "other_node_hashes": [
       194243121,
       607142094,
-      1680595431,
       153324004,
       3569789392,
       107154916,
@@ -1106,6 +1105,7 @@
     "other_node_hashes": [
       3647485491,
       2177540076,
+      2360492953,
       2588033650,
       1995676814,
       198006370,
@@ -1122,6 +1122,13 @@
       1460726975,
     ],
   },
+  "commendations": {
+    "name": "Commendations",
+    "category": "Guardian Ranks",
+    "subcategory": null,
+    "type": "commendations", // total, given, received, quantities received
+  },
+
 
   // TODO collectibles
   // emblems (filter out empty names)
