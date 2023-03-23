@@ -115,6 +115,8 @@ function get_clan_members($force_refresh) {
       'season_xp' => $profile['profileProgression']['data']['seasonalArtifact']['powerBonusProgression']['currentProgress'] ?? '',
       'gifted_subs' => $character_progression['progressions']['2350534509']['currentProgress'] ?? '',
       'match_reactions' => $character_progression['progressions']['1345591265']['currentProgress'] ?? '',
+      // Could show current and liftimeHighest guardian ranks. profile['data']
+      // I don't think dungeon keys are reported in the API
     );
 
     // if ($member['bungieNetUserInfo']['displayName'] === '') {

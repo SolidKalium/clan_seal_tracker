@@ -77,6 +77,7 @@ td:first-child {
   left: 0;
   background-color: white;
   z-index: 1;
+  white-space: nowrap;
 }
 
 
@@ -175,7 +176,7 @@ td[recordState~="unowned"]:empty:after {
 }
 
 
-/* 
+/*
   colors from https://clrs.cc/
   contrast is too high for some of these, especially for unimportant things like why a cell is grey
 */

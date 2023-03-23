@@ -39,8 +39,6 @@
 - [Charlemagne](https://warmind.io/): discord bot for LFGs, clan member seal and raid notifications, and leaderboards
 - [Bungie's user profile page](https://www.bungie.net/7/en/User/Profile/): the official web-based representation of data
   - There are iOS and Android apps too. Those also let you buy bounties.
-- [D2 Foundry](https://d2foundry.gg/)
-- [Season pass extension](https://github.com/joshhunt/season-pass-extension): allows players to claim older season pass rewards
 - Some old lists of sites
   - https://github.com/vpzed/Destiny2-API-Info/wiki/Destiny-2-Open-Source-Projects
   - https://www.reddit.com/r/DestinyTheGame/comments/jitt09/a_comprehensive_list_of_useful_external_destiny_2/
@@ -60,8 +58,11 @@
 - [Ishtar Collective](https://www.ishtar-collective.net/): Lore
 - [Trials Report](https://trials.report/)
 - [Raid Report](https://raid.report/) / [Dungeon Report](https://dungeon.report/)
-- [Parallel Program list](https://solely.gay/parallel): People who have received the Parallel Program emblem for contributions to the community
+- [Parallel Program list](https://parallel.report/): People who have received the Parallel Program emblem for contributions to the community
 - [Cosmodrome](https://cosmodrome.page/): List of destiny-related projects
+- [Clarity](https://www.d2clarity.com/): A DIM companion app
+- [D2 Foundry](https://d2foundry.gg/)
+- [Season pass extension](https://github.com/joshhunt/season-pass-extension): allows players to claim older season pass rewards
 
 ### Meme sites
 - https://oracles.report/
@@ -142,4 +143,5 @@ Charlemagne calendar link?
 How does charlemagne get realtime D2 data?
 
 ### Misc notes
-Gilding count is a metric
+- Gilding count is a metric
+- "IgnoreVendorHashes": "3354631265,3819664660,2260557667,1944634565,1423393512". The first three are faction vendors. The other two don't appear to be in the game anymore.

@@ -7,7 +7,7 @@ class profiles {
   // Not currently using cookies, even if it might help in the event of two webrequests being made at the same time
 
   private static $dir = 'profiles';
-  private static $standard_components = array('Profiles', 'ProfileProgression', 'CharacterProgressions', 'PresentationNodes', 'Collectibles', 'Records'); // These are the components that will be fetched and stored
+  private static $standard_components = array('Profiles', 'ProfileProgression', 'CharacterProgressions', 'PresentationNodes', 'Collectibles', 'Records', 'SocialCommendations'); // These are the components that will be fetched and stored
   private static $cache_minutes = 5;
 
   private static $updated_profiles = array();
@@ -474,6 +474,7 @@ class profiles {
       "Metrics" => 1100,
       "StringVariables" => 1200,
       "Craftables" => 1300,
+      "SocialCommendations" => 1400,
     );
 
     foreach ($components as $key => $value) {

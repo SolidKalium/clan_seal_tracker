@@ -167,6 +167,7 @@ $components = array(
 	// "Metrics" => 1100,
   // "StringVariables" => 1200,
   // "Craftables" => 1300,
+  // "SocialCommendations" => 1400,
 );
 // $result = bungie_api::api('/Destiny2/5/Profile/4611686018500895898/?components=' . implode(',', array_values($components))); // kalium
 // $result = bungie_api::api('/Destiny2/3/Profile/4611686018490731084/?components=' . implode(',', array_values($components))); // scorpin

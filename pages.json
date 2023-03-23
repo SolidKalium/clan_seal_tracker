@@ -269,8 +269,8 @@
       "2677253635": {},
       "2487502837": {},
       "2553509474": {}, // Conditional Finality
-      "3383113994": {}, // Dim Italics emblem (2 hours on Twitch during raid race)
-      "1805281840": {}, // Particle Acceleration emblem (2 hours on Twitch during contest mode)
+      // "3383113994": {}, // Dim Italics emblem (2 hours on Twitch during raid race)
+      // "1805281840": {}, // Particle Acceleration emblem (2 hours on Twitch during contest mode)
     },
   },
 
@@ -1141,6 +1141,18 @@
   // ornaments?
   // medals?
 
+  "apogee_repeaters": {
+    "name": "Apogee Repeaters",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 703136805,
+  },
+  "nimbus_action_figures": {
+    "name": "Nimbus Action Figures",
+    "category": "Checklists",
+    "subcategory": null,
+    "checklist_hash": 1793940260,
+  },
   "region_chests": {
     "name": "Region Chests",
     "category": "Checklists",
