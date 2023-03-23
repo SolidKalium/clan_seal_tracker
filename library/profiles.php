@@ -22,10 +22,13 @@ class profiles {
     $key = self::get_key($membership_type, $membership_id);
     $path = self::$dir . '/' . $key . '.json';
 
-    if (self::_use_cache($membership_type, $membership_id, $last_seen, $refresh)) {
+    if (bungie_api::$API_DISABLED || self::_use_cache($membership_type, $membership_id, $last_seen, $refresh)) {
       // echo 'cached user ' . $key . PHP_EOL;
       $profile = json_decode(file_get_contents($path), true);
       if ($profile === null) {
+        if (bungie_api::$API_DISABLED) {
+          return array(); // Dummy data
+        }
         throw new Exception('Failed to decode ' . $path);
       }
       return $profile;
@@ -350,6 +353,12 @@ class profiles {
           throw new Exception("json_decode error for pre-cache profile $i " . json_last_error() . ": " . json_last_error_msg());
         }
         // unset($profile_text);
+        if ($profile['ErrorCode'] > 1) { // Technically may not be disabled, but the server is having trouble
+          bungie_api::$API_DISABLED = true;
+          echo 'Error retrieving player data. Falling back to cached data.' . PHP_EOL;
+          echo 'Bungie API error message: ' . $profile['Message'] . PHP_EOL;
+          return;
+        }
         foreach ($expected as $key => $value) {
           if ($profile[$key] !== $value) {
             // if ($key === 'ErrorCode' && $profile[$key] === 1618) {

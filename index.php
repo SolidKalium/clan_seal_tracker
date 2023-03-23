@@ -196,8 +196,12 @@ function show_page($page_key, $type = null) {
 
 
   // $players = profiles::get_cached_players();
-  $players = groups::get_group_members(get_setting("group_id"));
-  profiles::precache_players($players);
+  try {
+    $players = groups::get_group_members(get_setting("group_id"));
+    profiles::precache_players($players);
+  } catch(SystemDisabledException $e) {
+    $players = groups::get_group_members(get_setting("group_id"), INF);
+  }
 
   $headings = get_headings($page, $type);
   $rows = get_rows($page_key, $headings, $players);
@@ -742,7 +746,7 @@ function get_normalized_item_name($item) {
 function get_rows($page_key, $headings, $players) {
   $rows = array();
 
-  $private_players = array();
+  $private_players = array(); // Players whose privacy settings prevent us from getting data
 
   $pinned_profile_ids = array(
     // '5_4611686018500895898', // kalium
@@ -783,7 +787,12 @@ function get_rows($page_key, $headings, $players) {
     if (!empty($player['isOnline'])) {
       $last_seen = time(); // last seen now
     }
-    $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId'], $last_seen);
+    if (!bungie_api::$API_DISABLED) {
+      $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId'], $last_seen);
+    } else {
+      $profile = profiles::get($player['destinyUserInfo']['membershipType'], $player['destinyUserInfo']['membershipId'], INF);
+    }
+
 
     if (empty($profile['profileRecords']['data'])) {
       $private_players[$id] = profiles::normalize_name($profile['profile']['data']['userInfo']['displayName']);

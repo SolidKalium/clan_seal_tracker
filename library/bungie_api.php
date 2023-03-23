@@ -4,6 +4,7 @@
 class bungie_api {
 
   ///// PUBLIC API FUNCTIONS
+  public static $API_DISABLED = false;
 
   public static function get_manifest() { // Destiny2.GetDestinyManifest
     return self::api('/Destiny2/Manifest/');
@@ -193,6 +194,12 @@ class bungie_api {
       throw new Exception("json_decode error " . json_last_error() . ": " . json_last_error_msg());
     }
 
+    if ($result['ErrorCode'] === 5) { // ErrorStatus: SystemDisabled
+      bungie_api::$API_DISABLED = true;
+      echo 'Bungie API is currently disabled' . PHP_EOL;
+      throw new SystemDisabledException();
+    }
+
     $excluded_paths = array(
       '/App/OAuth/token/',
     );
@@ -298,3 +305,6 @@ class bungie_api {
   }
 
 }
+
+class SystemDisabledException extends Exception {}
+
