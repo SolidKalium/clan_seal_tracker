@@ -1036,6 +1036,7 @@
   // TODO challenge/event card? (per character?) Challenge completion count is already on the seal
   // TODO seasonal vendor upgrades unlocked?
 
+  // TODO color header blue if seasonal, once that information is in the API
   "rank_2-6": {
     "name": "New Light through Veteran",
     "category": "Guardian Ranks",

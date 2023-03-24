@@ -239,6 +239,9 @@ function show_page($page_key, $type = null) {
     }
     if (!empty($heading['metric_hash'])) {
       $heading_attributes .= " metric_hash='{$heading['metric_hash']}'";
+      if (!empty($heading['subtype'])) {
+        $heading_attributes .= " type='{$heading['subtype']}'";
+      }
     }
 
     if (empty($heading['objectives']) || count($heading['objectives']) === 1) {
@@ -395,7 +398,13 @@ function get_player_metric_td($player_data, $heading) { // including commendatio
   $metric_hash = $heading['metric_hash'];
   $player_metric = $player_data['metrics'][$metric_hash];
   $text = $player_metric > 0 ? $player_metric : '';
-  return "<td recordState='metric'>{$text}</td>";
+
+  $heading_attributes = "recordState='metric'";
+  if (!empty($heading['subtype'])) {
+    $heading_attributes .= " type='{$heading['subtype']}'";
+  }
+
+  return "<td {$heading_attributes}>{$text}</td>";
 }
 
 function get_headings($page, $type = null) {
@@ -718,8 +727,8 @@ function get_headings($page, $type = null) {
           'name' => $sc['displayProperties']['name'],
           'description' => $sc['displayProperties']['description'],
           'type' => 'commendation',
+          'subtype' => strtolower($middle_node['displayProperties']['name']),
           'skip_for_completion' => true,
-           // TODO color?
           'scope' => 0,
           'order' => ($next_default_order++),
         );

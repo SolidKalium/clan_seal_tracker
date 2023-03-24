@@ -85,6 +85,23 @@ th[gild] {
   background-color: gold;
 }
 
+/* th[seasonal] {
+  background-color: --blue;
+} */
+
+th[type~="ally"] { /* commendation type */
+  background-color: var(--green);
+}
+th[type~="mastery"] {
+  background-color: gold;
+}
+th[type~="fun"] {
+  background-color: var(--red);
+}
+th[type~="leadership"] {
+  background-color: var(--aqua);
+}
+
 th > td {
   padding: 0px;
 }
@@ -176,6 +193,23 @@ td[recordState~="unowned"]:empty:after {
 }
 td[recordState~="metric"] { /* just a metric. No actual status */
   border-bottom: 1px solid #ddd;
+}
+
+td[type~="ally"] {  /* commendation type */
+  background-color: lightgreen;
+  border-bottom: none;
+}
+td[type~="mastery"] {
+  background-color: lightgoldenrodyellow;
+  border-bottom-color: goldenrod;
+}
+td[type~="fun"] {
+  background-color: lightpink;
+  border-bottom: none;
+}
+td[type~="leadership"] {
+  background-color: lightblue;
+  border-bottom: none;
 }
 
 
