@@ -205,7 +205,7 @@ function show_page($page_key, $type = null) {
 
   $headings = get_headings($page, $type);
   $rows = get_rows($page_key, $headings, $players);
-  $max_completion = count($headings) - 1;
+  $max_completion = get_max_completion($headings);
 
 
   $th1 = '';
@@ -916,13 +916,7 @@ function get_rows($page_key, $headings, $players) {
     // echo_pretty_json($player_data);
   }
 
-  // $max_completion = count($headings) - 1; // ignore player column. Maybe should work differently, but this is ok for now.
-  $max_completion = 0;
-  foreach ($headings as $heading) {
-    if ($heading['name'] !== 'Player' && empty($heading['skip_for_completion'])) { // TODO this flag isn't fully implemented
-      $max_completion++;
-    }
-  }
+  $max_completion = get_max_completion($headings);
   if ($max_completion) {
     usort($rows, get_row_sorter($max_completion));
   } else if ($page_key === 'commendations') {
@@ -937,7 +931,9 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
   if ($heading['scope'] === 0) { // account scope
       $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']] ?? fake_empty_record_for_heading($heading);
       $player_data['records'][$heading['record_hash']] = $profile_record;
-      $player_data['total_completion'] += estimate_player_record_progress($profile_record);
+      if (empty($heading['skip_for_completion'])) {
+        $player_data['total_completion'] += estimate_player_record_progress($profile_record);
+      }
   } else if ($heading['scope'] === 1) { // character scope
     // Example: season of chosen battlegrounds has multiple objectives. progress is the same across characters, but state may differ. e.g. 4 vs 12
     //   Progress may be 0 instead of 1 for some completed objectives (Example: complete challenger's proving quest)
@@ -975,7 +971,9 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
     }
 
     $player_data['records'][$heading['record_hash']] = $best_character_record;
-    $player_data['total_completion'] += estimate_player_record_progress($best_character_record);
+    if (empty($heading['skip_for_completion'])) {
+      $player_data['total_completion'] += estimate_player_record_progress($best_character_record);
+    }
   } else {
     throw new Exception('scope ' . $heading['scope'] . ' not handled');
   }
@@ -1166,6 +1164,15 @@ function get_player_objective_state($record, $key) {
   return implode(' ', array_keys(array_filter($enums)));
 }
 
+function get_max_completion($headings) {
+  $max_completion = 0;
+  foreach ($headings as $heading) {
+    if ($heading['name'] !== 'Player' && empty($heading['skip_for_completion'])) {
+      $max_completion++;
+    }
+  }
+  return $max_completion;
+}
 function get_row_sorter($max_completion) {
     return function ($a, $b) use ($max_completion) {
         // return value is cast to int, so returning a float less than 1 may cause incorrect sort order.

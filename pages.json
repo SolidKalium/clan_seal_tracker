@@ -3,6 +3,7 @@
   // other_node_hashes should only have nodes that are direct parents of records
   // if a record is in the records list, it should be displayed even if not part of a relevant node.
   // if a record is suppressed, don't show it
+  // if a heading has skip_for_completion=true, don't count it for sorting purposes
 
   // Collectibles are handled a little awkwardly. In a more complex system, they might be a separate category that could optionally be combined with the badge, triumphs, an overall view, etc. Could be able to hide items that a reward for triumphs, to only show random drops, etc. Might use a separate mapping for collectible source data. Could tie raid/dungeon weapons to encounters at the same time.
   // Could also split/combine different pages of triumphs in custom ways? E.g. all Moon triumphs, nightmare hunt triumphs only, nightmare hunt triumphs + collectibles/mods, etc.
@@ -93,7 +94,7 @@
       "564366615":  {"column_name": "Class", "number_objectives": true, "order": 8},
       "992355976":  {"column_name": "Chests", "number_objectives": true},
       "3323713181": {"column_name": "Exo Logs", "number_objectives": true},
-      "2699580344": {"column_name": "Day One", "number_objectives": true, "suppress": true},
+      "2699580344": {"column_name": "Day One", "number_objectives": true, "suppress": true, "skip_for_completion": true},
       "3560923614": {"column_name": "Flawless", "suppress": true},
       "924334687": {}, // Succession pattern
       "399865831": {}, // Bequest pattern
@@ -125,7 +126,7 @@
       "2592913942": {"column_name": "Solar", "number_objectives": true},
       "3969659747": {"column_name": "Class", "number_objectives": true},
       "3790077074": {"number_objectives": true},
-      "2384429092": {"number_objectives": true, "suppress": true}, // Tempo's edge / first 24 hours
+      "2384429092": {"number_objectives": true, "suppress": true, "skip_for_completion": true}, // Tempo's edge / first 24 hours
       "507778024": {"order": -1}, // vex catalyst
     },
     "collectibles": { // mods
@@ -152,7 +153,7 @@
       3779087602,
     ],
     "records": {
-      "922211732": {"column_name": "Day 1",  "number_objectives": true},
+      "922211732": {"column_name": "Day 1",  "number_objectives": true, "skip_for_completion": true},
       "4019717242": {"column_name": "Flawless"},
       "1729647218": {"column_name": "Badge"},
       "3330343477": {"column_name": "Clan"},
@@ -196,7 +197,7 @@
     "records": {
       "4268824781": {"column_name": "Badge"},
       "1594888684": {"column_name": "Chests", "number_objectives": true},
-      "2579096068": {"column_name": "Day 1",  "number_objectives": true},
+      "2579096068": {"column_name": "Day 1",  "number_objectives": true, "skip_for_completion": true},
       "1360511082": {"column_name": "Flawless"},
       "70932677": {"column_name": "Clan"},
       "1760261415": {"column_name": "Arc", "number_objectives": true},
@@ -238,7 +239,7 @@
     "records": {
       "674616608": {"column_name": "Badge"},
       "921507736": {"column_name": "Chests", "number_objectives": true},
-      "3025362184": {"column_name": "Contest Mode",  "number_objectives": true},
+      "3025362184": {"column_name": "Contest Mode",  "number_objectives": true, "skip_for_completion": true},
       "397062446": {"column_name": "Flawless"},
       "4293716153": {"column_name": "Clan"},
       "4162933187": {"column_name": "Arc", "number_objectives": true},
@@ -269,8 +270,8 @@
       "2677253635": {},
       "2487502837": {},
       "2553509474": {}, // Conditional Finality
-      // "3383113994": {}, // Dim Italics emblem (2 hours on Twitch during raid race)
-      // "1805281840": {}, // Particle Acceleration emblem (2 hours on Twitch during contest mode)
+      "3383113994": {"skip_for_completion": true}, // Dim Italics emblem (2 hours on Twitch during raid race)
+      "1805281840": {"skip_for_completion": true}, // Particle Acceleration emblem (2 hours on Twitch during contest mode)
     },
   },
 
