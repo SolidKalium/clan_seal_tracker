@@ -557,6 +557,47 @@
     },
   },
 
+  "reveler": {
+    "name": "Events",
+    "category": "Seals",
+    "subcategory": "Events",
+    "seal_node_hash": 2594486939, // For some reason, these triumphs don't have icons
+  },
+  "solstice": {
+    "name": "Solstice",
+    "category": "Seals",
+    "subcategory": "Events",
+    "seal_node_hash": 3598951881,
+  },
+  "festival_of_the_lost": {
+    "name": "Festival of the Lost",
+    "category": "Seals",
+    "subcategory": "Events",
+    "other_node_hashes": [2330977699],
+    "seal_node_hash": 2592822840,
+  },
+  "dawning": {
+    "name": "The Dawning",
+    "category": "Seals",
+    "subcategory": "Events",
+    "seal_node_hash": 3896035657,
+    // cosmic hearth emblem (2022, from bungie rewards)
+  },
+  "guardian_games": {
+    "name": "Guardian Games",
+    "category": "Seals",
+    "subcategory": "Events",
+    "seal_node_hash": 1317417718,
+  },
+  "guardian_games_2023_medals": {
+    "name": "Guardian Games 2023 Medals",
+    "category": "Seals",
+    "subcategory": "Events",
+    "other_node_hashes": [3674532950],
+  },
+  // challenge/event card? (per character?) Challenge completion count is already on the seal. Seems to be account-wide now.
+  // seasonal vendor upgrades unlocked? No unlocks as of guardian games 2023?
+
   "dreaming_city": {
     "name": "Dreaming City",
     "category": "Seals",
@@ -965,77 +1006,6 @@
   //   // "other_node_hashes": [193232030, 1371596488, 1371596491, 1371596490, 1371596493, 1371596492, 1371596495, 1371596494, 1371596481, 1371596480, 2058046696],
   //   "records": {},
   // },
-  "dawning_2020": {
-    "name": "Dawning 2020",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [12380736, 2293230544],
-  },
-  "guardian_games_2021": {
-    "name": "Guardian Games 2021",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [1965217294],
-  },
-  "solstice_2021": {
-    "name": "Solstice of Heroes 2021",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [760002588],
-  },
-  "festival_of_the_lost_2021": {
-    "name": "Festival of the Lost 2021",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [1488084792],
-    "disable_reason": "triumphs deleted",
-  },
-  "dawning_2021": {
-    "name": "Dawning 2021",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [4277365833],
-  },
-  "guardian_games_2022": {
-    "name": "Guardian Games 2022",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [1734254471],
-  },
-  "guardian_games_2022_medals": {
-    "name": "Guardian Games 2022 Medals",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [3856185547],
-  },
-  "reveler": {
-    "name": "Events",
-    "category": "Events",
-    "subcategory": null,
-    "seal_node_hash": 2594486939, // For some reason, these triumphs don't have icons
-  },
-  "solstice": {
-    "name": "Solstice",
-    "category": "Events",
-    "subcategory": null,
-    "seal_node_hash": 3598951881,
-  },
-  "festival_of_the_lost": {
-    "name": "Festival of the Lost",
-    "category": "Events",
-    "subcategory": null,
-    "other_node_hashes": [2330977699],
-    "seal_node_hash": 2592822840,
-  },
-  "dawning": {
-    "name": "The Dawning",
-    "category": "Events",
-    "subcategory": null,
-    "seal_node_hash": 3896035657,
-    // cosmic hearth emblem (2022, from bungie rewards)
-  },
-  // TODO challenge/event card? (per character?) Challenge completion count is already on the seal
-  // TODO seasonal vendor upgrades unlocked?
 
   // TODO color header blue if seasonal, once that information is in the API
   "rank_2-6": {
@@ -1656,6 +1626,50 @@
     "category": "Legacy",
     "subcategory": "Quests",
     "other_node_hashes": [3968203274],
+  },
+
+  "dawning_2020": {
+    "name": "Dawning 2020",
+    "category": "Legacy",
+    "subcategory": "Events",
+    "other_node_hashes": [12380736, 2293230544],
+  },
+  "guardian_games_2021": {
+    "name": "Guardian Games 2021",
+    "category": "Legacy",
+    "subcategory": "Events",
+    "other_node_hashes": [1965217294],
+  },
+  "solstice_2021": {
+    "name": "Solstice of Heroes 2021",
+    "category": "Legacy",
+    "subcategory": "Events",
+    "other_node_hashes": [760002588],
+  },
+  "festival_of_the_lost_2021": {
+    "name": "Festival of the Lost 2021",
+    "category": "Legacy",
+    "subcategory": "Events",
+    "other_node_hashes": [1488084792],
+    "disable_reason": "triumphs deleted",
+  },
+  "dawning_2021": {
+    "name": "Dawning 2021",
+    "category": "Legacy",
+    "subcategory": "Events",
+    "other_node_hashes": [4277365833],
+  },
+  "guardian_games_2022": {
+    "name": "Guardian Games 2022",
+    "category": "Legacy",
+    "subcategory": "Events",
+    "other_node_hashes": [1734254471],
+  },
+  "guardian_games_2022_medals": {
+    "name": "Guardian Games 2022 Medals",
+    "category": "Legacy",
+    "subcategory": "Events",
+    "other_node_hashes": [3856185547],
   },
 
   "strikes_legacy": {

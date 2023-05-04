@@ -109,7 +109,7 @@ function get_clan_members($force_refresh) {
       'owns_solstice_2022' => in_array('3841872876', $event_card_hashes),
       'owns_festival_of_the_lost_2022' => in_array('3265920761', $event_card_hashes),
       'owns_dawning_2022' => in_array('2302439334', $event_card_hashes),
-      // Fake solstice event cards? 3461628897.
+      'owns_guardian_games_2023' => in_array('3461628897', $event_card_hashes),
       // silver is only returned for logged-in profiles. $profile['platformSilver']['data'][membershipType]. Component 105
       // Find ids using: https://data.destinysets.com/
       'season_xp' => $profile['profileProgression']['data']['seasonalArtifact']['powerBonusProgression']['currentProgress'] ?? '',
@@ -193,6 +193,7 @@ function display_member_table($members) {
       'Solstice 2022' => $member['owns_solstice_2022'] ? 'Yes' : '',
       'FotL 2022' => $member['owns_festival_of_the_lost_2022'] ? 'Yes' : '',
       'Dawning 2022' => $member['owns_dawning_2022'] ? 'Yes' : '',
+      'GG 2023' => $member['owns_guardian_games_2023'] ? 'Yes' : '',
       'Seasonal Level' => is_numeric($member['season_xp']) ? number_format($member['season_xp'] / 100000, 2) : $member['season_xp'],
       'Gifted Subs' => $member['gifted_subs'],
       'Match Reactions' => $member['match_reactions'],
