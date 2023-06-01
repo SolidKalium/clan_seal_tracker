@@ -29,6 +29,14 @@
       "623283604":  {"column_name": "Solar", "number_objectives": true, "order": 6},
       "2588923804": {"column_name": "Stasis", "number_objectives": true, "order": 7},
       "342038729":  {"column_name": "Class", "number_objectives": true, "order": 8},
+      "1029956969": {}, // Nation of Beasts pattern
+      "2610512925": {}, // Chattering Bone pattern
+      "3363925957": {}, // Transfiguration pattern
+      "2906615623": {}, // Age-Old Bond pattern
+      "950932825": {}, // Tyranny of Heaven pattern
+      "2360742598": {}, // The Supremacy pattern
+      "4104745812": {}, // Techeun Force pattern
+      "2585307516": {}, // Apex Predator pattern
       "717856991":  {"column_name": "Wishes", "order": -4},
       "1359055399": {"column_name": "Raid banners", "order": -3},
       "628370196":  {"column_name": "Chests", "order": -2},
@@ -556,6 +564,36 @@
       "310266584": {}, // Two-Tailed Fox catalyst
     },
   },
+  "season_21": {
+    "name": "Season of the Deep",
+    "category": "Seals",
+    "subcategory": "Seasonal",
+    "seal_node_hash": 1270675701,
+    "other_node_hashes": [
+      4233610139, // quests
+      3821148611, // gear
+      886984653, // salvage
+      1823707661, // deep dive
+      // 1002011008, // fishing
+      2012935609, // general
+    ],
+    "collectibles": {
+      "4024692942": {}, // Arbor Warden
+      "3721933916": {}, // Triton Vice
+      "2940602493": {}, // Cenotaph Mask
+      "2746608191": {}, // Centrifuse
+    },
+    "records": {
+      "1195933113": {}, // Targeted Redaction pattern
+      "1585307805": {}, // Rapacious Appetite pattern
+      "673861429": {}, // Different Times pattern
+      "3328286012": {}, // Until Its Return pattern
+      "3159538778": {}, // A Distant Pull pattern
+      "2119725732": {}, // Thin Precipice pattern
+      "1048178161": {}, // Centrifuse catalyst
+      "2538406461": {}, // Malfeasance catalyst
+    },
+  },
 
   "reveler": {
     "name": "Events",
@@ -737,6 +775,23 @@
       "3100330213": {},
     },
   },
+  "fishing": {
+    "name": "Fishing",
+    "category": "Seals",
+    "subcategory": "Destination",
+    "other_node_hashes": [
+      1002011008, // Season of the Deep fishing
+    ],
+    "records": {
+      "552405891": {"number_objectives": true}, // exotic
+      "2408877948": {"number_objectives": true}, // legendary
+      "297212877": {"number_objectives": true}, // rare
+      "1867130383": {"number_objectives": true}, // uncommon
+      "1863016864": {"number_objectives": true}, // EDZ
+      "3758696003": {"number_objectives": true}, // throne world
+      "3560023014": {"number_objectives": true}, // nessus
+    },
+  },
 
   "new_light": {
     "name": "New Light",
@@ -851,6 +906,24 @@
       "185032465": {}, // Hierarchy of Needs catalyst
     },
   },
+  "ghosts": {
+    "name": "Ghosts of the Deep",
+    "category": "Dungeons",
+    "subcategory": null,
+    "seal_node_hash": 1705744655,
+    "other_node_hashes": [2279316529],
+    "badge_node_hash": 164858691,
+    "records": {
+      "2519881105": {"column_name": "Badge"},
+      "2238420633": {"number_objectives": true}, // collectibles
+      "3817062456": {"column_name": "Clan", "number_objectives": true},
+      "3202440564": {"column_name": "Arc", "number_objectives": true},
+      "646449162": {"column_name": "Void", "number_objectives": true},
+      "3358913961": {"column_name": "Solar", "number_objectives": true},
+      "3187362676": {"column_name": "Class", "number_objectives": true},
+      "1169793114": {}, // Navigator catalyst
+    },
+  },
 
   "node.ovrd.avalon": {
     "name": "\/\/node.ovrd.AVALON\/\/ (Vexcalibur)",
@@ -945,11 +1018,22 @@
       1573256543, // warlock
     ],
   },
+  "seasonal_challenges_21": {
+    "name": "Seasonal Challenges (Deep)",
+    "category": "Other",
+    "subcategory": null,
+    "other_node_hashes": [
+      1812007754, // Bonuses
+      3879246609, 4253677723, 4253677720, 4253677721, 4253677726, 4253677727, 4253677724, 4253677725, 4253677714, 4253677715, 3140639793,
+    ],
+    "records": {},
+  },
   "seasonal_challenges_20": {
     "name": "Seasonal Challenges (Defiance)",
     "category": "Other",
     "subcategory": null,
-    "other_node_hashes": [101130376, 4189078114, 4189078113, 4189078112, 4189078119, 4189078118, 4189078117, 4189078116, 4189078123, 4189078122, 1920499830],
+    "other_node_hashes": [2102357639],
+    // "other_node_hashes": [101130376, 4189078114, 4189078113, 4189078112, 4189078119, 4189078118, 4189078117, 4189078116, 4189078123, 4189078122, 1920499830],
     "records": {},
   },
   // "seasonal_challenges_19": {
@@ -1023,7 +1107,10 @@
       2890778319, // adventurer
       1006170986,
       2386755644,
-      3440238121, // veteran
+      2255054350, // veteran
+      1605400712,
+      3870366694,
+      3440238121,
       1136207523,
       472859807,
     ],
@@ -1039,7 +1126,6 @@
       3022015892,
       1635301565,
       1614697748,
-      1890133162,
     ],
   },
   "rank_8": {
@@ -1049,8 +1135,8 @@
     "other_node_hashes": [
       1705890062,
       1056236424,
-      2547167937,
-      1854176989,
+      971324125,
+      3611372588,
       2427983160,
       759794351,
       2117867809,
@@ -1063,9 +1149,9 @@
     "other_node_hashes": [
       194243121,
       607142094,
-      153324004,
-      3569789392,
-      107154916,
+      1020100831,
+      2178611599,
+      3490420542,
       1715006394,
       3095296416,
     ],
@@ -1076,7 +1162,10 @@
     "subcategory": null,
     "other_node_hashes": [
       3647485491,
-      2177540076,
+      280655854,
+      2499789966,
+      3932467826,
+      104667280,
       2360492953,
       2588033650,
       1995676814,
@@ -1090,6 +1179,7 @@
     "other_node_hashes": [
       2190040502,
       3034053226,
+      936264472,
       21319293,
       1460726975,
     ],

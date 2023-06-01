@@ -243,6 +243,10 @@ class profiles {
   private static function _precache_players($players, $force_refresh) {
     $queue = array();
 
+    if (!is_dir(self::$dir)) {
+      mkdir(self::$dir);
+    }
+
     foreach ($players as $player) {
       $last_seen = $player['lastOnlineStatusChange'] ?? null;
       if (!empty($player['isOnline'])) {
