@@ -1028,7 +1028,7 @@ function estimate_player_record_progress($record) {
   } else if (!empty($record['intervalObjectives'])) {
     $count = 1;
     $objective = end($record['intervalObjectives']);
-    $progress += min(1, $objective['progress'] ?? 0 / max(1, $objective['completionValue']));
+    $progress += min(1, ($objective['progress'] ?? 0) / max(1, $objective['completionValue']));
   } else if (isset($record['state'])) {
     // state is not normally on a record.
     // example: season 12 trials confidence is high.

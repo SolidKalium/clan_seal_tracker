@@ -63,6 +63,9 @@
 - [Clarity](https://www.d2clarity.com/): A DIM companion app
 - [D2 Foundry](https://d2foundry.gg/)
 - [Season pass extension](https://github.com/joshhunt/season-pass-extension): allows players to claim older season pass rewards
+- https://d2checkpoint.com/
+- https://destinyclandashboard.com/ / https://destinyclan.report/
+- https://app.mobalytics.gg/destiny-2
 
 ### Meme sites
 - https://oracles.report/
