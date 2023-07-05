@@ -853,6 +853,7 @@ function get_rows($page_key, $headings, $players) {
     // if ($id !== '5_4611686018500895898') { continue; } // kalium
     // if ($id !== '5_4611686018503337845') { continue; } // gyrados
     // if ($id !== '2_4611686018449964451') { continue; } // pirate
+    // if ($id !== '2_4611686018472115408') { continue; } // storm
     // echo_pretty_json($player); exit();
 
     $last_seen = $player['lastOnlineStatusChange'] ?? null;
@@ -1008,7 +1009,10 @@ function estimate_player_record_progress($record) {
 
   if (
     isset($record['state']) &&
-    ($record['state'] === 0) || ($record['state'] & 1) // complete or just not redeemed yet
+    ($record['state'] === 0 && empty($record['intervalObjectives'])) || ($record['state'] & 1) // complete or just not redeemed yet
+    // Note: state can be 0 when an interval objective is complete but not redeemed.
+    //   It might be better to get the actual progress for that case. Then only default to 1 if all progress is redeemed.
+    //   More test cases would potentially be needed and this could have changed over time.
   ) {
     return 1;
   }
