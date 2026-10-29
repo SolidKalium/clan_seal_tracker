@@ -1,0 +1,22 @@
+{
+  "name": "Seal Tracker",
+  "image": "local/devtools:1",
+  "forwardPorts": [8000, 5173],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
+        "mechatroner.rainbow-csv",
+        "bmewburn.vscode-intelephense-client",
+        "mrmlnc.vscode-apache",
+        "openai.chatgpt@26.1007.21434"
+      ]
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/.git,target=${containerWorkspaceFolder}/.git,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.devcontainer,target=${containerWorkspaceFolder}/.devcontainer,type=bind,readonly"
+  ]
+}
