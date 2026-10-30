@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { recordCell, recordFraction, selectRecord, buildSeal } from '../src/domain';
-import type { Heading, Profile, RecordProgress } from '../src/types';
+import { recordCell, recordFraction, selectRecord, buildSeal, sealAwarded } from '../src/domain';
+import type { Heading, Profile, RecordProgress, Seal } from '../src/types';
 export const heading: Heading = { hash: '42', name: 'Test triumph', label: 'Test', description: '', scope: 0, gilding: false, skip: false, order: 1, objectives: [{ hash: 101, completionValue: 10 }], intervals: [] };
 const objective = (progress: number, complete = false, hash = 101) => ({ objectiveHash: hash, progress, completionValue: 10, complete });
 const cases: RecordProgress[] = [
@@ -38,6 +38,21 @@ describe('progress rules', () => {
     const p: Profile = { characterRecords: { data: { titan: { records: { '42': { state: 4, objectives: [objective(10), objective(0, false, 102)] } } }, hunter: { records: { '42': { state: 4, objectives: [objective(0), objective(10, false, 102)] } } } } } };
     const record = selectRecord(p, { ...heading, scope: 1 });
     expect(recordFraction(record!)).toBe(.5);
+  });
+  it('counts character-scoped title redemption on any character, including tied progress', () => {
+    const seal = { completionHash: '42', completionScope: 1 } as Seal;
+    const profile: Profile = { characterRecords: { data: {
+      first: { records: { '42': { state: 4, objectives: [objective(10, true)] } } },
+      second: { records: { '42': { state: 1, objectives: [objective(10, true)] } } },
+    } } };
+    expect(sealAwarded(profile, seal)).toBe(true);
+    expect(sealAwarded(profile, { ...seal, completionScope: 0 })).toBeUndefined();
+  });
+  it('exposes objective names, counts, completion, and response-order independence', () => {
+    const h = { ...heading, objectives: [{ hash: 101, completionValue: 10, progressDescription: 'Security' }, { hash: 102, completionValue: 1, progressDescription: 'Atraks' }] };
+    const cell = recordCell({ state: 4, objectives: [{ ...objective(0, false, 102), completionValue: 1 }, objective(5)] }, h);
+    expect(cell.objectives.map(o => [o.name, o.text, o.complete])).toEqual([['Security', '5/10', false], ['Atraks', '·', false]]);
+    expect(recordCell({ state: 1 }, h).objectives.every(o => o.complete)).toBe(true);
   });
   it('marks missing manifest content unavailable', () => {
     expect(buildSeal({ id: 'x', name: 'X', category: 'Raid', sealNodeHash: '1', records: {} }, { version: 'v', language: 'en', nodes: {}, records: {}, objectives: {} }).unavailable).toBeTruthy();

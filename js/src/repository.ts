@@ -106,6 +106,19 @@ export class TrackerRepository {
       }
     });
   }
+  memberships(user: UserInfo): Promise<UserInfo[]> {
+    const key = `memberships:${user.membershipType}_${user.membershipId}`;
+    return this.once(key, async () => {
+      const cached = await this.store.get<UserInfo[]>(key);
+      if (fresh(cached, 24 * 60 * MINUTE)) return cached!.value;
+      try {
+        const response = await this.transport.api<{ destinyMemberships: UserInfo[] }>(`/User/GetMembershipsById/${user.membershipId}/${user.membershipType}/`);
+        if (!Array.isArray(response.destinyMemberships)) throw new Error('Platform names are unavailable.');
+        await this.store.put({ key, value: response.destinyMemberships, fetchedAt: Date.now() });
+        return response.destinyMemberships;
+      } catch (error) { if (cached) return cached.value; throw error; }
+    });
+  }
   private async failed<T>(cached: Cached<T> | undefined, e: unknown): Promise<LoadResult<T>> {
     const error = message(e);
     if (cached) await this.store.put({ ...cached, lastAttemptAt: Date.now(), error });

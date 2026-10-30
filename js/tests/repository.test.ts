@@ -48,3 +48,14 @@ it('persists across store instances and clears API cache without deleting prefer
   expect(await other.preference('table', {})).toEqual({ sort: 'name' });
   expect(await other.get('x')).toBeUndefined(); other.db.close();
 });
+
+it('deduplicates and caches linked platform names, retaining them during an outage', async () => {
+  const names = [{ ...member.destinyUserInfo, displayName: 'Steam name' }];
+  const t = transport({ destinyMemberships: names }), repository = new TrackerRepository(store, t, '1');
+  const results = await Promise.all([repository.memberships(member.destinyUserInfo), repository.memberships(member.destinyUserInfo)]);
+  expect(results).toEqual([names, names]); expect(t.api).toHaveBeenCalledTimes(1);
+  await repository.memberships(member.destinyUserInfo); expect(t.api).toHaveBeenCalledTimes(1);
+  await store.put({ key: 'memberships:3_4611686018485645582', value: names, fetchedAt: 0 });
+  vi.mocked(t.api).mockRejectedValue(new Error('offline'));
+  expect(await repository.memberships(member.destinyUserInfo)).toEqual(names);
+});

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+import RecordDetails from './RecordDetails.vue';
+import GuardianDetails from './GuardianDetails.vue';
 import config from '../.generated/config.json';
 import catalogJson from '../.generated/catalog.json';
 import { BungieTransport } from './api';
@@ -7,7 +9,8 @@ import { CacheStore } from './storage';
 import { eachLimited, TrackerRepository } from './repository';
 import { buildSeal, recordCell, selectRecord, sealAwarded } from './domain';
 import { profileFresh } from './policy';
-import type { Definitions, Heading, LoadResult, PageConfig, PlayerData, Profile, Roster } from './types';
+import { compareClanTenure } from './clan';
+import type { Cell, Definitions, Heading, LoadResult, PageConfig, PlayerData, Profile, Roster, UserInfo } from './types';
 
 const catalog = catalogJson as PageConfig[];
 const store = new CacheStore();
@@ -20,7 +23,54 @@ const rosterState = ref(''), definitionsState = ref('');
 const hash = ref(window.location.hash);
 const search = ref(''), filter = ref('all'), sort = ref('progress');
 const preferencesReady = ref(false);
-const detail = ref<{ player: string; heading: string; text: string }>();
+const detail = shallowRef<{ player: string; heading: Heading; cell: Cell }>();
+type TooltipContent = { kind: 'record'; player?: string; heading: Heading; cell?: Cell } | { kind: 'guardian'; guardian: PlayerData; memberships?: UserInfo[]; loading: boolean; error?: string };
+const tooltip = shallowRef<TooltipContent & { id: number; anchor: DOMRect; style: Record<string, string> }>();
+const tooltipElement = ref<HTMLElement>();
+const groupHeader = ref<HTMLElement>();
+const groupHeaderHeight = ref(64);
+let headerObserver: ResizeObserver | undefined;
+let tooltipSerial = 0;
+const objectiveColumns = (heading: Heading) => Math.max(1, heading.objectives.length);
+const hasStages = computed(() => selected.value?.headings.some(h => objectiveColumns(h) > 1));
+const tableColumns = computed(() => 2 + (selected.value?.headings.reduce((sum, h) => sum + objectiveColumns(h), 0) ?? 0));
+function closeTooltip() { tooltip.value = undefined; }
+async function positionTooltip(id: number) {
+  await nextTick();
+  const tip = tooltip.value;
+  if (!tip || tip.id !== id || !tooltipElement.value) return;
+  const rect = tip.anchor;
+  const bounds = tooltipElement.value.getBoundingClientRect();
+  const left = Math.max(10, Math.min(rect.left + rect.width / 2 - bounds.width / 2, window.innerWidth - bounds.width - 10));
+  const top = rect.bottom + bounds.height + 12 < window.innerHeight ? rect.bottom + 8 : Math.max(10, rect.top - bounds.height - 8);
+  tooltip.value = { ...tip, style: { left: `${left}px`, top: `${top}px`, visibility: 'visible' } };
+}
+async function openTooltip(event: Event, content: TooltipContent) {
+  const id = ++tooltipSerial;
+  tooltip.value = { ...content, id, anchor: (event.currentTarget as HTMLElement).getBoundingClientRect(), style: { left: '0px', top: '0px', visibility: 'hidden' } };
+  await positionTooltip(id);
+  return id;
+}
+function showTooltip(event: Event, heading: Heading, cell?: Cell, player?: string) {
+  return openTooltip(event, { kind: 'record', heading, cell, player });
+}
+async function showGuardianTooltip(event: Event, guardian: PlayerData) {
+  const id = await openTooltip(event, { kind: 'guardian', guardian, loading: true });
+  try {
+    const memberships = await repository.memberships(guardian.member.destinyUserInfo);
+    if (tooltip.value?.id === id && tooltip.value.kind === 'guardian') tooltip.value = { ...tooltip.value, memberships, loading: false };
+  } catch {
+    if (tooltip.value?.id === id && tooltip.value.kind === 'guardian') tooltip.value = { ...tooltip.value, loading: false, error: 'Additional platform names are unavailable.' };
+  }
+  await positionTooltip(id);
+}
+watch(groupHeader, element => {
+  headerObserver?.disconnect();
+  if (element) {
+    headerObserver = new ResizeObserver(() => { groupHeaderHeight.value = element.getBoundingClientRect().height; });
+    headerObserver.observe(element);
+  }
+});
 const routeId = computed(() => hash.value.startsWith('#/seal/') ? hash.value.slice(7) : '');
 const isHome = computed(() => !hash.value || hash.value === '#' || hash.value === '#/');
 const seals = computed(() => definitions.value ? catalog.map(page => buildSeal(page, definitions.value!)) : []);
@@ -44,13 +94,14 @@ const rows = computed(() => {
     return { id, ...p, name: nameOf(p), cells, fraction, hasData, complete: hasData && scored.length > 0 && fraction >= 1, earned: sealAwarded(p.profile, seal) };
   }).filter(row => row.name.toLowerCase().includes(search.value.trim().toLowerCase()) && (filter.value === 'all' || (filter.value === 'complete' ? row.complete : filter.value === 'incomplete' ? row.hasData && !row.complete : !row.hasData)))
     .sort((a, b) => {
+      if (sort.value === 'tenure') return compareClanTenure(a.member, b.member) || a.name.localeCompare(b.name);
       if (sort.value === 'name') return a.name.localeCompare(b.name);
       if (a.hasData !== b.hasData) return a.hasData ? -1 : 1;
       if (sort.value === 'progress' && a.complete !== b.complete) return a.complete ? 1 : -1;
       return b.fraction - a.fraction || a.name.localeCompare(b.name);
     });
 });
-const changedHash = () => { hash.value = window.location.hash; detail.value = undefined; };
+const changedHash = () => { hash.value = window.location.hash; detail.value = undefined; closeTooltip(); };
 const age = (time?: number) => {
   if (!time) return 'Not cached';
   const minutes = Math.max(0, Math.floor((Date.now() - time) / 60_000));
@@ -116,19 +167,21 @@ async function retryPlayer(id: string) {
   try { applyProfile(player.member, await repository.profile(player.member, cached => applyProfile(player.member, cached), true)); }
   finally { busy.value = false; phase.value = 'Ready'; }
 }
-function showDetail(player: string, heading: Heading, text: string) { detail.value = { player, heading: heading.name, text }; }
+function showDetail(player: string, heading: Heading, cell: Cell) { closeTooltip(); detail.value = { player, heading, cell }; }
 watch([search, filter, sort], () => { if (preferencesReady.value) void store.setPreference('table', { search: search.value, filter: filter.value, sort: sort.value }); });
 watch(selected, seal => { document.title = seal ? `${seal.title} · Clan Seal Tracker` : 'Clan Seal Tracker'; });
 onMounted(async () => {
   window.addEventListener('hashchange', changedHash);
+  window.addEventListener('resize', closeTooltip);
+  window.addEventListener('scroll', closeTooltip);
   try {
     const preferences = await store.preference('table', { search: '', filter: 'all', sort: 'progress' });
     search.value = typeof preferences.search === 'string' ? preferences.search : '';
     filter.value = ['all', 'complete', 'incomplete', 'unavailable'].includes(preferences.filter) ? preferences.filter : 'all';
-    sort.value = ['progress', 'highest', 'name'].includes(preferences.sort) ? preferences.sort : 'progress';
+    sort.value = ['progress', 'highest', 'name', 'tenure'].includes(preferences.sort) ? preferences.sort : 'progress';
   } finally { preferencesReady.value = true; busy.value = false; void load(); }
 });
-onUnmounted(() => window.removeEventListener('hashchange', changedHash));
+onUnmounted(() => { window.removeEventListener('hashchange', changedHash); window.removeEventListener('resize', closeTooltip); window.removeEventListener('scroll', closeTooltip); headerObserver?.disconnect(); closeTooltip(); });
 </script>
 
 <template>
@@ -168,17 +221,51 @@ onUnmounted(() => window.removeEventListener('hashchange', changedHash));
       </template>
       <template v-else-if="selected && !selected.unavailable">
         <section class="page-heading seal-heading"><div><p class="eyebrow">{{ selected.page.name }} / SEAL REQUIREMENTS</p><h1>{{ selected.title }}</h1><p class="lede">{{ selected.description || 'Track every requirement, one guardian at a time.' }}</p></div><div class="title-tally"><strong>{{ titleCount(selected) }}</strong><span>known title holders</span></div></section>
-        <div class="table-tools"><label class="search"><span aria-hidden="true">⌕</span><input v-model="search" aria-label="Search guardians" placeholder="Search guardians…" type="search"></label><label><span class="sr-only">Filter progress</span><select v-model="filter" aria-label="Filter progress"><option value="all">All guardians</option><option value="incomplete">Requirements incomplete</option><option value="complete">Requirements complete</option><option value="unavailable">No public data</option></select></label><label><span class="sr-only">Sort guardians</span><select v-model="sort" aria-label="Sort guardians"><option value="progress">Closest next · completed last</option><option value="highest">Highest progress first</option><option value="name">Guardian name</option></select></label></div>
+        <div class="table-tools"><label class="search"><span aria-hidden="true">⌕</span><input v-model="search" aria-label="Search guardians" placeholder="Search guardians…" type="search"></label><label><span class="sr-only">Filter progress</span><select v-model="filter" aria-label="Filter progress"><option value="all">All guardians</option><option value="incomplete">Requirements incomplete</option><option value="complete">Requirements complete</option><option value="unavailable">No public data</option></select></label><label><span class="sr-only">Sort guardians</span><select v-model="sort" aria-label="Sort guardians"><option value="progress">Closest next · completed last</option><option value="highest">Highest progress first</option><option value="name">Guardian name</option><option value="tenure">Clan tenure · longest first</option></select></label></div>
         <div class="table-caption"><span>{{ rows.length }} guardians shown</span><span>✓ Complete <span class="legend-progress">●</span> In progress <span class="muted">— No record</span></span></div>
-        <div class="table-scroll" tabindex="0" aria-label="Scrollable seal progress table">
-          <table><thead><tr><th scope="col" class="player-column">Guardian</th><th scope="col" class="progress-column">Requirements</th><th v-for="heading in selected.headings" :key="heading.hash" scope="col" :title="`${heading.name}\n${heading.description}`"><span>{{ heading.label }}</span><small v-if="heading.gilding">Gilding</small><small v-if="heading.scope === 1">Per character</small></th></tr></thead>
-            <tbody><tr v-for="row in rows" :key="row.id" :class="{ 'row-complete': row.complete }"><th scope="row" class="player-column"><span class="player-name">{{ row.name }} <span v-if="row.earned" class="earned" title="Title requirement complete" aria-label="Title requirement complete">✦</span></span><span class="player-meta" :class="{ 'warning-text': ['stale', 'private', 'unavailable'].includes(row.status) }" :title="row.error || age(row.fetchedAt)">{{ statusLabel(row) }}<span v-if="row.fetchedAt"> · {{ age(row.fetchedAt) }}</span></span><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :disabled="busy" @click="retryPlayer(row.id)">Retry profile</button></th><td class="progress-column"><template v-if="row.hasData"><strong>{{ Math.round(row.fraction * 100) }}<small>%</small></strong><span class="mini-progress"><span :style="{ width: `${row.fraction * 100}%` }"></span></span></template><span v-else class="muted">{{ row.status === 'loading' ? 'Loading…' : 'No data' }}</span></td><td v-for="(cell, i) in row.cells" :key="selected.headings[i]!.hash" :class="{ 'cell-complete': cell.complete, 'cell-progress': cell.fraction > 0 && !cell.complete, 'cell-missing': cell.missing, 'cell-unowned': cell.unowned }"><button class="cell-button" :title="cell.detail" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${cell.complete ? 'complete' : cell.missing ? 'no record' : cell.text === '·' ? 'incomplete' : cell.text}`" @click="showDetail(row.name, selected!.headings[i]!, cell.detail)">{{ cell.text }}</button></td></tr><tr v-if="!rows.length"><td :colspan="selected.headings.length + 2" class="empty-state">{{ !roster ? (busy ? 'Loading clan roster…' : 'Clan roster is unavailable. See the connection notice above.') : busy ? 'Loading guardians…' : 'No guardians match this view.' }}<button v-if="search || filter !== 'all'" class="text-button" @click="search = ''; filter = 'all'">Reset filters</button></td></tr></tbody>
+        <div class="table-scroll" tabindex="0" aria-label="Scrollable seal progress table" :style="{ '--group-header-height': `${groupHeaderHeight}px` }" @scroll="closeTooltip">
+          <table>
+            <thead>
+              <tr ref="groupHeader" class="record-header-row">
+                <th scope="col" class="player-column" :rowspan="hasStages ? 2 : 1">Guardian</th>
+                <th scope="col" class="progress-column" :rowspan="hasStages ? 2 : 1">Requirements</th>
+                <th v-for="heading in selected.headings" :key="heading.hash" :scope="objectiveColumns(heading) > 1 ? 'colgroup' : 'col'" :colspan="objectiveColumns(heading)" :rowspan="hasStages && objectiveColumns(heading) === 1 ? 2 : 1" class="record-heading">
+                  <button class="heading-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showTooltip($event, heading)" @mouseleave="closeTooltip" @focus="showTooltip($event, heading)" @blur="closeTooltip" @keydown.esc="closeTooltip">{{ heading.label }}</button>
+                  <small v-if="heading.gilding">Gilding</small>
+                </th>
+              </tr>
+              <tr v-if="hasStages" class="objective-header-row">
+                <template v-for="heading in selected.headings" :key="heading.hash">
+                  <th v-for="(objective, stage) in (objectiveColumns(heading) > 1 ? heading.objectives : [])" :key="objective.hash" scope="col" class="objective-heading" :class="{ 'record-end': stage === heading.objectives.length - 1 }"><button class="stage-button" :aria-label="`Stage ${stage + 1}: ${objective.progressDescription || objective.displayProperties?.description || heading.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showTooltip($event, heading)" @mouseleave="closeTooltip" @focus="showTooltip($event, heading)" @blur="closeTooltip" @keydown.esc="closeTooltip">{{ stage + 1 }}</button></th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in rows" :key="row.id" :class="{ 'row-complete': row.complete }">
+                <th scope="row" class="player-column"><div class="guardian-row"><button class="guardian-button" :aria-label="`Guardian details: ${row.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showGuardianTooltip($event, row)" @mouseleave="closeTooltip" @focus="showGuardianTooltip($event, row)" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="player-name">{{ row.name }} <span v-if="row.earned" class="earned" aria-label="Title requirement complete">✦</span><span v-if="['stale', 'private', 'unavailable'].includes(row.status)" class="guardian-warning" :aria-label="statusLabel(row)">●</span></span></button><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :disabled="busy" :aria-label="`Retry profile: ${row.name}`" @click="retryPlayer(row.id)">↻</button></div></th>
+                <td class="progress-column"><template v-if="row.hasData"><strong>{{ Math.round(row.fraction * 100) }}<small>%</small></strong><span class="mini-progress"><span :style="{ width: `${row.fraction * 100}%` }"></span></span></template><span v-else class="muted">{{ row.status === 'loading' ? 'Loading…' : 'No data' }}</span></td>
+                <template v-for="(cell, i) in row.cells" :key="selected.headings[i]!.hash">
+                  <td v-if="cell.complete || !cell.objectives.length" :colspan="objectiveColumns(selected.headings[i]!)" :class="{ 'cell-complete': cell.complete, 'cell-progress': cell.fraction > 0 && !cell.complete, 'cell-missing': cell.missing, 'cell-unowned': cell.unowned }" class="record-end">
+                    <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${cell.complete ? 'complete' : cell.missing ? 'no record' : 'incomplete'}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name)" @mouseleave="closeTooltip" @focus="showTooltip($event, selected!.headings[i]!, cell, row.name)" @blur="closeTooltip" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ cell.text }}</button>
+                  </td>
+                  <template v-else>
+                    <td v-for="(objective, j) in cell.objectives" :key="objective.hash" :class="{ 'cell-complete': objective.complete, 'cell-progress': objective.fraction > 0 && !objective.complete, 'cell-missing': objective.missing, 'cell-unowned': cell.unowned, 'record-end': j === cell.objectives.length - 1 }">
+                      <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${objective.name}: ${objective.missing ? 'no record' : objective.complete ? 'complete' : `${objective.progress}/${objective.target}`}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name)" @mouseleave="closeTooltip" @focus="showTooltip($event, selected!.headings[i]!, cell, row.name)" @blur="closeTooltip" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ objective.text }}</button>
+                    </td>
+                  </template>
+                </template>
+              </tr>
+              <tr v-if="!rows.length"><td :colspan="tableColumns" class="empty-state">{{ !roster ? (busy ? 'Loading clan roster…' : 'Clan roster is unavailable. See the connection notice above.') : busy ? 'Loading guardians…' : 'No guardians match this view.' }}<button v-if="search || filter !== 'all'" class="text-button" @click="search = ''; filter = 'all'">Reset filters</button></td></tr>
+            </tbody>
           </table>
         </div>
-        <aside v-if="detail" class="detail-panel" aria-live="polite"><button class="detail-close" aria-label="Close record details" @click="detail = undefined">×</button><p class="eyebrow">{{ detail.player }}</p><h3>{{ detail.heading }}</h3><p class="detail-text">{{ detail.text }}</p></aside>
+        <aside v-if="detail" class="detail-panel" aria-live="polite"><button class="detail-close" aria-label="Close record details" @click="detail = undefined">×</button><RecordDetails :heading="detail.heading" :cell="detail.cell" :player="detail.player" /></aside>
         <p class="footnote">Progress averages each requirement’s objectives, matching the legacy calculation. A missing record is shown separately from an incomplete one. Click a cell for objective details.</p>
       </template>
       <section v-else-if="!isHome" class="empty-state"><h1>{{ selected?.unavailable ? selected.page.name : definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions && !busy ? 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section>
+      <Teleport to="body">
+        <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" role="tooltip" :style="tooltip.style"><RecordDetails v-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" /><GuardianDetails v-else :guardian="tooltip.guardian" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /></div>
+      </Teleport>
       <footer><span>CLAN SEAL TRACKER <span class="muted">/ JavaScript MVP</span></span><span>Public Bungie data · cached locally · not affiliated with Bungie</span></footer>
     </main>
   </div>

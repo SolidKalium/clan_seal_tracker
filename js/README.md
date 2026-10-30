@@ -23,10 +23,11 @@ Bungie must allow the browser's exact origin in the application registration. Fo
 
 - Clan from the existing settings file, with a local overview and seven existing raid-seal links.
 - Generic seal requirements from the active manifest, including account/character records and interval objectives. Missing or unsupported definitions are marked unavailable.
-- Progressive per-player updates, name search, complete/incomplete/no-data filters, sorting, sticky table headings/names, and objective details on cell selection.
+- Progressive per-player updates, name search, complete/incomplete/no-data filters, progress/name/clan-tenure sorting, sticky table headings/names, and objective details on cell selection.
 - Known title-holder counts with loaded-profile coverage. These include retained older public data; the global stale/private count identifies that limitation.
 - Definitions, roster, profiles, and cross-save resolution persist in IndexedDB. Small working maps avoid placing entire response trees in Vue reactivity.
 - Filters/sort/search persist separately from API data. Clearing the API cache keeps preferences.
+- Compact guardian rows, with clan rank, join date, freshness, and linked platform names in guardian tooltips. Membership names load on demand and are cached for 24 hours. Tooltips let pointer movement pass through to the table.
 - Manual refresh, individual retry, bounded profile concurrency, request deduplication, timeouts, throttling/backoff, and fallback to last good data.
 - Cache-storage failure falls back to session memory with a visible notice.
 
@@ -38,7 +39,7 @@ A failed fetch never changes the successful-fetch timestamp. Private responses r
 
 ## Intentional limits
 
-This slice implements **seal mode**, not the PHP page's additional badges, collectibles, or extra triumphs. Progress uses the PHP record-average calculation; each record occupies one cell, with objective details available on click. Character records choose the best complete character record by aggregate progress, rather than combining objectives across characters. That is a deliberate clarification of the legacy heuristic.
+This slice implements **seal mode**, not the PHP page's additional badges, collectibles, or extra triumphs. Progress uses the PHP record-average calculation. Multi-objective triumphs have aligned objective subcolumns, with visible counts for partial objectives; a completed triumph collapses to one checkmark spanning its stages. Hover or keyboard focus opens a styled tooltip, and clicking pins the details below the table. Character records choose the best complete character record by aggregate progress, rather than combining objectives across characters. That is a deliberate clarification of the legacy heuristic. API character storage scope alone does not imply character-specific earning rules, so no blanket per-character label is shown. Title counts respect the completion record's own scope and recognize redemption on any character.
 
 No per-user overrides, frozen profiles, hidden-player rules, clan selector, historical-data import/UI, OAuth, or server rendering. Clan selection follows the port of most current features. Archived datasets stay untouched.
 

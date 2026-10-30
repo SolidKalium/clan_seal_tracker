@@ -3,7 +3,7 @@ import type { Cell, Definitions, Heading, PageConfig, Profile, RecordProgress, S
 export function buildSeal(page: PageConfig, defs: Definitions): Seal {
   const node = defs.nodes[page.sealNodeHash];
   const completion = node && defs.records[String(node.completionRecordHash)];
-  const base: Seal = { page, title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: completion?.displayProperties.description ?? '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), headings: [] };
+  const base: Seal = { page, title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: completion?.displayProperties.description ?? '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
   if (!node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
   let nextOrder = 100;
   for (const { recordHash } of node.children.records) {
@@ -34,7 +34,7 @@ export function recordFraction(record: RecordProgress): number {
   return interval ? Math.min(1, (interval.progress ?? 0) / Math.max(1, interval.completionValue)) : 0;
 }
 
-export function selectRecord(profile: Profile, heading: Heading): RecordProgress | undefined {
+export function selectRecord(profile: Profile, heading: Pick<Heading, 'hash' | 'scope'>): RecordProgress | undefined {
   if (heading.scope === 0) return profile.profileRecords?.data?.records[heading.hash];
   const candidates = Object.values(profile.characterRecords?.data ?? {}).map(c => c.records[heading.hash]).filter((r): r is RecordProgress => !!r);
   // Select one whole character's record: do not invent completion by merging characters.
@@ -42,19 +42,31 @@ export function selectRecord(profile: Profile, heading: Heading): RecordProgress
 }
 
 export function recordCell(record: RecordProgress | undefined, heading: Heading): Cell {
-  if (!record) return { fraction: 0, complete: false, missing: true, text: '—', detail: 'No record data available', unowned: false };
-  const fraction = recordFraction(record);
-  const complete = fraction >= 1;
+  const fraction = record ? recordFraction(record) : 0;
+  const complete = !!record && fraction >= 1;
   const definitions = heading.objectives.length ? heading.objectives : heading.intervals.slice(-1);
-  const progress = heading.objectives.length ? record.objectives : record.intervalObjectives;
-  const detail = definitions.map(def => {
+  const progress = heading.objectives.length ? record?.objectives : record?.intervalObjectives;
+  const objectives = definitions.map(def => {
     const objective = progress?.find(o => String(o.objectiveHash) === String(def.hash));
-    return `${def.progressDescription || heading.name}: ${objective?.progress ?? 0}/${objective?.completionValue ?? def.completionValue}${objective?.complete ? ' (complete)' : ''}`;
-  }).join('\n');
-  return { fraction, complete, missing: false, text: complete ? '✓' : fraction > 0 ? `${Math.round(fraction * 100)}%` : '·', detail: `${heading.name}\n${detail || (complete ? 'Complete' : 'Incomplete')}${heading.scope === 1 ? '\nBest single character' : ''}`, unowned: !!(record.state & 32) };
+    const target = objective?.completionValue ?? def.completionValue;
+    const value = objective?.progress ?? 0;
+    const done = complete || !!objective?.complete || (target > 0 && value >= target);
+    return { hash: String(def.hash), name: def.progressDescription || def.displayProperties?.description || heading.name,
+      progress: value, target, complete: done, missing: !record,
+      text: !record ? '—' : done ? '✓' : target === 1 ? '·' : `${value}/${target}`,
+      fraction: done ? 1 : Math.min(1, value / Math.max(1, target)) };
+  });
+  const detail = objectives.map(o => `${o.name}: ${o.progress}/${o.target}${o.complete ? ' (complete)' : ''}`).join('\n');
+  return { objectives, fraction, complete, missing: !record, text: !record ? '—' : complete ? '✓' : fraction > 0 ? `${Math.round(fraction * 100)}%` : '·',
+    detail: !record ? 'No record data available' : detail || (complete ? 'Complete' : 'Incomplete'), unowned: !!(record && (record.state & 32)) };
 }
 
 export function sealAwarded(profile: Profile | undefined, seal: Seal): boolean | undefined {
-  const record = profile?.profileRecords?.data?.records[seal.completionHash];
-  return record ? !!(record.state & 1) || record.state === 0 : undefined;
+  if (!profile) return undefined;
+  const records = (seal.completionScope ?? 0) === 1
+    ? Object.values(profile.characterRecords?.data ?? {}).map(character => character.records[seal.completionHash])
+    : [profile.profileRecords?.data?.records[seal.completionHash]];
+  const present = records.filter((record): record is RecordProgress => !!record);
+  // A title may be redeemed on just one character, even if other records have equal objective progress.
+  return present.length ? present.some(record => !!(record.state & 1) || record.state === 0) : undefined;
 }

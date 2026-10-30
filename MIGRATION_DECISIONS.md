@@ -239,3 +239,40 @@ Verification: 16 unit tests and five Chromium Playwright scenarios pass. Shared 
 Live API finding: manifest and definition downloads work from the browser, but clan requests initially returned `OriginHeaderDoesNotMatchKey`. The user registered `http://localhost:5173`; Bungie reports propagation can take up to 20 minutes. This registration is independent of successful server-side API calls. The UI explains the error and supports retry after propagation.
 
 See `js/README.md` for run/build commands, data boundaries, tests, and remaining scope.
+
+## First feedback pass — 2026-10-30
+
+- Fixed title counts for character-scoped completion records (DSC). Read the scope from the manifest and check all relevant character records, including ties in objective progress. Live validation showed 14 title holders among 27 loaded profiles.
+- API storage scope is not a reliable label for how a triumph is earned. Removed the blanket “Per character” label. Most triumph records may be replicated across characters; future badge/collection pages need their own completion semantics and must not combine incompatible character progress.
+- Restored visible stages: multi-objective triumphs use aligned objective subcolumns, showing counts for partial objectives and one spanning checkmark for a completed triumph.
+- Replaced repetitive native tooltips with styled titles/descriptions, named objectives, distinct counts, and subdued completion text. The same structured content appears in pinned details.
+- Connected the search focus ring to its visible container and matched the dropdown heights.
+- Future navigation idea: turn the activity / page-type breadcrumb (e.g. “Deep Stone Crypt / Seal requirements”) into discoverable dropdowns once more page types are available. Deferred, not implemented in this pass.
+- Origin registration is now working: the live browser loaded all 27 profiles without API notices or runtime errors. Build, 18 unit checks, and six Playwright scenarios passed; desktop/mobile layouts inspected.
+
+Stage display correction: use compact numbered stage headers (1, 2, …), not objective names in the table. Keep numbered objective names in hover/focus and pinned details so the table remains dense and scannable.
+
+## Table interaction refinements — 2026-10-30
+
+- End-of-triumph dividers now extend through numbered subheaders, including boundaries adjacent to single-stage/row-spanning headers.
+- Hover/focus tooltips are pointer-transparent and dismiss immediately when leaving their trigger; they cannot trap the pointer over covered cells. Clicking record cells still provides pinned, selectable details.
+- Guardian rows are compact (approximately 35 px); names open details with freshness, fetch time, errors, and linked platform display names. Linked memberships are requested on demand, deduplicated, and cached for 24 hours with stale fallback.
+- The table scroll container uses the site background and contains overscroll, with a matching scrollbar track. Native Safari rubber-band rendering remains a manual visual check.
+- Build and browser checks cover group boundaries, row height, guardian details, pointer hit testing through tooltips, and the scroll background.
+
+Overscroll border correction: attach the rounded outer border to the table itself, not the stationary scroll container, so rubber-band scrolling moves the table and its border together. Keep the exposed scroll background matched to the site.
+
+## Revisit list
+
+Recorded 2026-10-30. Deferred polish and interaction design; these are not requests for immediate implementation.
+
+- [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.
+- [ ] Shrink tooltips and review their information density. Keep them useful for quick inspection without obscuring large portions of the table.
+- [ ] Remove or redesign click-on-cell behavior. The current pinned detail panel is provisional. Possible actions include navigating to a player page or opening a modal with richer triumph/collectible details, such as relevant YouTube guides. Exact action, context, and content sources remain undecided.
+- [ ] Revisit activity / page-type breadcrumb dropdowns when more page types are added.
+
+## Clan tenure and ranks — 2026-10-30
+
+Added persistent “Clan tenure · longest first” sorting using the roster's `joinDate`. This order is independent of profile visibility and completion; missing/invalid dates sort last, with guardian name breaking ties. Guardian tooltips now include the clan role and join date, using roster data already cached by the app.
+
+Rank labels follow Bungie's `GroupsV2.RuntimeGroupMemberType`: None (0), Beginner (1), Member (2), Admin (3), Acting Founder (4), Founder (5). Missing/unknown values are explicit. Source: https://bungie-net.github.io/multi/schema_GroupsV2-RuntimeGroupMemberType.html
