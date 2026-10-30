@@ -1,6 +1,8 @@
 
 # Clan Seal Tracker
 
+The new browser edition is in [`js/`](js/README.md). Run `npm --prefix js ci` then `npm --prefix js run dev` and open `http://localhost:5173/js/`. The PHP app below remains available for comparison.
+
 ## Setup this project to run on your own server
 - Checkout this git repository on your server
 - Register for a developer app at https://www.bungie.net/en/Application

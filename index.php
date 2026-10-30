@@ -117,7 +117,7 @@ function list_pages() {
   $page_index = array();
   foreach ($pages as $key => $page) {
     $page['key'] = $key;
-    $page_index[$page['category']][$page['subcategory']][] = $page;
+    $page_index[$page['category']][$page['subcategory'] ?? ''][] = $page;
   }
 
   foreach ($page_index as $category => $category_info) {

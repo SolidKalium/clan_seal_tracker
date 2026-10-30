@@ -1,6 +1,6 @@
 {
   "name": "Seal Tracker",
-  "image": "local/devtools:1",
+  "image": "local/devtools:2",
   "forwardPorts": [8000, 5173],
   "customizations": {
     "vscode": {
