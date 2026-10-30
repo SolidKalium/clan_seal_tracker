@@ -267,12 +267,67 @@ Overscroll border correction: attach the rounded outer border to the table itsel
 Recorded 2026-10-30. Deferred polish and interaction design; these are not requests for immediate implementation.
 
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.
+  - [ ] Page right-edge overscroll still uses a uniform browser canvas color rather than matching header/content bands. Oversized header/page paint extensions did not fix it and were reverted after a jitter report. Favor stable native scrolling over more paint/compositor workarounds.
+  - [ ] Consider making the table rubberband shift the opposite edge into its margin? Might not be possible.
+  - [ ] Consider making the scrollbar for the other dimension track with the table rubberbanding overscroll content. Might not be possible.
 - [ ] Shrink tooltips and review their information density. Keep them useful for quick inspection without obscuring large portions of the table.
+  - [ ] Overall compactness can also be considered. For reference, the PHP version for Rivensbane seal and the current 27-member Anomaly clan fits with plenty of vertical margin and a small amount of horizontal margin on a full screen view. Someone might like more breathing room, but likely not at the cost of difficulty of use. So usability features like pinning some players or a compactness toggle could allow a view that is less compact.
 - [ ] Remove or redesign click-on-cell behavior. The current pinned detail panel is provisional. Possible actions include navigating to a player page or opening a modal with richer triumph/collectible details, such as relevant YouTube guides. Exact action, context, and content sources remain undecided.
 - [ ] Revisit activity / page-type breadcrumb dropdowns when more page types are added.
+- [ ] Show guardian last login in tooltip?
+- [ ] Show an indicator outside of the tooltip when a guardian's data becomes stale?
+- [ ] Show a clan's emblem when a clan is selected?
+- [ ] Allow pinning guardians to the top?
+- [ ] Move or shrink headers? Main header can be shorter on desktop. Search and sort might or might not be collapsible or otherwise shrink out of the way. Left sidebar should be collapsible. Maybe just show clan logo, with clan name rotated to be vertical. Icons can replace some of the links there, but site navigation needs to be figured out first.
+- [ ] Consider additional text overrides for poor descriptions on seals, collections, etc.
+- [ ] Consider a new favicon?
 
 ## Clan tenure and ranks — 2026-10-30
 
 Added persistent “Clan tenure · longest first” sorting using the roster's `joinDate`. This order is independent of profile visibility and completion; missing/invalid dates sort last, with guardian name breaking ties. Guardian tooltips now include the clan role and join date, using roster data already cached by the app.
 
 Rank labels follow Bungie's `GroupsV2.RuntimeGroupMemberType`: None (0), Beginner (1), Member (2), Admin (3), Acting Founder (4), Founder (5). Missing/unknown values are explicit. Source: https://bungie-net.github.io/multi/schema_GroupsV2-RuntimeGroupMemberType.html
+
+## Menu compactness pass — 2026-10-30
+
+Moved cache/progress status and refresh into the top bar, replacing “Browser Edition”; removed the generic “Clan / Raid seals” utility row. Errors remain above page content. The status indicator explains its colors on hover/focus: green ready, amber updating/stale/private/memory-only, red loading failures. Removed “known” from title-holder labels.
+
+Added a persistent sidebar collapse toggle. The collapsed rail retains its emblem and a vertical clan name; remaining navigation and metadata are hidden until expanded. Desktop and mobile layouts were visually checked, including expansion after reload. The broader user-authored revisit items remain open; this addresses the selected menu/status changes only.
+
+## Status and collapsed-rail refinements — 2026-10-30
+
+Use “Records synced” when settled and “Syncing records” while refreshing. The detail line holds transient phases and profile counts. A fixed-width status area and refresh button keep the pip horizontally anchored; it aligns with the top line during refresh and returns to vertical center when settled. Its tooltip uses the same styled, pointer-transparent surface as record tooltips, listing the meanings and bolding the current state without a redundant current-state heading.
+
+Reduced the error-free gap above the page breadcrumb while retaining error notices and their spacing. Enlarged collapsed clan names, with short names using about 60% of the rail width; keep them selectable with a normal arrow cursor.
+
+## Page edges and right-aligned sync status — 2026-10-30
+
+The root canvas uses the header color above the measured header boundary and the site color below it, including exposed side regions during page overscroll. Header height is observed so this follows mobile wrapping. A full-height sidebar backdrop and divider now reach the footer while the actual menu remains sticky.
+
+Settled sync text sizes to its content beside Refresh. During refresh the pip sits directly beside the short primary line; longer detail text is right-aligned below it and may extend farther left than the pip. This replaces the fixed-width status area. Collapsed clan-name sizing remains unchanged (36 px for short desktop names).
+
+## Refresh counter and overscroll follow-up — 2026-10-30
+
+The profile refresh counter previously counted cached rows as already checked, so a refresh could sit at 27/27 while requests were still running. Track completed work in the current pass separately. Use “Checking profiles… · N / total done” during the pass and “N / total profiles” afterward; omit the counter while definitions/roster are being checked.
+
+User testing found Safari colored horizontal top overscroll correctly but reversed the vertical gradient at the page bottom; Chrome did neither. Repeating root backgrounds can cause this behavior (https://bugs.webkit.org/show_bug.cgi?id=247231). Replaced the root gradient with solid, matching html/body/theme colors that follow the current document edge. Actual app surfaces retain the site background. Passive scroll/wheel listeners only choose the color; they do not prevent default scrolling or simulate rubber-band movement. Recheck native Safari/Chrome visually before considering overscroll finished.
+
+Build and 12 Chromium browser scenarios passed, including a refresh held at 0/N while cached rows remain visible, completion wording, and top/bottom canvas color selection.
+
+## Side overscroll paint extension — 2026-10-30
+
+User confirmed solid edge colors fixed top/bottom in Safari and Chrome, but side overscroll still samples a single color instead of following the visible header band. Tested large header padding plus equal negative margins: content stayed positioned, but document scroll width doubled. Use paint-only spread shadows clipped to horizontal bands instead: header color extends sideways within the header's height; site color extends beside the content below it. This does not add horizontal scroll range. Keep the solid edge-color fallback for top/bottom. Native browser rubber-band compositing still needs user confirmation.
+
+## Overscroll stabilization rollback — 2026-10-30
+
+User reported no improvement at the right edge and jitter around combined top/side overscroll. Removed the large spread shadows and clip paths. Reduced canvas/theme color changes to actual document edges; mixed-axis wheel gestures no longer reset edge colors. Wheel intent is used only for clearly vertical gestures when the page has no vertical scroll range. The side-band mismatch remains on the revisit list; native jitter improvement needs user confirmation.
+
+## Native gesture baseline — 2026-10-30
+
+Safari jitter persisted/worsened, and the user observed Chrome starting a back-swipe preview while the opposite overscroll was still visible. Removed all custom page-edge scroll/wheel color handling and runtime theme-color changes, along with the experimental paint layers already reverted. Use a stable site-colored html/body canvas and matching static theme-color. Header rendering remains dark within its normal bounds. Browser navigation gestures remain enabled.
+
+Precise per-edge colors are deferred. This intentionally prioritizes a clean native-scrolling baseline over the prior top/header-color effect. Do not claim the native jitter is fixed based on headless tests; request user confirmation before further gesture workarounds.
+
+User confirmation: jitter remains in both Safari and Chrome, but is less severe after removing the custom handling. Keep this baseline; the issue is unresolved. Further investigation should use native browser gestures and account for Chrome's back-swipe preview, sticky headers/sidebar, and nested table scrolling. These are investigation leads, not established causes.
+
+Deferred at the user's request. The user confirmed that their Book Info Lookup project does not jitter under the same overscroll gestures in either browser. Use it as a comparison when investigation resumes; do not assume the remaining jitter is unavoidable browser behavior. No further scrolling changes in this pass.

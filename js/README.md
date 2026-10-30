@@ -21,7 +21,7 @@ Bungie must allow the browser's exact origin in the application registration. Fo
 
 ## Included
 
-- Clan from the existing settings file, with a local overview and seven existing raid-seal links.
+- Clan from the existing settings file, with a local overview and seven existing raid-seal links. The sidebar can collapse to an emblem and vertical clan name; its state persists locally. Cache status and refresh live in the top bar, with an explanatory status-color tooltip.
 - Generic seal requirements from the active manifest, including account/character records and interval objectives. Missing or unsupported definitions are marked unavailable.
 - Progressive per-player updates, name search, complete/incomplete/no-data filters, progress/name/clan-tenure sorting, sticky table headings/names, and objective details on cell selection.
 - Known title-holder counts with loaded-profile coverage. These include retained older public data; the global stale/private count identifies that limitation.
