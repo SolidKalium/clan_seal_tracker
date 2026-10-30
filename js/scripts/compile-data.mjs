@@ -16,8 +16,8 @@ export function compile(settings, pages) {
   const catalog = initial.map(id => {
     const p = pages[id];
     if (!p || typeof p.name !== 'string' || !Number.isInteger(p.seal_node_hash)) throw new Error(`Invalid page ${id}`);
-    // Explicit allowlist: no historical overrides, unrelated page modes, or settings.
-    return { id, name: p.name, category: 'Raid seals', sealNodeHash: String(p.seal_node_hash), records: p.records ?? {} };
+    // Explicit allowlist: never send historical user overrides or private settings.
+    return { id, name: p.name, category: 'Raid seals', sealNodeHash: String(p.seal_node_hash), badgeNodeHash: p.badge_node_hash ? String(p.badge_node_hash) : undefined, otherNodeHashes: (p.other_node_hashes ?? []).map(String), collectibles: p.collectibles ?? {}, records: p.records ?? {} };
   });
   return { config: { apiKey: settings.secret_key, clanId, language: 'en' }, catalog };
 }

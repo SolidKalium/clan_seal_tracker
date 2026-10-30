@@ -331,3 +331,43 @@ Precise per-edge colors are deferred. This intentionally prioritizes a clean nat
 User confirmation: jitter remains in both Safari and Chrome, but is less severe after removing the custom handling. Keep this baseline; the issue is unresolved. Further investigation should use native browser gestures and account for Chrome's back-swipe preview, sticky headers/sidebar, and nested table scrolling. These are investigation leads, not established causes.
 
 Deferred at the user's request. The user confirmed that their Book Info Lookup project does not jitter under the same overscroll gestures in either browser. Use it as a comparison when investigation resumes; do not assume the remaining jitter is unavoidable browser behavior. No further scrolling changes in this pass.
+
+
+## Badge and full raid views — 2026-10-30
+
+Added `#/badge/<raid>` and `#/raid/<raid>` beside the existing seal route for all seven configured raids. Compact Seal / Badge / Full raid links switch view; sidebar raid links preserve the current mode. PHP and historical caches remain untouched.
+
+- Badge scope comes from each collection presentation node. Shared collectibles occupy one column; parallel class armor sets occupy five compact slot columns. Default scoring selects one best whole class set per guardian, never mixing armor across classes. A class selector allows inspecting a specific class. Tooltips include class-specific item names and ownership. Missing/private collection data stays distinct from uncollected items. The parallel class-set shape was checked against all seven local manifest badges; incomplete class sets or missing required collectible definitions fail visibly instead of silently reducing the denominator.
+- Full raid scope unions seal records, raid presentation-node records, and configured additional records/collectibles, then adds badge items. Records and collection hashes are deduplicated. Full raid mode includes raid achievements hidden by legacy suppress overrides (notably flawless and day-one records); seal suppression remains otherwise intact. Obsolete configured extra record hashes absent from the current manifest are ignored; missing required node records still make the view unavailable.
+- Automate elemental labels/order from English manifest descriptions: Arc, Void, Solar, Stasis, Strand, followed by same-class requirements. Keep configured exceptions for unrelated records. Seal requirements come from the seal node, so newly added Strand triumphs outside the seal do not inflate seal completion.
+- Detect first-24/48-hour and Contest Mode achievements from descriptions. Show them consistently in both triumph views, labelled Day one / Not scored, excluding them from percentages. Existing explicit skip-for-completion rules also apply, including collectible exceptions.
+- Full-page completion averages scored record and collection columns equally, preserving the legacy full-page weighting (badge requirement record plus individual badge items). Badge completion itself uses the selected whole class set.
+- Fetch profile component 800 with 100/900, and add collectible definitions to the atomic manifest cache. Existing caches upgrade automatically through component/table coverage checks, even for an unchanged manifest version. No extra requests are needed to switch views after sync.
+
+Verification: domain tests cover normalized order and seal scope, unscored day-one achievements, missing collection data, and the mixed-class false-completion case. Repository tests cover upgrades from a fresh record-only manifest. Playwright covers view switching, cached navigation, collection percentages/private rows, and class selection. Live DSC badge and full raid data loaded for all 27 members; the full view had 48 headings, including Strand and unscored Day one, with no browser errors. Local current-manifest checks built all 21 views successfully. Final verification: 25 unit tests, 15 Chromium browser scenarios, and the production build passed.
+
+
+## Armor tooltip comparison — 2026-10-30
+
+Armor details now compare all classes in a compact table: piece collected and a quieter Set Complete row, with checks for true values and a dash for unknown data. Set Complete means all class-specific armor slots collected, independent of shared weapons/cosmetics and the selected scoring class. Removed the redundant selected-class progress summary. Class icons in the main table cells remain a future change.
+
+
+## Collection groups and objective wording — 2026-10-30
+
+Added a column header tier for Triumphs, Weapons, Weapon Patterns, Armor, Armor Mods, Cosmetics, and otherwise-unclassified Collection items. Grouping is derived from inventory item types and record types, with stable order inside groups. Existing numbered objective stages remain underneath, with sticky offsets accounting for the additional tier.
+
+Collection tooltips use inventory item type names (for example Scout Rifle, Emblem, Ghost Shell), and armor mods list sandbox perk names/descriptions. Source text that only names the current raid is omitted; sources with extra instructions or other activities remain visible. Download/cache inventory-item-lite and sandbox-perk definitions alongside the atomic manifest snapshot; retain only the item fields used by the UI. Cache coverage upgrades include these new tables even when the Bungie version is unchanged.
+
+Use “Objective” instead of “Target.” Collections say “Acquire” or “Collected,” never a numeric 1/1 goal. Weapon patterns use counts such as “5 patterns.” Other objectives retain their API descriptions and use units where explicitly identifiable (kills, encounters, chests, logs, wishes, banners, extractions, completions); singular unknown goals say “At least once,” and larger unknown goals use a neutral required count. Avoid guessing units from arbitrary triumph names. Armor comparison tooltips retain their collected/set-complete matrix.
+
+Verification includes classification/perks/source/unit cases, cache coverage, browser group spans and tooltip wording, plus rendering against the local current manifest and a captured public profile. Native Safari remains a manual visual check.
+
+
+## Redundant objective labels and badge acquisition — 2026-10-30
+
+Header/cell tooltips omit generic Complete/Progress labels and a sole “The … raid completed” label, retaining goals, counts, status, and named multi-stage objectives. Generic Progress descriptions are also omitted. Badge requirement triumphs are identified by their collection node name plus matching trophy description or explicit associated-badge wording; this avoids confusing King's Fall's same-named raid completion triumph with its badge. They use “Objective: Acquire badge” and acquisition status instead of repeatable-goal wording or numeric 0/1 counters. The badge completion record exposes class-named objectives; this does not establish an explicit all-class gilding flag, so no gilded badge claim is added.
+
+
+## Shared triumph tooltips — 2026-10-30
+
+Treat a triumph’s header and numbered objective headers as one hover/focus group, and its cells for each guardian as a separate group. Anchor the tooltip to the group once; moving among its cells updates the bold objective without recreating or repositioning the tooltip. Hover includes cell padding. Whole-triumph headers and completed cells leave no individual objective emphasized. Keyboard focus follows the same behavior; Escape and leaving the group dismiss the tooltip. Pointer events still pass through tooltips. Build and all 19 Chromium scenarios passed, including fixed-position checks across header and player objectives.

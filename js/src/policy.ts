@@ -1,6 +1,6 @@
 import type { Cached, Member } from './types';
 export const MINUTE = 60_000;
-export const PROFILE_COMPONENTS = [100, 900];
+export const PROFILE_COMPONENTS = [100, 800, 900];
 export function profileFresh(entry: Cached<unknown> | undefined, member: Member, now = Date.now()): boolean {
   if (!entry || entry.private || entry.error || PROFILE_COMPONENTS.some(c => !entry.components?.includes(c))) return false;
   const age = now - entry.fetchedAt;

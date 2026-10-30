@@ -59,3 +59,15 @@ it('deduplicates and caches linked platform names, retaining them during an outa
   vi.mocked(t.api).mockRejectedValue(new Error('offline'));
   expect(await repository.memberships(member.destinyUserInfo)).toEqual(names);
 });
+
+it('upgrades a fresh record-only manifest even when its Bungie version has not changed', async () => {
+  await store.put({ key: 'definitions:en', value: snapshot, fetchedAt: Date.now() });
+  const t: Transport = {
+    api: vi.fn().mockResolvedValue({ version: 'old', jsonWorldComponentContentPaths: { en: { DestinyPresentationNodeDefinition: 'nodes', DestinyRecordDefinition: 'records', DestinyObjectiveDefinition: 'objectives', DestinyCollectibleDefinition: 'collectibles', DestinyInventoryItemLiteDefinition: 'items', DestinySandboxPerkDefinition: 'perks' } } }),
+    resource: vi.fn().mockImplementation(async path => path === 'items' ? { '300': { displayProperties: { name: 'Weapon' }, itemType: 3 } } : path === 'perks' ? { '400': { displayProperties: { name: 'Perk' } } } : path === 'collectibles' ? { '200': { hash: 200, scope: 0, displayProperties: { name: 'Weapon' } } } : snapshot[path as 'nodes' | 'records' | 'objectives']),
+  };
+  const result = await new TrackerRepository(store, t, '1').definitions(noop);
+  expect(result.status).toBe('fresh');
+  expect(result.entry?.value.collectibles?.['200']?.displayProperties.name).toBe('Weapon');
+  expect(t.resource).toHaveBeenCalledTimes(6);
+});

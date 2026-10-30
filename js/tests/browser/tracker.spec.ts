@@ -7,7 +7,7 @@ const records = { '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male
 const objectives = { '103': { hash: 103, completionValue: 10, progressDescription: 'Final encounter' }, '101': { hash: 101, completionValue: 10, progressDescription: 'Encounters' }, '102': { hash: 102, completionValue: 1, progressDescription: 'Challenge' } };
 const members = ['Ada', 'Banshee', 'Crow'].map((name, i) => ({ destinyUserInfo: { membershipType: 3, membershipId: `461168601848564558${i}`, displayName: name, bungieGlobalDisplayName: name }, isOnline: false, lastOnlineStatusChange: '1', joinDate: ['2020-06-01T12:00:00Z', '2022-06-01T12:00:00Z', '2018-06-01T12:00:00Z'][i], memberType: [5, 3, 2][i] }));
 const envelope = (Response: unknown) => ({ ErrorCode: 1, ErrorStatus: 'Success', ThrottleSeconds: 0, Response });
-async function setup(page: Page, state: { offline: boolean; calls: number; originError?: boolean; delay?: number; profileGate?: Promise<void> }) {
+async function setup(page: Page, state: { offline: boolean; calls: number; originError?: boolean; delay?: number; profileGate?: Promise<void>; extended?: boolean }) {
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://www.bungie.net/**', async route => {
     const path = new URL(route.request().url()).pathname;
@@ -15,9 +15,12 @@ async function setup(page: Page, state: { offline: boolean; calls: number; origi
     if (state.delay) await new Promise(resolve => setTimeout(resolve, state.delay));
     if (state.offline) return route.abort('failed');
     if (state.originError && path.includes('/Members/')) return route.fulfill({ status: 500, json: { ErrorCode: 2107, ErrorStatus: 'OriginHeaderDoesNotMatchKey' } });
-    if (path === '/Platform/Destiny2/Manifest/') return route.fulfill({ json: envelope({ version: 'test-manifest', jsonWorldComponentContentPaths: { en: { DestinyPresentationNodeDefinition: root + 'nodes.json', DestinyRecordDefinition: root + 'records.json', DestinyObjectiveDefinition: root + 'objectives.json' } } }) });
-    if (path === root + 'nodes.json') return route.fulfill({ json: nodes });
-    if (path === root + 'records.json') return route.fulfill({ json: records });
+    if (path === '/Platform/Destiny2/Manifest/') return route.fulfill({ json: envelope({ version: 'test-manifest', jsonWorldComponentContentPaths: { en: { DestinyPresentationNodeDefinition: root + 'nodes.json', DestinyRecordDefinition: root + 'records.json', DestinyObjectiveDefinition: root + 'objectives.json', DestinyCollectibleDefinition: root + 'collectibles.json', DestinyInventoryItemLiteDefinition: root + 'items.json', DestinySandboxPerkDefinition: root + 'perks.json' } } }) });
+    if (path === root + 'nodes.json') return route.fulfill({ json: state.extended ? { ...nodes, '1525933460': { children: { records: [{ recordHash: 901 }, { recordHash: 902 }] } }, '1086048586': { displayProperties: { name: 'Badge', description: 'Raid collection' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } }, '4': { displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 202 }] } }, '5': { displayProperties: { name: 'Hunter' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 203 }] } } } : nodes });
+    if (path === root + 'records.json') return route.fulfill({ json: state.extended ? { ...records, '901': record(901, 'Woven Wish', { displayProperties: { name: 'Woven Wish', description: 'Complete with a fireteam made entirely of Strand subclasses.' } }), '902': record(902, 'Day one', { displayProperties: { name: 'Day one', description: 'Complete within the first 24 hours of release.' } }) } : records });
+    if (path === root + 'items.json') return route.fulfill({ json: { '301': { displayProperties: { name: 'Raid weapon' }, itemType: 3, itemTypeDisplayName: 'Scout Rifle' }, '302': { displayProperties: { name: 'Armor' }, itemType: 2, itemTypeDisplayName: 'Helmet' } } });
+    if (path === root + 'perks.json') return route.fulfill({ json: { '401': { displayProperties: { name: 'Mod perk', description: 'Improves the augment.' } } } });
+    if (path === root + 'collectibles.json') return route.fulfill({ json: { '201': { hash: 201, scope: 0, itemHash: 301, sourceString: 'Source: Last Wish Raid', displayProperties: { name: 'Raid weapon' } }, '202': { hash: 202, scope: 1, itemHash: 302, displayProperties: { name: 'Titan helmet' } }, '203': { hash: 203, scope: 1, itemHash: 302, displayProperties: { name: 'Hunter helmet' } } } });
     if (path === root + 'objectives.json') return route.fulfill({ json: objectives });
     if (path.includes('/Members/')) return route.fulfill({ json: envelope({ results: members, hasMore: false }) });
     if (/\/GroupV2\/\d+\/$/.test(path)) return route.fulfill({ json: envelope({ detail: { name: 'Test Clan' } }) });
@@ -30,7 +33,7 @@ async function setup(page: Page, state: { offline: boolean; calls: number; origi
       const member = members.find(m => path.includes(m.destinyUserInfo.membershipId))!;
       if (member.destinyUserInfo.displayName === 'Crow') return route.fulfill({ json: envelope({ profile: { privacy: 2 }, profileRecords: { privacy: 2 } }) });
       const complete = member.destinyUserInfo.displayName === 'Ada';
-      return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: { '99': { state: complete ? 1 : 4 }, '42': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 101, completionValue: 10, progress: complete ? 10 : 5, complete }, { objectiveHash: 103, completionValue: 10, progress: complete ? 10 : 5, complete }] }, '43': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 102, completionValue: 1, progress: complete ? 1 : 0, complete }] } } } } }) });
+      return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileCollectibles: { data: { collectibles: { '201': { state: complete ? 0 : 1 }, '202': { state: complete ? 0 : 1 }, '203': { state: 0 } } } }, profileRecords: { data: { records: { '99': { state: complete ? 1 : 4 }, '42': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 101, completionValue: 10, progress: complete ? 10 : 5, complete }, { objectiveHash: 103, completionValue: 10, progress: complete ? 10 : 5, complete }] }, '43': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 102, completionValue: 1, progress: complete ? 1 : 0, complete }] } } } } }) });
     }
     throw new Error(`Unmocked API route: ${path}`);
   });
@@ -309,4 +312,152 @@ test('wheel gestures do not change the static canvas or browser theme', async ({
   await page.locator('.topbar').dispatchEvent('wheel', { deltaX: 0, deltaY: -100 });
   expect(await paint()).toBe('rgb(246, 247, 242)');
   await expect(page.locator('meta[name=theme-color]')).toHaveAttribute('content', '#f6f7f2');
+});
+
+
+test('badge and full raid navigation keep collection progress and unscored day one visible', async ({ page }) => {
+  const state = { offline: false, calls: 0, extended: true }; await setup(page, state);
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const calls = state.calls;
+  await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Badge', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Last Wish badge');
+  await expect(page.locator('thead')).toContainText('Raid weapon');
+  await expect(page.locator('.category-header-row')).toContainText('Weapons');
+  await expect(page.locator('.category-header-row')).toContainText('Armor');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('.progress-column')).toContainText('100');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('50');
+  await page.getByRole('button', { name: 'Raid weapon', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Scout Rifle');
+  await expect(page.getByRole('tooltip')).toContainText('Objective: Acquire');
+  await expect(page.getByRole('tooltip')).not.toContainText('Target');
+  await expect(page.getByRole('tooltip')).not.toContainText('Source:');
+  await page.getByRole('button', { name: 'Ada: Titan helmet: complete', exact: true }).hover();
+  const armor = page.getByRole('tooltip').getByRole('table', { name: 'Armor collection by class' });
+  await expect(armor.getByRole('columnheader')).toHaveText(['Collection status', 'Titan', 'Hunter']);
+  await expect(armor.getByRole('row').nth(1)).toHaveText('Titan helmet Collected✓✓');
+  await expect(armor.getByRole('row').nth(2)).toHaveText('Set Complete✓✓');
+  await expect(page.getByRole('tooltip').locator('.objective-details')).toHaveCount(0);
+  await page.getByLabel('Badge class', { exact: true }).selectOption('0');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('0');
+  await page.getByLabel('Badge class', { exact: true }).selectOption('best');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Crow' })).toContainText('No data');
+  await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Full raid', exact: true }).click();
+  await expect(page.locator('thead')).toContainText('Strand');
+  await expect(page.locator('thead')).toContainText('Day one');
+  await expect(page.locator('thead')).toContainText('Not scored');
+  await expect(page.locator('thead')).toContainText('Raid weapon');
+  await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Seal', exact: true }).click();
+  await expect(page.locator('thead')).not.toContainText('Strand');
+  await expect(page.locator('thead')).toContainText('Day one');
+  expect(state.calls).toBe(calls);
+});
+
+test('group titles remain beside the sticky guardian column until their group ends', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 900 });
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.goto('#/raid/last_wish'); await ready(page);
+  // Leave enough columns after Triumphs to scroll that group completely out of view.
+  await page.locator('.record-heading').last().evaluate(el => { (el as HTMLElement).style.minWidth = '600px'; });
+  const geometry = () => page.locator('.table-scroll').evaluate(scroll => {
+    const group = scroll.querySelector('.category-header-row th[scope="colgroup"]')!;
+    const title = group.querySelector('.category-title')!.getBoundingClientRect();
+    const guardian = scroll.querySelector('.category-header-row .player-column')!.getBoundingClientRect();
+    const bounds = group.getBoundingClientRect();
+    return { left: title.left, right: title.right, guardianRight: guardian.right, groupRight: bounds.right };
+  });
+  await page.locator('.table-scroll').evaluate(scroll => {
+    const group = scroll.querySelector('.category-header-row th[scope="colgroup"]')!;
+    const guardian = scroll.querySelector('.player-column')!;
+    scroll.scrollLeft = group.getBoundingClientRect().left - scroll.getBoundingClientRect().left - guardian.getBoundingClientRect().width + 30;
+  });
+  await expect.poll(async () => Math.round((await geometry()).left - (await geometry()).guardianRight)).toBe(12);
+  await page.locator('.table-scroll').evaluate(scroll => { scroll.scrollLeft += 25; });
+  await expect.poll(async () => Math.round((await geometry()).left - (await geometry()).guardianRight)).toBe(12);
+  await page.locator('.table-scroll').evaluate(scroll => {
+    const group = scroll.querySelector('.category-header-row th[scope="colgroup"]')!;
+    scroll.scrollLeft += group.getBoundingClientRect().right - scroll.querySelector('.player-column')!.getBoundingClientRect().right + 20;
+  });
+  await expect.poll(async () => (await geometry()).right <= (await geometry()).guardianRight).toBe(true);
+});
+
+
+test('single Complete objective labels are omitted from header and cell details', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/objectives.json', route => route.fulfill({ json: {
+    ...objectives, '102': { ...objectives['102'], progressDescription: 'Complete' },
+  } }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await page.getByRole('button', { name: 'Second challenge', exact: true }).hover();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip.locator('.objective-name')).toHaveCount(0);
+  await expect(tooltip).toContainText('Objective: At least once');
+  await page.getByRole('button', { name: 'Banshee: Second challenge: Complete: 0/1', exact: true }).hover();
+  await expect(tooltip.locator('.objective-name')).toHaveCount(0);
+  await expect(tooltip.locator('.objective-count')).toHaveText(/0\s*\/\s*1/);
+  await expect(tooltip.locator('.objective-state')).toHaveText('Incomplete');
+  await page.getByRole('button', { name: 'First challenge', exact: true }).hover();
+  await expect(tooltip.locator('.objective-name')).toHaveCount(2);
+});
+
+test('generic progress and repeated raid labels are hidden, and badge goals describe acquisition', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '1086048586': { displayProperties: { name: 'First challenge', description: 'First challenge description' }, children: {} },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '42': record(42, 'First challenge', { objectiveHashes: [101] }),
+  } }));
+  await page.route('**/objectives.json', route => route.fulfill({ json: {
+    ...objectives, '101': { hash: 101, completionValue: 1, progressDescription: 'Progress' },
+    '102': { hash: 102, completionValue: 1, displayProperties: { description: 'The "Last Wish" raid completed' } },
+  } }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const tooltip = page.getByRole('tooltip');
+  await page.getByRole('button', { name: 'First challenge', exact: true }).hover();
+  await expect(tooltip).toContainText('Objective: Acquire badge');
+  await expect(tooltip).not.toContainText('At least once');
+  await expect(tooltip.locator('.objective-name')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Ada: First challenge: complete', exact: true }).hover();
+  await expect(tooltip).toContainText('Objective: Acquire badge');
+  await expect(tooltip).toContainText('Acquired');
+  await expect(tooltip.locator('.objective-count')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Second challenge', exact: true }).hover();
+  await expect(tooltip.locator('.objective-name')).toHaveCount(0);
+  await expect(tooltip).toContainText('Objective: At least once');
+  await page.getByRole('button', { name: 'Banshee: Second challenge: The "Last Wish" raid completed: 0/1', exact: true }).hover();
+  await expect(tooltip.locator('.objective-name')).toHaveCount(0);
+  await expect(tooltip.locator('.objective-count')).toHaveText(/0\s*\/\s*1/);
+});
+
+test('triumph tooltips stay anchored while the hovered objective changes', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const tooltip = page.getByRole('tooltip');
+  await page.getByRole('button', { name: 'First challenge', exact: true }).hover();
+  await expect(tooltip).toBeVisible();
+  const headerStyle = await tooltip.getAttribute('style');
+  await page.getByRole('button', { name: 'Stage 1: Encounters', exact: true }).hover();
+  await expect(tooltip.locator('.objective-active')).toContainText('Encounters');
+  await expect(tooltip).toHaveAttribute('style', headerStyle!);
+  await page.getByRole('button', { name: 'Stage 2: Final encounter', exact: true }).hover();
+  await expect(tooltip.locator('.objective-active')).toContainText('Final encounter');
+  await expect(tooltip).toHaveAttribute('style', headerStyle!);
+  await page.getByRole('button', { name: 'First challenge', exact: true }).hover();
+  await expect(tooltip.locator('.objective-active')).toHaveCount(0);
+  await expect(tooltip).toHaveAttribute('style', headerStyle!);
+
+  await page.getByRole('button', { name: 'Banshee: First challenge: Encounters: 5/10', exact: true }).hover();
+  await expect(tooltip.locator('.objective-active')).toContainText('Encounters');
+  const playerStyle = await tooltip.getAttribute('style');
+  await page.getByRole('button', { name: 'Banshee: First challenge: Final encounter: 5/10', exact: true }).hover();
+  await expect(tooltip.locator('.objective-active')).toContainText('Final encounter');
+  await expect(tooltip).toHaveAttribute('style', playerStyle!);
+  await page.getByRole('button', { name: 'Stage 1: Encounters', exact: true }).focus();
+  await expect(tooltip.locator('.objective-active')).toContainText('Encounters');
+  await expect(tooltip).toHaveAttribute('style', headerStyle!);
+  await page.getByRole('button', { name: 'Stage 2: Final encounter', exact: true }).focus();
+  await expect(tooltip.locator('.objective-active')).toContainText('Final encounter');
+  await expect(tooltip).toHaveAttribute('style', headerStyle!);
+  await page.getByRole('button', { name: 'Stage 2: Final encounter', exact: true }).press('Escape');
+  await expect(tooltip).toHaveCount(0);
 });
