@@ -34,3 +34,17 @@ it('loads ten raids from the independent browser catalog', () => {
     ['crotas_end', '238107129', '48971793'], ['salvations_edge', '334829503', '988425963'], ['the_desert_perpetual', '3954661385', '4253860097'],
   ]);
 });
+
+it('includes expansion and seasonal pages through the newer manifest content', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'js/pages.jsonc');
+  const { catalog } = compile({ secret_key: 'browser-key', group_id: 1 }, pages);
+  expect(catalog.filter(p => p.category === 'Expansions')).toHaveLength(10);
+  expect(catalog.filter(p => p.category === 'Seasons & Episodes')).toHaveLength(25);
+  expect(catalog.filter(p => p.id.startsWith('episode_')).map(p => [p.id, p.sealNodeHash])).toEqual([
+    ['episode_echoes', '1270675696'], ['episode_revenant', '1270675697'], ['episode_heresy', '1270675698'],
+  ]);
+  expect(catalog.find(p => p.id === 'renegades')).toMatchObject({ sealNodeHash: '2205068290', otherNodeHashes: ['1981882108'] });
+  expect(catalog.find(p => p.id === 'the_edge_of_fate')).toMatchObject({ sealNodeHash: '3588958240' });
+  expect(catalog.find(p => p.id === 'monument_of_triumph')).toMatchObject({ sealNodeHash: '1210906304', otherNodeHashes: ['4024048810'] });
+  expect(catalog.every(p => !Object.hasOwn(p, 'legacy'))).toBe(true);
+});

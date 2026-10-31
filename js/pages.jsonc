@@ -1,4 +1,4 @@
-// Browser raid catalog. Independent of the PHP pages.json.
+// Browser page catalog. Independent of the PHP pages.json.
 // Hashes identify manifest nodes; rules contain only supported overrides and extra full-raid content.
 // Elemental order, day-one exclusion, item categories, armor slots, and objective numbering are automatic.
 [
@@ -625,5 +625,643 @@
     "otherNodeHashes": [],
     "records": {},
     "collectibles": {}
+  },
+  {
+    "id": "dreaming_city",
+    "name": "Dreaming City",
+    "category": "Expansions",
+    "sealNodeHash": "560097044",
+    "badgeNodeHash": "3642989833",
+    "otherNodeHashes": [
+      "1318886167",
+      "3424890260",
+      "2983489279",
+      "3593914021",
+      "1995542897",
+      "302201398"
+    ],
+    "records": {},
+    "collectibles": {
+      "276336069": {},
+      "1469913803": {},
+      "1469913807": {},
+      "1895171074": {},
+      "1895171075": {},
+      "3360537487": {}
+    }
+  },
+  {
+    "id": "shadowkeep",
+    "name": "Shadowkeep",
+    "category": "Expansions",
+    "sealNodeHash": "379405979",
+    "badgeNodeHash": "2388540594",
+    "otherNodeHashes": [
+      "1172527717",
+      "3580665945",
+      "2130735626",
+      "1325869705",
+      "2832559544",
+      "1676236275"
+    ],
+    "records": {},
+    "collectibles": {
+      "2538385076": {}
+    }
+  },
+  {
+    "id": "beyond_light",
+    "name": "Beyond Light",
+    "category": "Expansions",
+    "sealNodeHash": "79180995",
+    "badgeNodeHash": "2078340986",
+    "otherNodeHashes": [
+      "135736218",
+      "3692479600",
+      "148653552",
+      "2322553724"
+    ],
+    "records": {
+      "2708727662": {}
+    }
+  },
+  {
+    "id": "30th",
+    "name": "30th Anniversary",
+    "category": "Expansions",
+    "sealNodeHash": "2185719388",
+    "otherNodeHashes": [],
+    "records": {
+      "385553757": {},
+      "631089354": {},
+      "834963888": {},
+      "1254331510": {},
+      "1770021330": {},
+      "1855685192": {},
+      "3574136388": {},
+      "3735490332": {},
+      "3735490333": {},
+      "3835718947": {}
+    }
+  },
+  {
+    "id": "witch_queen",
+    "name": "The Witch Queen",
+    "category": "Expansions",
+    "sealNodeHash": "3061040177",
+    "badgeNodeHash": "3016040694",
+    "otherNodeHashes": [
+      "882064875",
+      "2430016828",
+      "3333204392",
+      "1346478920",
+      "3880215604"
+    ],
+    "records": {
+      "220342896": {},
+      "292832740": {},
+      "311360599": {},
+      "494981303": {},
+      "689439417": {},
+      "953028525": {},
+      "1446423643": {},
+      "1507884969": {},
+      "1615038969": {},
+      "2107474614": {},
+      "3770251030": {},
+      "3863516258": {},
+      "3907981638": {},
+      "4205772441": {}
+    },
+    "collectibles": {
+      "328283190": {},
+      "1089205875": {},
+      "3810283242": {},
+      "4028619089": {}
+    }
+  },
+  {
+    "id": "light_fall",
+    "name": "Lightfall",
+    "category": "Expansions",
+    "sealNodeHash": "4186496383",
+    "badgeNodeHash": "1074030956",
+    "otherNodeHashes": [
+      "3352340500",
+      "1391513288",
+      "1192509750",
+      "2429963846",
+      "376062746",
+      "842301675"
+    ],
+    "records": {
+      "170523067": {},
+      "777254375": {},
+      "1167176444": {},
+      "1517724383": {},
+      "2292557505": {},
+      "2618920720": {},
+      "2839479882": {}
+    },
+    "collectibles": {
+      "2629609053": {},
+      "2843753795": {},
+      "3709294547": {},
+      "4226434173": {}
+    }
+  },
+  {
+    "id": "the_final_shape",
+    "name": "The Final Shape",
+    "category": "Expansions",
+    "sealNodeHash": "2724376914",
+    "badgeNodeHash": "1528010893",
+    "otherNodeHashes": [
+      "1309523808",
+      "2862419972",
+      "3810764472"
+    ],
+    "records": {}
+  },
+  {
+    "id": "the_edge_of_fate",
+    "name": "The Edge of Fate",
+    "category": "Expansions",
+    "sealNodeHash": "3588958240",
+    "otherNodeHashes": [
+      "2140539821"
+    ],
+    "records": {}
+  },
+  {
+    "id": "renegades",
+    "name": "Renegades",
+    "category": "Expansions",
+    "sealNodeHash": "2205068290",
+    "otherNodeHashes": [
+      "1981882108"
+    ],
+    "records": {}
+  },
+  {
+    "id": "renegades_invasions",
+    "name": "Renegades · Invasions",
+    "category": "Expansions",
+    "sealNodeHash": "347825339",
+    "otherNodeHashes": [
+      "2136916333"
+    ],
+    "records": {}
+  },
+  {
+    "id": "season_5",
+    "name": "Season of the Forge",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "450166688",
+    "badgeNodeHash": "2399267278",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "season_6",
+    "name": "Season of the Drifter",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "2978379966",
+    "badgeNodeHash": "2503214417",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "season_7",
+    "name": "Season of Opulence",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "717225803",
+    "badgeNodeHash": "2759158924",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "season_8",
+    "name": "Season of the Undying",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "955166374",
+    "badgeNodeHash": "3267852685",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "season_9",
+    "name": "Season of Dawn",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "955166375",
+    "badgeNodeHash": "4257248973",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "season_10",
+    "name": "Season of the Worthy",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008461",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "season_11",
+    "name": "Season of Arrivals",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008460",
+    "badgeNodeHash": "3459575786",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "season_12",
+    "name": "Season of the Hunt",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008463",
+    "otherNodeHashes": [
+      "3669331558",
+      "3937870096",
+      "2802812434",
+      "1808459779"
+    ],
+    "records": {
+      "2135780490": {}
+    },
+    "collectibles": {
+      "117301517": {},
+      "1128765419": {},
+      "1244896500": {},
+      "1789224066": {},
+      "2705309061": {},
+      "3551011276": {}
+    }
+  },
+  {
+    "id": "season_13",
+    "name": "Season of the Chosen",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008462",
+    "otherNodeHashes": [
+      "643487148",
+      "1071337794",
+      "121075568",
+      "3006777794"
+    ],
+    "records": {
+      "1833569807": {}
+    },
+    "collectibles": {
+      "1434922082": {},
+      "2208687510": {},
+      "3972162588": {}
+    }
+  },
+  {
+    "id": "season_14",
+    "name": "Season of the Splicer",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008457",
+    "otherNodeHashes": [
+      "1134387311",
+      "2826444925",
+      "529389631",
+      "3807851309",
+      "933409053"
+    ],
+    "records": {
+      "250211794": {}
+    },
+    "collectibles": {
+      "80672475": {},
+      "2333070885": {},
+      "2522582325": {}
+    }
+  },
+  {
+    "id": "season_15",
+    "name": "Season of the Lost",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008456",
+    "otherNodeHashes": [
+      "1202345386",
+      "3027737790",
+      "3735727166",
+      "1949199957",
+      "2619080017",
+      "1926009491",
+      "2479490220",
+      "230744312",
+      "1961109500",
+      "1158320377"
+    ],
+    "records": {
+      "478443982": {},
+      "543030486": {},
+      "576592584": {},
+      "839992506": {},
+      "868748392": {},
+      "1184842701": {},
+      "1767438219": {},
+      "2329638530": {},
+      "2503471062": {},
+      "2939070754": {},
+      "3430706981": {},
+      "3950834212": {},
+      "4078726305": {}
+    },
+    "collectibles": {
+      "182540649": {},
+      "720772515": {},
+      "4259407797": {}
+    }
+  },
+  {
+    "id": "season_16",
+    "name": "Season of the Risen",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008459",
+    "otherNodeHashes": [
+      "1147698909",
+      "1541092394",
+      "3802714325",
+      "2860804863"
+    ],
+    "records": {
+      "263158944": {},
+      "930979915": {},
+      "1701593813": {},
+      "2115207174": {},
+      "3343946430": {},
+      "3357460834": {},
+      "3628100770": {},
+      "3842442685": {}
+    },
+    "collectibles": {
+      "1140859956": {},
+      "1256729926": {},
+      "1813764890": {},
+      "2218977062": {},
+      "2243533023": {},
+      "2897560445": {},
+      "3536167764": {}
+    }
+  },
+  {
+    "id": "season_17",
+    "name": "Season of the Haunted",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008458",
+    "otherNodeHashes": [
+      "1267192217",
+      "1321501307",
+      "3212312368",
+      "4154823524",
+      "2551992318"
+    ],
+    "records": {
+      "662547074": {},
+      "826543773": {},
+      "1060652297": {},
+      "1444412985": {},
+      "1691359215": {},
+      "1968204778": {},
+      "2126241222": {},
+      "2177815995": {},
+      "2258742229": {},
+      "2330294643": {},
+      "2511032639": {},
+      "2547048326": {},
+      "3022631571": {},
+      "3693097974": {}
+    },
+    "collectibles": {
+      "77226437": {},
+      "1179882117": {},
+      "2589037677": {},
+      "3436952293": {}
+    }
+  },
+  {
+    "id": "season_18",
+    "name": "Season of Plunder",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008453",
+    "otherNodeHashes": [
+      "2994180523",
+      "155343661",
+      "104852044",
+      "823209491",
+      "3564406313",
+      "3598863561"
+    ],
+    "records": {
+      "122415725": {},
+      "146759633": {},
+      "1389390726": {},
+      "1544481626": {},
+      "2158979729": {},
+      "2571854597": {},
+      "3257403871": {},
+      "3318895306": {},
+      "3587005520": {},
+      "4013775975": {}
+    },
+    "collectibles": {
+      "1977134032": {},
+      "2330682964": {},
+      "3161668545": {},
+      "3849432554": {}
+    }
+  },
+  {
+    "id": "season_19",
+    "name": "Season of the Seraph",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1321008452",
+    "otherNodeHashes": [
+      "3563671414",
+      "1425512290",
+      "1356402617",
+      "2379774266",
+      "172285384"
+    ],
+    "records": {
+      "51293100": {},
+      "204031420": {},
+      "500197328": {},
+      "500197329": {},
+      "500197331": {},
+      "500197332": {},
+      "500197334": {},
+      "500197335": {},
+      "622035212": {},
+      "692035983": {},
+      "929245926": {},
+      "1144463862": {},
+      "1226048594": {},
+      "1366529950": {},
+      "1506999309": {},
+      "1554146513": {},
+      "1778902326": {},
+      "2468174803": {},
+      "3172595571": {},
+      "3257786888": {},
+      "3257786889": {},
+      "3257786891": {},
+      "3394471563": {},
+      "3835559140": {},
+      "3862297426": {},
+      "4022708297": {},
+      "4070327399": {}
+    },
+    "collectibles": {
+      "985132347": {}
+    }
+  },
+  {
+    "id": "season_20",
+    "name": "Season of Defiance",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1270675700",
+    "otherNodeHashes": [
+      "3805032166",
+      "1723339410",
+      "2363027913",
+      "638109944"
+    ],
+    "records": {
+      "310266584": {},
+      "752104278": {},
+      "788492661": {},
+      "1388873285": {},
+      "2324218515": {},
+      "2514059564": {},
+      "3091520689": {},
+      "3091520690": {},
+      "3091520691": {},
+      "3171877617": {},
+      "3393054854": {},
+      "3845305795": {}
+    },
+    "collectibles": {
+      "198847559": {},
+      "761958733": {},
+      "1028128210": {},
+      "1184569884": {},
+      "1298489117": {},
+      "1339968002": {},
+      "2035616561": {}
+    }
+  },
+  {
+    "id": "season_21",
+    "name": "Season of the Deep",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1270675701",
+    "otherNodeHashes": [
+      "4233610139",
+      "3821148611",
+      "886984653",
+      "1823707661",
+      "2012935609"
+    ],
+    "records": {
+      "673861429": {},
+      "1048178161": {},
+      "1195933113": {},
+      "1585307805": {},
+      "2119725732": {},
+      "2538406461": {},
+      "3159538778": {},
+      "3328286012": {}
+    },
+    "collectibles": {
+      "2746608191": {},
+      "2940602493": {},
+      "3721933916": {},
+      "4024692942": {}
+    }
+  },
+  {
+    "id": "season_22",
+    "name": "Season of the Witch",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1270675702",
+    "otherNodeHashes": [
+      "264892844"
+    ],
+    "records": {}
+  },
+  {
+    "id": "season_23",
+    "name": "Season of the Wish",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1270675703",
+    "otherNodeHashes": [
+      "4229305251"
+    ],
+    "records": {}
+  },
+  {
+    "id": "episode_echoes",
+    "name": "Episode: Echoes",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1270675696",
+    "otherNodeHashes": [
+      "665075114"
+    ],
+    "records": {}
+  },
+  {
+    "id": "episode_revenant",
+    "name": "Episode: Revenant",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1270675697",
+    "otherNodeHashes": [
+      "711491817"
+    ],
+    "records": {}
+  },
+  {
+    "id": "episode_heresy",
+    "name": "Episode: Heresy",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1270675698",
+    "otherNodeHashes": [
+      "518565296"
+    ],
+    "records": {}
+  },
+  {
+    "id": "into_the_light",
+    "name": "Into the Light",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "2291258849",
+    "otherNodeHashes": [
+      "3121766601"
+    ],
+    "records": {}
+  },
+  {
+    "id": "rite_of_the_nine",
+    "name": "Rite of the Nine",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "2603002048",
+    "otherNodeHashes": [
+      "2530001514"
+    ],
+    "records": {}
+  },
+  {
+    "id": "monument_of_triumph",
+    "name": "Monument of Triumph",
+    "category": "Seasons & Episodes",
+    "sealNodeHash": "1210906304",
+    "otherNodeHashes": [
+      "4024048810"
+    ],
+    "records": {}
   }
 ]

@@ -103,3 +103,43 @@ it('builds activity triumphs without requiring a badge or mixing its collection 
   expect(view.headings.every(h => !h.collectibleHashes)).toBe(true);
   expect(buildSeal({ ...activity, badgeNodeHash: page.badgeNodeHash }, defs, 'triumphs').headings.every(h => !h.collectibleHashes)).toBe(true);
 });
+
+it('walks nested expansion and episode sections, deduplicating shared records and cycles', () => {
+  const expanded: Definitions = { ...defs, nodes: { ...defs.nodes,
+    '3': { ...defs.nodes['3']!, children: { presentationNodes: [{ presentationNodeHash: 6 }, { presentationNodeHash: 7 }] } },
+    '6': { ...defs.nodes['3']!, hash: 6, children: { records: [{ recordHash: 16 }], presentationNodes: [{ presentationNodeHash: 7 }] } },
+    '7': { ...defs.nodes['3']!, hash: 7, children: { records: [{ recordHash: 16 }, { recordHash: 15 }], presentationNodes: [{ presentationNodeHash: 3 }] } },
+  } };
+  for (const category of ['Expansions', 'Seasons & Episodes']) {
+    const config = { ...page, category };
+    const full = buildSeal(config, expanded, 'triumphs');
+    expect(full.unavailable).toBeUndefined();
+    expect(full.headings.filter(h => h.hash === '16')).toHaveLength(1);
+    expect(full.headings.find(h => h.hash === '15')).toMatchObject({ skip: true });
+    expect(full.headings.every(h => !h.collectibleHashes)).toBe(true);
+    expect(buildSeal(config, expanded).headings.some(h => h.hash === '16')).toBe(false);
+    expect(buildSeal(config, expanded, 'badge').headings.some(h => h.collectibleHashes)).toBe(true);
+  }
+});
+
+it('takes legacy status from the official Legacy Titles tree rather than the page category', () => {
+  const root = { ...defs.nodes['3']!, hash: 1881970629, children: { presentationNodes: [{ presentationNodeHash: 8 }] } };
+  const legacyDefs: Definitions = { ...defs, nodes: { ...defs.nodes,
+    '1881970629': root,
+    '8': { ...defs.nodes['3']!, hash: 8, children: { presentationNodes: [{ presentationNodeHash: 1 }] } },
+  } };
+  expect(buildSeal({ ...page, category: 'Seasons & Episodes' }, defs).legacy).toBe(false);
+  expect(buildSeal({ ...page, category: 'Expansions' }, legacyDefs).legacy).toBe(true);
+});
+
+it('prefers the seal node description and falls back when it is blank', () => {
+  const recordDescription = 'Complete all of the Triumphs for Renegades.';
+  const nodeDescription = 'Complete all of the Triumphs for Invasions in Renegades.';
+  const completion = record(99, recordDescription);
+  for (const description of [nodeDescription, '', '   ', undefined]) {
+    const source: Definitions = { ...defs, records: { ...defs.records, '99': completion }, nodes: { ...defs.nodes,
+      '1': { ...defs.nodes['1']!, displayProperties: { name: 'Undertaker', description } },
+    } };
+    expect(buildSeal(page, source).description).toBe(description?.trim() || recordDescription);
+  }
+});

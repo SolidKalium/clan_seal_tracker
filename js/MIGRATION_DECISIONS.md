@@ -273,7 +273,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Shrink tooltips and review their information density. Keep them useful for quick inspection without obscuring large portions of the table.
   - [ ] Overall compactness can also be considered. For reference, the PHP version for Rivensbane seal and the current 27-member Anomaly clan fits with plenty of vertical margin and a small amount of horizontal margin on a full screen view. Someone might like more breathing room, but likely not at the cost of difficulty of use. So usability features like pinning some players or a compactness toggle could allow a view that is less compact.
   - [ ] Can also have a setting to show counts instead of checkmarks
-- [ ] Remove or redesign click-on-cell behavior. The current pinned detail panel is provisional. Possible actions include navigating to a player page or opening a modal with richer triumph/collectible details, such as relevant YouTube guides. Exact action, context, and content sources remain undecided.
+- [ ] Remove or redesign click-on-cell behavior. The current pinned detail panel is provisional. Possible actions include navigating to a player page or opening a modal with richer triumph/collectible details, such as relevant YouTube guides. Exact action, context, and content sources remain undecided. May depend on tap vs click.
 - [ ] Revisit activity / page-type breadcrumb dropdowns when more page types are added.
 - [ ] Show guardian last login in tooltip?
 - [ ] Show an indicator outside of the tooltip when a guardian's data becomes stale?
@@ -437,3 +437,21 @@ Center collection header names vertically for both single and multiple lines. Hi
 
 Replace Gilding and Not scored header labels with gold diagonal border stripes for gilding requirements and a small hollow diamond for unscored requirements. Neither treatment reserves title space; names remain vertically centered. Tooltips explain both statuses without implying that unscored triumphs are unavailable or less valuable.
 Swapped to solid gold with an internal fade. Can revisit later.
+
+## Expansion and seasonal migration — 2026-10-31
+
+Added separate Expansions and Seasons & Episodes groups to the browser catalog. Expansion pages cover the Dreaming City, Shadowkeep, Beyond Light, 30th Anniversary, The Witch Queen, Lightfall, The Final Shape, The Edge of Fate, Renegades, and its Invasions title. Seasonal pages carry forward seasons 5–21 and add Witch, Wish, Echoes, Revenant, Heresy, Into the Light, Rite of the Nine, and Monument of Triumph (the newer season 28 entry). PHP configuration remains unchanged.
+
+Preserve supported PHP display overrides, extra triumphs, and collectibles. Traverse configured triumph nodes recursively with shared-child/cycle protection; newer episode trees have multiple section levels. Keep collection badges as separate views for non-raid pages so an entire badge is not added to a triumph percentage. The Final Shape uses campaign, lost sectors, and world branches while its raid remains on the separate Salvation’s Edge page.
+
+Derive the Legacy label at runtime from membership in Bungie’s Legacy Titles presentation tree (1881970629), rather than a configured flag, dates, or the `isSeasonal` field (which is primarily a Guardian Ranks display hint). Archived progress stays visible. The notice concerns earning the title; it does not claim that every associated item or individual triumph is unavailable. Older seasonal/episode triumph roots are also under Legacy Triumphs (3215903653); Monument of Triumph is in the active tree. The API’s SeasonDefinition confirms the episode names and their seal mappings.
+
+This migration covers content with a manifest seal. Reclamation has a season definition but no seal mapping or dedicated triumph branch in the checked manifest, so no speculative page is added. The earliest seasons retain their seals and badges; a broader triumph view can only show the extra records still exposed/configured. Events, standalone legacy badges, and destination pages without seals remain outside this migration.
+
+Validation: all new view combinations built against manifest 245114.26.10.13.2000-1-bnet.66137. Unit and browser coverage includes nested traversal, deduplication/cycles, manifest-derived legacy status, new categories, and navigation between seal, badge, and triumph views.
+
+API reference: https://bungie-net.github.io/multi/schema_Destiny-Definitions-Presentation-DestinyPresentationNodeDefinition.html
+
+## Collapsible sidebar sections — 2026-10-31
+
+Each category has an independent, keyboard-accessible toggle. Initial load and navigation to another category open the current category and collapse the others; the overview defaults to Raids. Manual toggles can leave multiple categories open, and changing view within the same category preserves those choices. Section state is derived from the route on reload rather than stored as a separate preference. The existing whole-sidebar collapse remains independent.

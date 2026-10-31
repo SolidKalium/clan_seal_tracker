@@ -10,6 +10,7 @@
     "prebuild": "npm run prepare:data",
     "build": "vue-tsc --noEmit && vite build",
     "test": "vitest run",
+    "pretest:browser": "npm run prepare:data",
     "test:browser": "playwright test",
     "preview": "vite preview --host 0.0.0.0"
   },

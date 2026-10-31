@@ -3,19 +3,36 @@ import type { Cell, Definitions, Heading, PageConfig, Profile, RecordProgress, S
 
 const isDayOne = (record: Definitions['records'][string] | undefined) => !!record && /first (?:24|48) hours|contest mode|contest difficulty/i.test(record.displayProperties.description + ' ' + record.displayProperties.name);
 export type PageMode = 'seal' | 'badge' | 'raid' | 'triumphs';
+// Walk the manifest hierarchy rather than assuming every configured node is a leaf.
+// Shared children and malformed cycles must not duplicate requirements or loop forever.
+export function presentationTree(defs: Definitions, roots: string[]): Definitions['nodes'][string][] {
+  const seen = new Set<string>(), result: Definitions['nodes'][string][] = [];
+  function visit(hash: string) {
+    if (seen.has(hash)) return;
+    seen.add(hash);
+    const node = defs.nodes[hash];
+    if (!node) return;
+    result.push(node);
+    for (const child of node.children.presentationNodes ?? []) visit(String(child.presentationNodeHash));
+  }
+  roots.forEach(visit);
+  return result;
+}
+
 export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 'seal'): Seal {
   const node = defs.nodes[page.sealNodeHash];
   const completion = node && defs.records[String(node.completionRecordHash)];
-  const base: Seal = { page, title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: completion?.displayProperties.description ?? '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
+  const base: Seal = { page, legacy: presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
   if (!node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
   if (mode === 'badge') return buildBadge(page, defs, base);
   const full = mode === 'raid' || mode === 'triumphs';
   let nextOrder = 100;
   const hashes = new Set(node.children.records.map(r => String(r.recordHash)));
+  const extraNodes = presentationTree(defs, page.otherNodeHashes ?? []);
   // Historical day-one achievements stay visible in either triumph view, never scored.
-  for (const hash of page.otherNodeHashes ?? []) for (const r of defs.nodes[hash]?.children.records ?? []) if (isDayOne(defs.records[String(r.recordHash)])) hashes.add(String(r.recordHash));
+  for (const extra of extraNodes) for (const r of extra.children.records ?? []) if (isDayOne(defs.records[String(r.recordHash)])) hashes.add(String(r.recordHash));
   if (full) {
-    for (const hash of page.otherNodeHashes ?? []) for (const r of defs.nodes[hash]?.children.records ?? []) hashes.add(String(r.recordHash));
+    for (const extra of extraNodes) for (const r of extra.children.records ?? []) hashes.add(String(r.recordHash));
     for (const hash of Object.keys(page.records)) if (defs.records[hash]) hashes.add(hash);
   }
   for (const recordHash of hashes) {
@@ -44,13 +61,13 @@ export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 
   const group = (n: number) => n === 0 ? 0 : n > 0 ? 1 : 3;
   base.headings.sort((a, b) => group(a.order) - group(b.order) || a.order - b.order);
   if (full) {
-    if (page.badgeNodeHash && page.category !== 'Activities') {
+    if (page.badgeNodeHash && mode === 'raid') {
       const badge = buildBadge(page, defs, base);
       if (badge.unavailable) return badge;
       base.headings.push(...badge.headings);
     }
     const extras = new Set(Object.keys(page.collectibles ?? {}));
-    for (const hash of page.otherNodeHashes ?? []) for (const c of defs.nodes[hash]?.children.collectibles ?? []) extras.add(String(c.collectibleHash));
+    for (const extra of extraNodes) for (const c of extra.children.collectibles ?? []) extras.add(String(c.collectibleHash));
     const included = new Set(base.headings.flatMap(h => h.collectibleHashes ?? []));
     for (const hash of extras) if (!included.has(hash) && !page.collectibles?.[hash]?.suppress) {
       const heading = collectibleHeading([hash], [], defs, page.name);

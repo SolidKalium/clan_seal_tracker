@@ -218,7 +218,8 @@ test('compact header status and persistent collapsible clan rail', async ({ page
   await page.screenshot({ path: 'test-results/mobile-collapsed-sidebar.png', fullPage: true });
   await page.getByRole('button', { name: 'Expand side menu', exact: true }).click();
   await expect(page.locator('.seal-nav').first()).toBeVisible();
-  expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height)).toBeLessThan(220);
+  // Four compact navigation rows now include expansions and seasons/episodes.
+  expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height)).toBeLessThan(280);
 });
 
 test('status stays anchored during refresh and the collapsed clan name uses the rail', async ({ page }) => {
@@ -570,6 +571,7 @@ test('activity seals and triumphs have separate navigation and optional badges',
     ...Object.fromEntries(activities.map((a, i) => [990 + i, record(990 + i, a.name, { titleInfo: { titlesByGender: { Male: a.title } } })])),
   } }));
   await page.goto(''); await ready(page);
+  await page.getByRole('button', { name: 'Activities', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Activity seals', exact: true }).locator('.seal-card')).toHaveCount(6);
   for (const activity of activities) {
     await page.getByRole('navigation', { name: 'Activities', exact: true }).getByRole('link', { name: activity.name, exact: true }).click();
@@ -641,4 +643,102 @@ test('restricted and hidden triumphs retain progress with a cell indicator and t
   await expect(tooltip.locator('.objective-count').first()).toHaveText(/5\s*\/\s*10/);
   await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('75');
   await expect(page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('.cell-conditions')).toHaveCount(0);
+});
+
+test('expansions and episodes expose nested triumphs, independent badges, and manifest legacy status', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  const sealNode = (hash: number, title: string) => ({ hash, displayProperties: { name: title }, completionRecordHash: hash + 1, children: { records: [{ recordHash: 42 }] } });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '2724376914': sealNode(2724376914, 'The Final Shape'),
+    '1270675696': sealNode(1270675696, 'Episode: Echoes'),
+    '1210906304': sealNode(1210906304, 'Monument of Triumph'),
+    '1528010893': { displayProperties: { name: 'Pale Heart Pathfinder' }, children: { presentationNodes: [{ presentationNodeHash: 4 }] } },
+    '4': { displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }] } },
+    '665075114': { hash: 665075114, children: { presentationNodes: [{ presentationNodeHash: 6 }] } },
+    '6': { hash: 6, children: { records: [{ recordHash: 44 }] } },
+    '1881970629': { hash: 1881970629, children: { presentationNodes: [{ presentationNodeHash: 1270675696 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '2724376915': record(2724376915, 'The Final Shape', { titleInfo: { titlesByGender: { Male: 'Transcendent' } } }),
+    '1270675697': record(1270675697, 'Echoes', { titleInfo: { titlesByGender: { Male: 'Intrepid' } } }),
+    '1210906305': record(1210906305, 'Monument of Triumph', { titleInfo: { titlesByGender: { Male: 'Immortal' } } }),
+    '44': record(44, 'Nested episode triumph', { objectiveHashes: [102] }),
+  } }));
+  await page.goto(''); await ready(page);
+  await expect(page.getByRole('region', { name: 'Expansion seals', exact: true }).locator('.seal-card')).toHaveCount(10);
+  await expect(page.getByRole('region', { name: 'Seasons & Episodes', exact: true }).locator('.seal-card')).toHaveCount(25);
+  await page.getByRole('button', { name: 'Expansions', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Expansions', exact: true }).getByRole('link', { name: 'The Final Shape', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Transcendent');
+  await expect(page.locator('.legacy-notice')).toHaveCount(0);
+  const expansionViews = page.getByRole('navigation', { name: 'Expansion view' });
+  await expansionViews.getByRole('link', { name: 'Badge', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('The Final Shape badge');
+  await expansionViews.getByRole('link', { name: 'Triumphs', exact: true }).click();
+  await page.getByRole('button', { name: 'Seasons & Episodes', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Seasons & Episodes', exact: true }).getByRole('link', { name: 'Episode: Echoes Legacy', exact: true }).click();
+  await expect(page).toHaveURL(/#\/triumphs\/episode_echoes$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Intrepid');
+  await expect(page.locator('.legacy-notice')).toContainText('can no longer be earned');
+  await expect(page.locator('thead')).toContainText('Nested episode triumph');
+  await expect(page.locator('thead')).not.toContainText('Raid weapon');
+  const seasonalViews = page.getByRole('navigation', { name: 'Seasonal view' });
+  await expect(seasonalViews.getByRole('link', { name: 'Badge', exact: true })).toHaveCount(0);
+  await seasonalViews.getByRole('link', { name: 'Seal', exact: true }).click();
+  await expect(page.locator('thead')).not.toContainText('Nested episode triumph');
+  await page.getByRole('navigation', { name: 'Seasons & Episodes', exact: true }).getByRole('link', { name: 'Monument of Triumph', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Immortal');
+  await expect(page.locator('.legacy-notice')).toHaveCount(0);
+});
+
+test('sidebar sections default to the current category and can be toggled independently by keyboard', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const raids = page.getByRole('button', { name: 'Raids', exact: true });
+  const activities = page.getByRole('button', { name: 'Activities', exact: true });
+  await expect(raids).toHaveAttribute('aria-expanded', 'true');
+  for (const name of ['Activities', 'Expansions', 'Seasons & Episodes']) {
+    await expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('navigation', { name, exact: true })).toHaveCount(0);
+  }
+  await raids.focus(); await page.keyboard.press('Space');
+  await expect(raids).toHaveAttribute('aria-expanded', 'false');
+  await raids.press('Enter');
+  await expect(raids).toHaveAttribute('aria-expanded', 'true');
+  await activities.click();
+  await expect(activities).toHaveAttribute('aria-expanded', 'true');
+  await expect(raids).toHaveAttribute('aria-expanded', 'true');
+  await page.goto('#/seal/crucible');
+  await expect(raids).toHaveAttribute('aria-expanded', 'false');
+  await expect(activities).toHaveAttribute('aria-expanded', 'true');
+  await page.reload(); await ready(page);
+  await expect(activities).toHaveAttribute('aria-expanded', 'true');
+  await expect(raids).toHaveAttribute('aria-expanded', 'false');
+  await page.locator('.sidebar .nav-home').click();
+  await expect(raids).toHaveAttribute('aria-expanded', 'true');
+  await expect(activities).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('Undertaker disables the duplicate triumphs tab with an accessible explanation', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '347825339': { hash: 347825339, displayProperties: { name: 'Undertaker' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } },
+    '2136916333': { hash: 2136916333, children: { records: [{ recordHash: 42 }] } },
+  } }));
+  await page.goto('#/seal/renegades_invasions'); await ready(page);
+  const tab = page.getByRole('navigation', { name: 'Expansion view' }).getByRole('button', { name: 'Triumphs', exact: true });
+  await expect(tab).toHaveAttribute('aria-disabled', 'true');
+  await tab.hover();
+  await expect(page.getByRole('tooltip')).toHaveText('Has no triumphs outside the seal');
+  await expect(page.getByRole('tooltip')).toHaveCSS('padding', '6px 9px');
+  const tabBounds = (await tab.boundingBox())!;
+  const tipBounds = (await page.getByRole('tooltip').boundingBox())!;
+  expect(tipBounds.width).toBeLessThan(300);
+  expect(Math.abs(tipBounds.x - (tabBounds.x + tabBounds.width / 2 + 12))).toBeLessThan(2);
+  expect(Math.abs(tipBounds.y - (tabBounds.y + tabBounds.height / 2 + 8))).toBeLessThan(2);
+  await tab.click({ force: true });
+  await expect(page).toHaveURL(/#\/seal\/renegades_invasions$/);
+  await tab.focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('tooltip')).toHaveText('Has no triumphs outside the seal');
+  await expect(page).toHaveURL(/#\/seal\/renegades_invasions$/);
 });
