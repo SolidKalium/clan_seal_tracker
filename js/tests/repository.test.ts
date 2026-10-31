@@ -71,3 +71,20 @@ it('upgrades a fresh record-only manifest even when its Bungie version has not c
   expect(result.entry?.value.collectibles?.['200']?.displayProperties.name).toBe('Weapon');
   expect(t.resource).toHaveBeenCalledTimes(6);
 });
+
+it('upgrades an old roster cache and retains its emblem when banner lookup fails', async () => {
+  const emblem = { backgroundColor: 'rgba(0, 0, 0, 1)', layers: [{ path: '/common/destiny2_content/icons/old.png', color: 'rgba(255, 255, 255, 1)' }] };
+  await store.put({ key: 'roster:1', value: { name: 'Old clan', members: [member], emblem }, fetchedAt: Date.now() });
+  const t: Transport = { resource: vi.fn(), api: vi.fn().mockImplementation(async path => {
+    if (path.includes('/Members/')) return { results: [member], hasMore: false };
+    if (path.includes('/ClanBannerDictionary/')) throw new Error('banner service unavailable');
+    return { detail: { name: 'Updated clan', clanInfo: { clanBannerData: { decalId: 1, decalColorId: 2, decalBackgroundColorId: 3, gonfalonId: 4, gonfalonColorId: 5, gonfalonDetailId: 6, gonfalonDetailColorId: 7 } } } };
+  }) };
+  const repo = new TrackerRepository(store, t, '1');
+  const result = await repo.roster(noop);
+  expect(result.status).toBe('fresh');
+  expect(result.entry?.value).toMatchObject({ name: 'Updated clan', members: [member], emblem });
+  const calls = vi.mocked(t.api).mock.calls.length;
+  await repo.roster(noop);
+  expect(t.api).toHaveBeenCalledTimes(calls);
+});

@@ -58,3 +58,19 @@ describe('progress rules', () => {
     expect(buildSeal({ id: 'x', name: 'X', category: 'Raid', sealNodeHash: '1', records: {} }, { version: 'v', language: 'en', nodes: {}, records: {}, objectives: {} }).unavailable).toBeTruthy();
   });
 });
+
+
+it('distinguishes completed unclaimed records without changing their progress', () => {
+  expect(recordCell({ state: 0, objectives: [objective(10, true)] }, heading)).toMatchObject({ complete: true, fraction: 1, text: '✓', unclaimed: true });
+  expect(recordCell({ state: 1, objectives: [objective(10, true)] }, heading)).toMatchObject({ complete: true, unclaimed: false });
+  expect(recordCell({ state: 4, objectives: [objective(5)] }, heading)).toMatchObject({ complete: false, unclaimed: false });
+  expect(recordCell(undefined, heading).unclaimed).toBe(false);
+  expect(recordCell({ state: 0, intervalObjectives: [objective(5)] }, { ...heading, objectives: [], intervals: heading.objectives }).unclaimed).toBe(false);
+});
+it('prefers a redeemed character record when complete progress ties an unclaimed one', () => {
+  const profile: Profile = { characterRecords: { data: {
+    titan: { records: { '42': { state: 0, objectives: [objective(10, true)] } } },
+    hunter: { records: { '42': { state: 1, objectives: [objective(10, true)] } } },
+  } } };
+  expect(recordCell(selectRecord(profile, { ...heading, scope: 1 }), heading).unclaimed).toBe(false);
+});

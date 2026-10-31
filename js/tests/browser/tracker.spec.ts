@@ -11,12 +11,13 @@ async function setup(page: Page, state: { offline: boolean; calls: number; origi
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://www.bungie.net/**', async route => {
     const path = new URL(route.request().url()).pathname;
+    if (/\/icons\/test-(titan|hunter)\.png$/.test(path)) return route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><path fill="white" d="M16 4 28 26H4Z"/></svg>' });
     state.calls++;
     if (state.delay) await new Promise(resolve => setTimeout(resolve, state.delay));
     if (state.offline) return route.abort('failed');
     if (state.originError && path.includes('/Members/')) return route.fulfill({ status: 500, json: { ErrorCode: 2107, ErrorStatus: 'OriginHeaderDoesNotMatchKey' } });
     if (path === '/Platform/Destiny2/Manifest/') return route.fulfill({ json: envelope({ version: 'test-manifest', jsonWorldComponentContentPaths: { en: { DestinyPresentationNodeDefinition: root + 'nodes.json', DestinyRecordDefinition: root + 'records.json', DestinyObjectiveDefinition: root + 'objectives.json', DestinyCollectibleDefinition: root + 'collectibles.json', DestinyInventoryItemLiteDefinition: root + 'items.json', DestinySandboxPerkDefinition: root + 'perks.json' } } }) });
-    if (path === root + 'nodes.json') return route.fulfill({ json: state.extended ? { ...nodes, '1525933460': { children: { records: [{ recordHash: 901 }, { recordHash: 902 }] } }, '1086048586': { displayProperties: { name: 'Badge', description: 'Raid collection' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } }, '4': { displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 202 }] } }, '5': { displayProperties: { name: 'Hunter' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 203 }] } } } : nodes });
+    if (path === root + 'nodes.json') return route.fulfill({ json: state.extended ? { ...nodes, '1525933460': { children: { records: [{ recordHash: 901 }, { recordHash: 902 }] } }, '1086048586': { displayProperties: { name: 'Badge', description: 'Raid collection' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } }, '4': { displayProperties: { name: 'Titan', icon: root + 'icons/test-titan.png' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 202 }] } }, '5': { displayProperties: { name: 'Hunter', icon: root + 'icons/test-hunter.png' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 203 }] } } } : nodes });
     if (path === root + 'records.json') return route.fulfill({ json: state.extended ? { ...records, '901': record(901, 'Woven Wish', { displayProperties: { name: 'Woven Wish', description: 'Complete with a fireteam made entirely of Strand subclasses.' } }), '902': record(902, 'Day one', { displayProperties: { name: 'Day one', description: 'Complete within the first 24 hours of release.' } }) } : records });
     if (path === root + 'items.json') return route.fulfill({ json: { '301': { displayProperties: { name: 'Raid weapon' }, itemType: 3, itemTypeDisplayName: 'Scout Rifle' }, '302': { displayProperties: { name: 'Armor' }, itemType: 2, itemTypeDisplayName: 'Helmet' } } });
     if (path === root + 'perks.json') return route.fulfill({ json: { '401': { displayProperties: { name: 'Mod perk', description: 'Improves the augment.' } } } });
@@ -207,7 +208,7 @@ test('compact header status and persistent collapsible clan rail', async ({ page
   await expect(page.locator('.sidebar .clan-emblem')).toBeVisible();
   await expect(page.locator('.sidebar .clan-name')).toHaveText('Test Clan');
   expect(await page.locator('.sidebar .clan-name').evaluate(e => getComputedStyle(e).writingMode)).toBe('vertical-rl');
-  await expect(page.locator('.seal-nav')).toBeHidden();
+  await expect(page.locator('.seal-nav').first()).toBeHidden();
   expect(await page.locator('main').evaluate(e => e.getBoundingClientRect().width)).toBeGreaterThan(width);
   await page.screenshot({ path: 'test-results/collapsed-sidebar.png', fullPage: true });
   await page.reload(); await ready(page);
@@ -216,7 +217,7 @@ test('compact header status and persistent collapsible clan rail', async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/mobile-collapsed-sidebar.png', fullPage: true });
   await page.getByRole('button', { name: 'Expand side menu', exact: true }).click();
-  await expect(page.locator('.seal-nav')).toBeVisible();
+  await expect(page.locator('.seal-nav').first()).toBeVisible();
   expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height)).toBeLessThan(220);
 });
 
@@ -331,14 +332,32 @@ test('badge and full raid navigation keep collection progress and unscored day o
   await expect(page.getByRole('tooltip')).toContainText('Objective: Acquire');
   await expect(page.getByRole('tooltip')).not.toContainText('Target');
   await expect(page.getByRole('tooltip')).not.toContainText('Source:');
-  await page.getByRole('button', { name: 'Ada: Titan helmet: complete', exact: true }).hover();
+  await page.getByRole('button', { name: 'Ada: Titan helmet: collected for Titan, Hunter', exact: true }).hover();
   const armor = page.getByRole('tooltip').getByRole('table', { name: 'Armor collection by class' });
   await expect(armor.getByRole('columnheader')).toHaveText(['Collection status', 'Titan', 'Hunter']);
-  await expect(armor.getByRole('row').nth(1)).toHaveText('Titan helmet Collected✓✓');
-  await expect(armor.getByRole('row').nth(2)).toHaveText('Set Complete✓✓');
+  await expect(armor.getByRole('row').nth(1)).toHaveText('Titan helmet Collected');
+  await expect(armor.getByRole('row').nth(2)).toHaveText('Set Complete');
+  for (const row of [armor.getByRole('row').nth(1), armor.getByRole('row').nth(2)]) {
+    await expect(row.getByRole('img', { name: 'Titan', exact: true })).toHaveCount(1);
+    await expect(row.getByRole('img', { name: 'Hunter', exact: true })).toHaveCount(1);
+  }
+  const owned = page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.armor-ownership');
+  await expect(owned.getByRole('img', { name: 'Hunter', exact: true })).toHaveCount(1);
+  await expect(owned.getByRole('img', { name: 'Titan', exact: true })).toHaveCount(0);
+  await expect(owned.locator('.class-icon')).toHaveCSS('mask-image', /test-hunter\.png/);
+  await expect(owned.locator('.class-slot')).toHaveCount(2);
+  await expect(owned.locator('.class-slot').first()).toHaveAttribute('data-class', 'Titan');
+  await expect(owned.locator('.class-slot').first().getByRole('img')).toHaveCount(0);
+  const allOwned = page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('.armor-ownership');
+  const relativeHunterX = (button: typeof owned) => button.evaluate(el => el.querySelector('[data-class="Hunter"]')!.getBoundingClientRect().left - el.getBoundingClientRect().left);
+  expect(await relativeHunterX(owned)).toBe(await relativeHunterX(allOwned));
+  await expect(allOwned.getByRole('img', { name: 'Titan', exact: true })).toHaveCSS('opacity', '0.58');
+  await expect(owned.getByRole('img', { name: 'Hunter', exact: true })).toHaveCSS('opacity', '0.76');
+  await expect(armor.getByRole('row').nth(1).getByRole('img', { name: 'Titan', exact: true })).toHaveCSS('opacity', '1');
   await expect(page.getByRole('tooltip').locator('.objective-details')).toHaveCount(0);
   await page.getByLabel('Badge class', { exact: true }).selectOption('0');
   await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('0');
+  await expect(owned.getByRole('img', { name: 'Hunter', exact: true })).toHaveCount(1);
   await page.getByLabel('Badge class', { exact: true }).selectOption('best');
   await expect(page.locator('tbody tr').filter({ hasText: 'Crow' })).toContainText('No data');
   await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Full raid', exact: true }).click();
@@ -460,4 +479,156 @@ test('triumph tooltips stay anchored while the hovered objective changes', async
   await expect(tooltip).toHaveAttribute('style', headerStyle!);
   await page.getByRole('button', { name: 'Stage 2: Final encounter', exact: true }).press('Escape');
   await expect(tooltip).toHaveCount(0);
+});
+
+test('clan emblem layers persist and scale with the collapsed menu', async ({ page }) => {
+  const state = { offline: false, calls: 0 }; await setup(page, state);
+  const color = (red: number) => ({ red, green: 20, blue: 30, alpha: 255 });
+  const icon = root + 'icons/test-titan.png';
+  await page.route('**/Platform/GroupV2/*/', route => route.fulfill({ json: envelope({ detail: { name: 'Test Clan', clanInfo: { clanBannerData: { decalId: 1, decalColorId: 2, decalBackgroundColorId: 3, gonfalonColorId: 4, gonfalonDetailId: 5, gonfalonDetailColorId: 6 } } } }) }));
+  let dictionaryCalls = 0;
+  await page.route('**/Platform/Destiny2/Clan/ClanBannerDictionary/', route => {
+    dictionaryCalls++;
+    return route.fulfill({ json: envelope({ clanBannerDecalsSquare: { '1': { foregroundPath: icon, backgroundPath: icon } }, clanBannerGonfalonDetailsSquare: { '5': icon }, clanBannerGonfalonColors: { '4': color(10) }, clanBannerDecalPrimaryColors: { '2': color(200) }, clanBannerDecalSecondaryColors: { '3': color(240) }, clanBannerGonfalonDetailColors: { '6': color(50) } }) });
+  });
+  await page.goto(''); await ready(page);
+  const emblem = page.getByRole('img', { name: 'Test Clan clan emblem', exact: true });
+  await expect(emblem).toBeVisible();
+  await expect(emblem.locator('.clan-banner-layer')).toHaveCount(3);
+  await expect(emblem).toHaveCSS('background-color', 'rgb(10, 20, 30)');
+  await expect(emblem.locator('.clan-banner-layer').last()).toHaveCSS('background-color', 'rgb(200, 20, 30)');
+  expect((await emblem.boundingBox())!.width).toBe(62);
+  await page.getByRole('button', { name: 'Collapse side menu' }).click();
+  expect((await emblem.boundingBox())!.width).toBe(44);
+  const calls = state.calls;
+  await page.reload(); await ready(page);
+  await expect(emblem).toBeVisible();
+  expect(dictionaryCalls).toBe(1);
+  expect(state.calls).toBe(calls);
+  state.offline = true;
+  await page.getByRole('button', { name: 'Refresh data', exact: true }).click(); await ready(page);
+  await expect(emblem).toBeVisible();
+});
+
+test('the browser catalog exposes the three new raids with seal, badge, and full views', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const additions = [
+    { id: 'crotas_end', name: "Crota's End", seal: '238107129', badge: '48971793', title: 'Swordbearer' },
+    { id: 'salvations_edge', name: "Salvation's Edge", seal: '334829503', badge: '988425963', title: 'Iconoclast' },
+    { id: 'the_desert_perpetual', name: 'The Desert Perpetual', seal: '3954661385', badge: '4253860097', title: 'Atemporal' },
+  ];
+  const extraNodes = Object.fromEntries(additions.flatMap((raid, i) => [
+    [raid.seal, { hash: Number(raid.seal), displayProperties: { name: raid.name }, completionRecordHash: 990 + i, children: { records: [{ recordHash: 42 }] } }],
+    [raid.badge, { displayProperties: { name: raid.name }, children: { presentationNodes: [{ presentationNodeHash: 4 }] } }],
+  ]));
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes, ...extraNodes,
+    '4': { displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, ...Object.fromEntries(additions.map((raid, i) => [990 + i, record(990 + i, raid.name, { titleInfo: { titlesByGender: { Male: raid.title } } })])) } }));
+  await page.goto(''); await ready(page);
+  await expect(page.getByRole('region', { name: 'Raid seals', exact: true }).locator('.seal-card')).toHaveCount(10);
+  await expect(page.getByRole('region', { name: 'Activity seals', exact: true }).locator('.seal-card')).toHaveCount(6);
+  for (const raid of additions) {
+    await page.locator('.seal-nav').getByRole('link', { name: raid.name, exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.title);
+    const views = page.getByRole('navigation', { name: 'Raid view' });
+    await views.getByRole('link', { name: 'Badge', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.name + ' badge');
+    await views.getByRole('link', { name: 'Full raid', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.title);
+    await views.getByRole('link', { name: 'Seal', exact: true }).click();
+  }
+});
+
+test('activity seals and triumphs have separate navigation and optional badges', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const activities = [
+    { id: 'crucible', name: 'Crucible', seal: '475207334', badge: '701100740', extra: '3973313476', title: 'Glorious' },
+    { id: 'iron_banner', name: 'Iron Banner', seal: '2161171268', extra: '3049172190', title: 'Iron Lord' },
+    { id: 'gambit', name: 'Gambit', seal: '3665267419', badge: '1420354007', extra: '97371225', title: 'Dredgen' },
+    { id: 'trials', name: 'Trials of Osiris', seal: '1733555826', badge: '564984975', extra: '2739258696', title: 'Flawless' },
+    { id: 'strikes', name: 'Strikes', seal: '3776992251', extra: '1954283988', title: 'Conqueror' },
+    { id: 'deadeye', name: 'Weapons', seal: '361765966', title: 'Deadeye' },
+  ];
+  const activityNodes = Object.fromEntries(activities.flatMap((a, i) => [
+    [a.seal, { displayProperties: { name: a.name }, completionRecordHash: 990 + i, children: { records: [{ recordHash: 42 }, { recordHash: 43 }] } }],
+    ...(a.extra ? [[a.extra, { children: { records: [{ recordHash: 44 }] } }]] : []),
+    ...(a.badge ? [[a.badge, { displayProperties: { name: a.name }, children: { presentationNodes: [{ presentationNodeHash: 4 }] } }]] : []),
+  ]));
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes, ...activityNodes,
+    '4': { displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '43': { ...records['43'], forTitleGilding: true }, '44': record(44, 'Extra activity triumph'),
+    ...Object.fromEntries(activities.map((a, i) => [990 + i, record(990 + i, a.name, { titleInfo: { titlesByGender: { Male: a.title } } })])),
+  } }));
+  await page.goto(''); await ready(page);
+  await expect(page.getByRole('region', { name: 'Activity seals', exact: true }).locator('.seal-card')).toHaveCount(6);
+  for (const activity of activities) {
+    await page.getByRole('navigation', { name: 'Activities', exact: true }).getByRole('link', { name: activity.name, exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(activity.title);
+    const views = page.getByRole('navigation', { name: 'Activity view' });
+    await expect(views.getByRole('link', { name: 'Badge', exact: true })).toHaveCount(activity.badge ? 1 : 0);
+    await expect(page.locator('thead')).toContainText('Gilding');
+    await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(0);
+    await views.getByRole('link', { name: 'Triumphs', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp('#/triumphs/' + activity.id + '$'));
+    await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(activity.extra ? 1 : 0);
+    await expect(page.getByRole('button', { name: 'Raid weapon', exact: true })).toHaveCount(0);
+    if (activity.badge) {
+      await views.getByRole('link', { name: 'Badge', exact: true }).click();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(activity.name + ' badge');
+      await expect(page.getByRole('button', { name: 'Raid weapon', exact: true })).toHaveCount(1);
+    }
+    await views.getByRole('link', { name: 'Seal', exact: true }).click();
+  }
+});
+
+test('completed unclaimed triumphs use a separate green and explain their status', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', async route => {
+    const path = new URL(route.request().url()).pathname;
+    const member = members.find(m => path.includes(m.destinyUserInfo.membershipId))!;
+    if (!member) return route.fallback();
+    const unclaimed = member.destinyUserInfo.displayName === 'Banshee';
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {
+      '99': { state: 1 }, '42': { state: unclaimed ? 0 : 1, objectives: [{ objectiveHash: 101, progress: 10, completionValue: 10, complete: true }, { objectiveHash: 103, progress: 10, completionValue: 10, complete: true }] }, '43': { state: 1 },
+    } } } }) });
+  });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const button = page.getByRole('button', { name: 'Banshee: First challenge: complete, unclaimed', exact: true });
+  await expect(button.locator('..')).toHaveClass(/cell-unclaimed/);
+  await expect(button.locator('..')).toHaveCSS('background-color', 'rgb(224, 238, 230)');
+  await expect(page.getByRole('button', { name: 'Ada: First challenge: complete', exact: true }).locator('..')).not.toHaveClass(/cell-unclaimed/);
+  await button.hover();
+  await expect(page.getByRole('tooltip')).toContainText('Completed, but not claimed in game.');
+  await page.getByRole('button', { name: 'Ada: First challenge: complete', exact: true }).hover();
+  await expect(page.getByRole('tooltip').locator('.claim-status')).toHaveCount(0);
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('100');
+});
+
+test('restricted and hidden triumphs retain progress with a cell indicator and tooltip explanations', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const path = new URL(route.request().url()).pathname;
+    const member = members.find(m => path.includes(m.destinyUserInfo.membershipId))!;
+    const restricted = member.destinyUserInfo.displayName === 'Banshee';
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {
+      '99': { state: 1 }, '42': { state: restricted ? 62 : 1, objectives: [101, 103].map(objectiveHash => ({ objectiveHash, progress: restricted ? 5 : 10, completionValue: 10, complete: !restricted })) }, '43': { state: 1 },
+    } } } }) });
+  });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const button = page.getByRole('button', { name: 'Banshee: First challenge: Final encounter: 5/10', exact: true });
+  const cell = button.locator('..');
+  await expect(cell).toHaveClass(/cell-unowned/);
+  await expect(cell.getByRole('img')).toHaveAccessibleName('Content locked; Hidden in game; Obscured in game');
+  await expect(cell.locator('.condition-more')).toHaveText('+');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.cell-conditions')).toHaveCount(1);
+  await button.hover();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip.locator('.record-conditions strong')).toHaveText(['Content locked', 'Hidden in game', 'Obscured in game']);
+  await expect(tooltip).toContainText('such as required DLC');
+  await expect(tooltip.locator('.objective-count').first()).toHaveText(/5\s*\/\s*10/);
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('75');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('.cell-conditions')).toHaveCount(0);
 });

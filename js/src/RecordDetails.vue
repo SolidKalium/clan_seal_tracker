@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import ClassIcon from './ClassIcon.vue';
 import { objectiveGoal, objectiveUnit } from './domain';
 import type { Cell, Heading } from './types';
 const props = defineProps<{ heading: Heading; cell?: Cell; player?: string; activeObjectiveHash?: string }>();
@@ -17,15 +18,18 @@ const description = computed(() => {
   <div class="record-details">
     <p v-if="player" class="eyebrow">{{ player }}</p>
     <h3>{{ heading.name }}</h3>
+    <p v-if="heading.group?.startsWith('Armor · ')" class="item-type">{{ heading.armorSetName }}</p>
     <p v-if="heading.itemType" class="item-type">{{ heading.itemType }}</p>
     <ul v-if="heading.perks?.length" class="item-perks"><li v-for="(perk, i) in heading.perks" :key="i"><strong>{{ perk.name }}</strong><p v-if="perk.description">{{ perk.description }}</p></li></ul>
     <p v-if="description && description !== heading.name" class="record-description" :class="{ 'collection-description': heading.collectibleHashes }">{{ description }}</p>
+    <p v-if="cell?.unclaimed" class="claim-status">Completed, but not claimed in game.</p>
+    <ul v-if="cell?.conditions?.length" class="record-conditions"><li v-for="condition in cell.conditions" :key="condition.code"><strong>{{ condition.label }}</strong><span>{{ condition.description }}</span></li></ul>
     <template v-if="cell">
       <table v-if="cell.variants" class="armor-comparison" aria-label="Armor collection by class">
         <thead><tr><th scope="col"><span class="sr-only">Collection status</span></th><th v-for="variant in cell.variants" :key="variant.name" scope="col">{{ variant.name }}</th></tr></thead>
         <tbody>
-          <tr><th scope="row">{{ heading.label }} Collected</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.missing ? 'No data' : variant.complete ? 'Collected' : 'Not collected'">{{ variant.complete ? '✓' : variant.missing ? '—' : '' }}</td></tr>
-          <tr class="armor-set-status"><th scope="row">Set Complete</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.setComplete ? 'Set complete' : variant.setMissing ? 'No data' : 'Set incomplete'">{{ variant.setComplete ? '✓' : variant.setMissing ? '—' : '' }}</td></tr>
+          <tr><th scope="row">{{ heading.label }} Collected</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.missing ? 'No data' : variant.complete ? 'Collected' : 'Not collected'"><ClassIcon v-if="variant.complete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.missing">—</span></td></tr>
+          <tr class="armor-set-status"><th scope="row">Set Complete</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.setComplete ? 'Set complete' : variant.setMissing ? 'No data' : 'Set incomplete'"><ClassIcon v-if="variant.setComplete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.setMissing">—</span></td></tr>
         </tbody>
       </table>
       <p v-else-if="heading.collectibleHashes" class="objective-state">{{ cell.missing ? 'No collection data available' : cell.complete ? 'Collected' : 'Acquire' }}</p>

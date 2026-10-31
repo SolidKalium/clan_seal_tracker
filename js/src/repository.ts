@@ -1,4 +1,5 @@
 import type { Transport } from './api';
+import { composeClanEmblem, type ClanBannerData, type ClanBannerSource } from './clanBanner';
 import { CacheStore } from './storage';
 import { fresh, MINUTE, profileFresh, PROFILE_COMPONENTS } from './policy';
 import type { Cached, Definitions, LoadResult, Manifest, Member, Profile, Roster, UserInfo } from './types';
@@ -54,7 +55,7 @@ export class TrackerRepository {
     return this.once('roster', async () => {
       const key = `roster:${this.clanId}`, cached = await this.store.get<Roster>(key);
       if (cached) onCached({ entry: cached, status: fresh(cached, 3 * MINUTE) ? 'cached' : 'stale' });
-      if (!force && fresh(cached, 3 * MINUTE)) return { entry: cached, status: 'cached' };
+      if (!force && cached?.value.emblemChecked && fresh(cached, 3 * MINUTE)) return { entry: cached, status: 'cached' };
       try {
         const members: Member[] = [];
         for (let page = 1; ; page++) {
@@ -65,11 +66,33 @@ export class TrackerRepository {
           if (!response.hasMore) break;
         }
         let name = cached?.value.name ?? `Clan ${this.clanId}`;
-        try { name = (await this.transport.api<{ detail: { name: string } }>(`/GroupV2/${this.clanId}/`)).detail.name || name; } catch { /* Name is optional; roster remains usable. */ }
-        const entry: Cached<Roster> = { key, value: { name, members }, fetchedAt: Date.now(), lastAttemptAt: Date.now() };
+        let emblem = cached?.value.emblem, emblemChecked = cached?.value.emblemChecked ?? false;
+        try {
+          const { detail } = await this.transport.api<{ detail: { name: string; clanInfo?: { clanBannerData?: ClanBannerData } } }>(`/GroupV2/${this.clanId}/`);
+          name = detail.name || name;
+          const banner = detail.clanInfo?.clanBannerData;
+          if (banner) {
+            const source = await this.bannerSource(force);
+            emblem = source ? composeClanEmblem(banner, source) ?? emblem : emblem;
+          } else emblem = undefined;
+          emblemChecked = true;
+        } catch { /* Optional clan details must not prevent the roster from loading. */ }
+        const entry: Cached<Roster> = { key, value: { name, members, emblem, emblemChecked }, fetchedAt: Date.now(), lastAttemptAt: Date.now() };
         await this.store.put(entry);
         return { entry, status: 'fresh' };
       } catch (e) { return this.failed(cached, e); }
+    });
+  }
+  private bannerSource(force = false): Promise<ClanBannerSource | undefined> {
+    return this.once('clan-banner-source', async () => {
+      const key = 'clan-banner-source', cached = await this.store.get<ClanBannerSource>(key);
+      if (!force && fresh(cached, 24 * 60 * MINUTE)) return cached!.value;
+      try {
+        const value = await this.transport.api<ClanBannerSource>('/Destiny2/Clan/ClanBannerDictionary/');
+        if (!value?.clanBannerDecalsSquare || !value.clanBannerGonfalonColors) throw new Error('Clan banner definitions are incomplete.');
+        await this.store.put({ key, value, fetchedAt: Date.now() });
+        return value;
+      } catch { return cached?.value; }
     });
   }
   profile(member: Member, onCached: CachedCallback<Profile>, force = false): Promise<LoadResult<Profile>> {

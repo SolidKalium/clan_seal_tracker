@@ -1,0 +1,629 @@
+// Browser raid catalog. Independent of the PHP pages.json.
+// Hashes identify manifest nodes; rules contain only supported overrides and extra full-raid content.
+// Elemental order, day-one exclusion, item categories, armor slots, and objective numbering are automatic.
+[
+  {
+    "id": "last_wish",
+    "name": "Last Wish",
+    "sealNodeHash": "1486062207",
+    "badgeNodeHash": "1086048586",
+    "otherNodeHashes": [
+      "1525933460"
+    ],
+    "collectibles": {
+      "426204227": {},
+      "1244899887": {},
+      "1616812058": {},
+      "2061705522": {}
+    },
+    "records": {
+      "342038729": {},
+      "380332968": {
+        "column_name": "Petra's Run",
+        "order": -1
+      },
+      "623283604": {},
+      "628370196": {
+        "column_name": "Chests",
+        "order": -2
+      },
+      "717856991": {
+        "column_name": "Wishes",
+        "order": -4
+      },
+      "950932825": {},
+      "1029956969": {},
+      "1359055399": {
+        "column_name": "Raid banners",
+        "order": -3
+      },
+      "2360742598": {},
+      "2585307516": {},
+      "2588923804": {},
+      "2610512925": {},
+      "2756328801": {
+        "column_name": "Badge",
+        "order": 1
+      },
+      "2826160801": {},
+      "2906615623": {},
+      "3000516033": {},
+      "3363925957": {},
+      "3448775736": {
+        "column_name": "Raid",
+        "order": 2
+      },
+      "4078980921": {
+        "column_name": "Clan",
+        "order": 3
+      },
+      "4104745812": {}
+    }
+  },
+  {
+    "id": "garden_of_salvation",
+    "name": "Garden of Salvation",
+    "sealNodeHash": "1827854727",
+    "badgeNodeHash": "223465203",
+    "otherNodeHashes": [
+      "615240848"
+    ],
+    "collectibles": {
+      "160781275": {},
+      "911081605": {},
+      "1395260669": {},
+      "1435246899": {},
+      "2076751138": {},
+      "2081488768": {},
+      "2276007528": {},
+      "3796544862": {}
+    },
+    "records": {
+      "277137394": {},
+      "521675034": {
+        "column_name": "Divinity"
+      },
+      "1221037312": {
+        "column_name": "Clan",
+        "order": 3
+      },
+      "1522774125": {
+        "column_name": "Flawless",
+        "suppress": true
+      },
+      "1830799772": {},
+      "1922270325": {
+        "column_name": "Chests"
+      },
+      "2571794337": {},
+      "2629178011": {},
+      "3427328428": {},
+      "3804486505": {
+        "column_name": "Raid",
+        "order": 2
+      },
+      "3866024089": {
+        "column_name": "Badge",
+        "order": 1
+      }
+    }
+  },
+  {
+    "id": "dsc",
+    "name": "Deep Stone Crypt",
+    "sealNodeHash": "2960810718",
+    "badgeNodeHash": "1235050036",
+    "otherNodeHashes": [
+      "1726708384"
+    ],
+    "collectibles": {
+      "811728933": {},
+      "1755084153": {},
+      "2040177352": {},
+      "2802279446": {}
+    },
+    "records": {
+      "200612470": {},
+      "399865831": {},
+      "513707022": {},
+      "518342793": {
+        "column_name": "Clan",
+        "order": 3
+      },
+      "564366615": {},
+      "633869177": {},
+      "924334687": {},
+      "992355976": {
+        "column_name": "Chests"
+      },
+      "2699580344": {
+        "column_name": "Day One",
+        "suppress": true,
+        "skip_for_completion": true
+      },
+      "3185876102": {
+        "column_name": "Raid",
+        "order": 2
+      },
+      "3200831458": {},
+      "3323713181": {
+        "column_name": "Exo Logs"
+      },
+      "3370786210": {},
+      "3504856768": {
+        "column_name": "Badge",
+        "order": 1
+      },
+      "3560923614": {
+        "column_name": "Flawless",
+        "suppress": true
+      },
+      "3834307795": {},
+      "3875695735": {},
+      "4170453731": {}
+    }
+  },
+  {
+    "id": "vog",
+    "name": "Vault of Glass",
+    "sealNodeHash": "3734352323",
+    "badgeNodeHash": "1154828558",
+    "otherNodeHashes": [
+      "132375837"
+    ],
+    "collectibles": {
+      "1995412174": {},
+      "1995412175": {},
+      "2070411864": {},
+      "2070411865": {},
+      "2070411867": {},
+      "2923491621": {},
+      "2923491622": {},
+      "2923491623": {},
+      "3837479520": {},
+      "3837479521": {},
+      "3837479522": {}
+    },
+    "records": {
+      "507778024": {
+        "order": -1
+      },
+      "578313932": {},
+      "932039090": {},
+      "1961032859": {},
+      "1983700615": {},
+      "2384429092": {
+        "suppress": true,
+        "skip_for_completion": true
+      },
+      "2592913942": {},
+      "2782679117": {
+        "column_name": "Badge"
+      },
+      "3790077074": {},
+      "3969659747": {}
+    }
+  },
+  {
+    "id": "vow",
+    "name": "Vow of the Disciple",
+    "sealNodeHash": "2886738008",
+    "badgeNodeHash": "1809003442",
+    "otherNodeHashes": [
+      "3779087602"
+    ],
+    "collectibles": {
+      "131769494": {},
+      "286736914": {},
+      "937581026": {},
+      "1029704925": {},
+      "1477727935": {},
+      "1808843605": {},
+      "2687147700": {},
+      "2817568609": {},
+      "2963782329": {},
+      "3932921591": {}
+    },
+    "records": {
+      "422252754": {},
+      "486676807": {
+        "column_name": "Lore Book Unlocks"
+      },
+      "610864524": {
+        "column_name": "Master Difficulty"
+      },
+      "876397380": {},
+      "922211732": {
+        "column_name": "Day 1",
+        "skip_for_completion": true
+      },
+      "989023188": {},
+      "1053120087": {},
+      "1057921323": {},
+      "1607471906": {},
+      "1729647218": {
+        "column_name": "Badge"
+      },
+      "2383291155": {},
+      "2896258222": {},
+      "3330343477": {
+        "column_name": "Clan"
+      },
+      "3620246150": {},
+      "3868889639": {},
+      "3991904123": {
+        "column_name": "Master Challenges"
+      },
+      "4019717242": {
+        "column_name": "Flawless"
+      },
+      "4241035147": {}
+    }
+  },
+  {
+    "id": "kings_fall",
+    "name": "King's Fall",
+    "sealNodeHash": "2613142083",
+    "badgeNodeHash": "3509969063",
+    "otherNodeHashes": [
+      "3596566041"
+    ],
+    "collectibles": {
+      "38314821": {},
+      "192937277": {},
+      "1734594003": {},
+      "2180234436": {},
+      "2408235828": {},
+      "2408235829": {},
+      "2408235830": {},
+      "2408235831": {},
+      "3956066174": {}
+    },
+    "records": {
+      "70932677": {
+        "column_name": "Clan"
+      },
+      "437884069": {},
+      "750389420": {},
+      "773758208": {},
+      "1329091971": {},
+      "1360511082": {
+        "column_name": "Flawless"
+      },
+      "1594888684": {
+        "column_name": "Chests"
+      },
+      "1760261415": {},
+      "2069837521": {},
+      "2120297138": {
+        "column_name": "Master Challenges"
+      },
+      "2546821156": {},
+      "2579096068": {
+        "column_name": "Day 1",
+        "skip_for_completion": true
+      },
+      "3147255355": {},
+      "3255215894": {},
+      "3388215749": {
+        "column_name": "Master Difficulty"
+      },
+      "3539714738": {},
+      "3650227809": {},
+      "3666607158": {},
+      "4268824781": {
+        "column_name": "Badge"
+      }
+    }
+  },
+  {
+    "id": "root_of_nightmares",
+    "name": "Root of Nightmares",
+    "sealNodeHash": "1976056830",
+    "badgeNodeHash": "1968454484",
+    "otherNodeHashes": [
+      "4114450368"
+    ],
+    "collectibles": {
+      "556817462": {},
+      "1346566213": {},
+      "1805281840": {
+        "skip_for_completion": true
+      },
+      "1856547360": {},
+      "1856547361": {},
+      "1856547362": {},
+      "1856547363": {},
+      "2098333676": {},
+      "2487502837": {},
+      "2553509474": {},
+      "2677253635": {},
+      "3383113994": {
+        "skip_for_completion": true
+      }
+    },
+    "records": {
+      "31076871": {},
+      "139617739": {
+        "column_name": "Lore Book"
+      },
+      "391307104": {
+        "column_name": "Master Difficulty"
+      },
+      "397062446": {
+        "column_name": "Flawless"
+      },
+      "417302779": {},
+      "674616608": {
+        "column_name": "Badge"
+      },
+      "700218081": {},
+      "921507736": {
+        "column_name": "Chests"
+      },
+      "1160810407": {},
+      "1164396532": {},
+      "1982000933": {},
+      "2656634354": {},
+      "2742412203": {},
+      "3025362184": {
+        "column_name": "Contest Mode",
+        "skip_for_completion": true
+      },
+      "3413963390": {},
+      "3743137436": {},
+      "3838502045": {},
+      "4149006431": {
+        "column_name": "Master Challenges"
+      },
+      "4162933187": {},
+      "4293716153": {
+        "column_name": "Clan"
+      }
+    }
+  },
+  {
+    "id": "crotas_end",
+    "name": "Crota's End",
+    "sealNodeHash": "238107129",
+    "badgeNodeHash": "48971793",
+    "otherNodeHashes": [
+      "2782956855"
+    ],
+    "records": {
+      "116345475": {
+        "column_name": "Clan",
+        "order": 3
+      },
+      "295018272": {
+        "column_name": "Master Challenges",
+        "order": 90
+      },
+      "411909019": {},
+      "583710954": {},
+      "710681626": {
+        "column_name": "Chests"
+      },
+      "1294327154": {},
+      "1732432755": {
+        "column_name": "Master",
+        "order": 9
+      },
+      "1741156110": {},
+      "2045739672": {
+        "column_name": "Raid",
+        "order": 2
+      },
+      "2572383496": {
+        "column_name": "Flawless"
+      },
+      "3250738778": {},
+      "3859670341": {},
+      "3922046691": {
+        "column_name": "Badge",
+        "order": 1
+      }
+    },
+    "collectibles": {
+      "203521123": {},
+      "502970598": {},
+      "1294858439": {},
+      "1355194274": {},
+      "1370367757": {},
+      "1524385790": {},
+      "2606379132": {
+        "skip_for_completion": true
+      },
+      "3089071559": {},
+      "3375139625": {}
+    }
+  },
+  {
+    "id": "salvations_edge",
+    "name": "Salvation's Edge",
+    "sealNodeHash": "334829503",
+    "badgeNodeHash": "988425963",
+    "otherNodeHashes": [
+      "2657827258"
+    ],
+    "records": {
+      "519472433": {},
+      "819153082": {
+        "column_name": "Clan",
+        "order": 3
+      },
+      "1077926398": {},
+      "1568864289": {
+        "column_name": "Badge",
+        "order": 1
+      },
+      "1728165205": {
+        "column_name": "Master",
+        "order": 9
+      },
+      "2043998246": {},
+      "2307589343": {
+        "column_name": "Chests"
+      },
+      "2487240675": {
+        "column_name": "Raid",
+        "order": 2
+      },
+      "2577052324": {},
+      "3123571268": {
+        "column_name": "Lore"
+      },
+      "3202450274": {
+        "column_name": "Master Challenges",
+        "order": 90
+      },
+      "3208349713": {},
+      "3553593767": {
+        "column_name": "Flawless"
+      },
+      "3842096181": {}
+    },
+    "collectibles": {
+      "392205168": {},
+      "654071284": {
+        "skip_for_completion": true
+      },
+      "735290470": {},
+      "1021464224": {},
+      "2437867248": {},
+      "2912866390": {},
+      "3311944448": {},
+      "3411864064": {}
+    }
+  },
+  {
+    "id": "the_desert_perpetual",
+    "name": "The Desert Perpetual",
+    "sealNodeHash": "3954661385",
+    "badgeNodeHash": "4253860097",
+    "otherNodeHashes": [],
+    "records": {
+      "354655351": {
+        "column_name": "Chests"
+      },
+      "2372577075": {
+        "column_name": "Epic Raid"
+      },
+      "2730634807": {
+        "column_name": "Flawless"
+      },
+      "2830411595": {
+        "column_name": "Raid",
+        "order": 2
+      },
+      "3215569786": {
+        "column_name": "Lore"
+      },
+      "3385103507": {
+        "column_name": "Badge",
+        "order": 1
+      },
+      "3730746991": {
+        "column_name": "Flawless · Epic"
+      },
+      "3958740669": {
+        "order": 2
+      }
+    },
+    "collectibles": {
+      "2053307670": {
+        "skip_for_completion": true
+      },
+      "2519524947": {},
+      "2597271471": {},
+      "3666913356": {},
+      "3666913357": {
+        "skip_for_completion": true
+      },
+      "3862121212": {}
+    }
+  },
+  {
+    "id": "crucible",
+    "name": "Crucible",
+    "category": "Activities",
+    "sealNodeHash": "475207334",
+    "badgeNodeHash": "701100740",
+    "otherNodeHashes": [
+      "3973313476",
+      "339137305",
+      "1667143694"
+    ],
+    "records": {},
+    "collectibles": {}
+  },
+  {
+    "id": "iron_banner",
+    "name": "Iron Banner",
+    "category": "Activities",
+    "sealNodeHash": "2161171268",
+    "otherNodeHashes": [
+      "3049172190"
+    ],
+    "records": {},
+    "collectibles": {}
+  },
+  {
+    "id": "gambit",
+    "name": "Gambit",
+    "category": "Activities",
+    "sealNodeHash": "3665267419",
+    "badgeNodeHash": "1420354007",
+    "otherNodeHashes": [
+      "97371225",
+      "22122108",
+      "3758722403"
+    ],
+    "records": {},
+    "collectibles": {}
+  },
+  {
+    "id": "trials",
+    "name": "Trials of Osiris",
+    "category": "Activities",
+    "sealNodeHash": "1733555826",
+    "badgeNodeHash": "564984975",
+    "otherNodeHashes": [
+      "2739258696",
+      "2463489289",
+      "3813527194"
+    ],
+    "records": {},
+    "collectibles": {}
+  },
+  {
+    "id": "strikes",
+    "name": "Strikes",
+    "category": "Activities",
+    "sealNodeHash": "3776992251",
+    "otherNodeHashes": [
+      "1954283988",
+      "1990811028",
+      "4285884347",
+      "69244313",
+      "245634203",
+      "2973304209",
+      "3520248493"
+    ],
+    "records": {
+      "1004971789": {},
+      "1891852050": {},
+      "2111785377": {}
+    },
+    "collectibles": {}
+  },
+  {
+    "id": "deadeye",
+    "name": "Weapons",
+    "category": "Activities",
+    "sealNodeHash": "361765966",
+    "otherNodeHashes": [],
+    "records": {},
+    "collectibles": {}
+  }
+]

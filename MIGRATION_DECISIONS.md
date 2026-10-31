@@ -272,6 +272,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
   - [ ] Consider making the scrollbar for the other dimension track with the table rubberbanding overscroll content. Might not be possible.
 - [ ] Shrink tooltips and review their information density. Keep them useful for quick inspection without obscuring large portions of the table.
   - [ ] Overall compactness can also be considered. For reference, the PHP version for Rivensbane seal and the current 27-member Anomaly clan fits with plenty of vertical margin and a small amount of horizontal margin on a full screen view. Someone might like more breathing room, but likely not at the cost of difficulty of use. So usability features like pinning some players or a compactness toggle could allow a view that is less compact.
+  - [ ] Can also have a setting to show counts instead of checkmarks
 - [ ] Remove or redesign click-on-cell behavior. The current pinned detail panel is provisional. Possible actions include navigating to a player page or opening a modal with richer triumph/collectible details, such as relevant YouTube guides. Exact action, context, and content sources remain undecided.
 - [ ] Revisit activity / page-type breadcrumb dropdowns when more page types are added.
 - [ ] Show guardian last login in tooltip?
@@ -281,6 +282,8 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Move or shrink headers? Main header can be shorter on desktop. Search and sort might or might not be collapsible or otherwise shrink out of the way. Left sidebar should be collapsible. Maybe just show clan logo, with clan name rotated to be vertical. Icons can replace some of the links there, but site navigation needs to be figured out first.
 - [ ] Consider additional text overrides for poor descriptions on seals, collections, etc.
 - [ ] Consider a new favicon?
+- [ ] Consider optional per-clan styling for the page, based on the clan's colors.
+- [ ] Option to show progress without gilding. Could also allow a "full completion" mode that includes day 1 or any other excluded entries.
 
 ## Clan tenure and ranks — 2026-10-30
 
@@ -371,3 +374,54 @@ Header/cell tooltips omit generic Complete/Progress labels and a sole “The …
 ## Shared triumph tooltips — 2026-10-30
 
 Treat a triumph’s header and numbered objective headers as one hover/focus group, and its cells for each guardian as a separate group. Anchor the tooltip to the group once; moving among its cells updates the bold objective without recreating or repositioning the tooltip. Hover includes cell padding. Whole-triumph headers and completed cells leave no individual objective emphasized. Keyboard focus follows the same behavior; Escape and leaving the group dismiss the tooltip. Pointer events still pass through tooltips. Build and all 19 Chromium scenarios passed, including fixed-position checks across header and player objectives.
+
+## Armor ownership class logos — 2026-10-30
+
+Use the class icons from each badge's existing class presentation nodes; no new manifest table or hardcoded class asset mapping. Armor cells show every owning class's logo, independently of the scoring class selector. Both ownership and full-set rows in the tooltip use the same logos, retaining class names as column headers and the quieter set row. Use theme-colored masks for the API's transparent white assets, with accessible class labels and an initial fallback if icon metadata is absent. Missing ownership remains distinct from uncollected armor. Verified the real assets against a captured public profile, plus the build, 27 unit tests, and all 19 Chromium scenarios.
+
+
+## Clan emblem — 2026-10-30
+
+Replace the sidebar placeholder with the clan’s actual square emblem, including collapsed mode. Resolve `detail.clanInfo.clanBannerData` using Bungie’s `/Destiny2/Clan/ClanBannerDictionary/` endpoint. Compose the selected gonfalon color, square detail layer, secondary decal layer, and primary decal layer with their API colors. Square assets keep the small sidebar logo legible; this is the web emblem rather than the full hanging banner.
+
+Cache the dictionary for 24 hours and retain the resolved layers in the roster cache. Old roster entries upgrade on their next load. Optional banner failures preserve a cached emblem and do not block member data. Missing/incomplete definitions retain the placeholder. Verified λnomaly’s real emblem in expanded/collapsed layouts; build, 30 unit tests, and 20 Chromium scenarios passed, including warm cache reuse and failure fallback. API reference: https://bungie-net.github.io/multi/operation_get_Destiny2-GetClanBannerSource.html
+
+## Independent browser catalog and three more raids — 2026-10-30
+
+The JS site now owns `js/pages.jsonc`, an ordered catalog using the browser's node fields and supported rule overrides. The compiler reads this file, not the PHP `pages.json`, and validates page IDs, node hashes, and rule types. Copied only supported display/scoring rules and extra-content hashes; dropped legacy objective-numbering options and redundant elemental labels/orders. Parent `settings.json` still supplies the default clan and client API key. The PHP configuration is unchanged.
+
+Added Crota's End (Swordbearer), Salvation's Edge (Iconoclast), and The Desert Perpetual (Atemporal), each with seal, badge, and full raid modes. Verified the node hashes against the current Bungie manifest, which matches the local snapshot. Include available weapon patterns, raid mods/exotics, and additional raid cosmetics; time-exclusive day-one emblems are unscored. Existing scope rules continue to exclude non-seal elemental triumphs from seal views. Normalize Prismatic after Strand and before same-class requirements. Distinguish Epic day-one achievements in their labels.
+
+The Desert Perpetual has two parallel armor sets. Group the Collective Psyche and Wayward Psyche slots separately, with set-specific completion in armor tooltips; overall badge scoring still selects one whole class across the entire badge. It currently has no weapon-pattern records to add.
+
+Verification: all 30 views build against the current manifest. Compared the original seven raids with their legacy configuration: heading order, labels, and scoring exclusions remain the same in every mode. Production build, 34 unit tests, and 21 Chromium scenarios pass, including all three new raids' navigation. Documentation describes the new catalog editing workflow.
+
+
+## Activity seals and triumphs — 2026-10-31
+
+Brought the legacy Activity group into the independent JS catalog: Crucible/Glorious, Iron Banner/Iron Lord, Gambit/Dredgen, Trials of Osiris/Flawless, Strikes/Conqueror, and Weapons/Deadeye. Keep the PHP catalog unchanged. The overview and sidebar separate Raids from Activities; links preserve an appropriate view when switching between the groups.
+
+Activity pages have Seal and Triumphs views (`#/triumphs/<id>`), plus optional badges for Crucible, Gambit, and Trials. Triumph lists union seal requirements and the configured extra nodes/records, deduplicating IDs. They do not require a badge or mix badge collections into their progress, preserving the legacy hide-badge-unless-explicit behavior. Existing raid routes and scope remain supported.
+
+Keep gilding requirements visibly labelled and included in the percentage, matching the legacy scoring; explain this in the activity footer rather than silently changing completion semantics. Title-holder counts continue to use the title completion record separately. Current manifest definitions contain all six seals and all configured extra nodes; current public profile components already cover these records.
+
+Verification: all six seal/triumph pairs and three optional badges build against the current manifest. Build, 35 unit tests, and 22 Chromium scenarios cover activity navigation, seal/full scope, pages without badges, optional badges, gilding labels, and the existing raid UI.
+
+## Completed, unclaimed triumphs — 2026-10-31
+
+Completed records without the API's RecordRedeemed bit, and without ObjectiveNotCompleted, use a distinct mint-green cell and the tooltip note “Completed, but not claimed in game.” Progress remains complete; ordinary acquired collectibles are unaffected. When equally complete character records disagree about redemption, prefer a redeemed record rather than falsely reporting the triumph as unclaimed. Do not interpret partially completed interval records as an unclaimed whole triumph.
+
+Confirmed BreakingBack's Special Operator record is state 0 with a completed objective (1691/500). Reference for the record state flags: https://bungie-net.github.io/multi/schema_Destiny-DestinyRecordState.html
+
+
+## Record visibility and permission conditions — 2026-10-31
+
+Keep flagged triumphs and their progress visible. Add a small corner marker for missing entitlement/permission (lock), hidden/invisible, obscured details, unavailable reward, or an equip-ready title. A plus indicates multiple flags; the tooltip lists every condition and explains it. One marker per guardian/triumph avoids repeating icons across each encounter stage. Existing unowned hatching and completed/unclaimed colors remain intact.
+
+Do not call every missing entitlement “missing DLC”: DLC is one example of the permission restriction returned by Bungie. Missing/private profile data remains a separate state. Collectible state bits have different meanings and are not interpreted as record permissions. Reference: https://bungie-net.github.io/multi/schema_Destiny-DestinyRecordState.html
+
+
+## Reduce condition noise — 2026-10-31
+
+Removed RewardUnavailable and CanEquipTitle from cell indicators and tooltip notes at the user’s request. Their inconsistent presence does not offer a useful distinction here. Retain missing entitlement, hidden/invisible, obscured, and the separate completed-but-unclaimed treatment; raw API flags remain cached.
+Valent has the Deadeye triumph Weapon Archivist with only one of these two statuses, while other triumphs for him have both statuses. The actual meaning isn't clear.

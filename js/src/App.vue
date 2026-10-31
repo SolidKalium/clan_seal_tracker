@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import RecordDetails from './RecordDetails.vue';
+import ClassIcon from './ClassIcon.vue';
+import CellConditions from './CellConditions.vue';
+import ClanEmblem from './ClanEmblem.vue';
 import GuardianDetails from './GuardianDetails.vue';
 import config from '../.generated/config.json';
 import catalogJson from '../.generated/catalog.json';
@@ -121,11 +124,18 @@ watch(groupHeader, element => {
     if (playerColumn) headerObserver.observe(playerColumn);
   }
 });
-const routeMode = computed<PageMode>(() => /^#\/(badge|raid)\//.exec(hash.value)?.[1] as PageMode || 'seal');
-const routeId = computed(() => /^#\/(?:seal|badge|raid)\/(.+)$/.exec(hash.value)?.[1] ?? '');
+const routeMode = computed<PageMode>(() => /^#\/(badge|raid|triumphs)\//.exec(hash.value)?.[1] as PageMode || 'seal');
+const routeId = computed(() => /^#\/(?:seal|badge|raid|triumphs)\/(.+)$/.exec(hash.value)?.[1] ?? '');
 const isHome = computed(() => !hash.value || hash.value === '#' || hash.value === '#/');
 const seals = computed(() => definitions.value ? catalog.map(page => buildSeal(page, definitions.value!)) : []);
+const catalogGroups = [{ name: 'Raids', pages: catalog.filter(p => p.category !== 'Activities') }, { name: 'Activities', pages: catalog.filter(p => p.category === 'Activities') }];
+const sealsById = computed(() => Object.fromEntries(seals.value.map(s => [s.page.id, s])));
+function pageMode(page: PageConfig): PageMode {
+  if (routeMode.value === 'seal' || routeMode.value === 'badge' && page.badgeNodeHash) return routeMode.value;
+  return page.category === 'Activities' ? 'triumphs' : 'raid';
+}
 const selected = computed(() => { const page = catalog.find(p => p.id === routeId.value); return page && definitions.value ? buildSeal(page, definitions.value, routeMode.value) : undefined; });
+const pageModes = computed<PageMode[]>(() => selected.value ? ['seal', ...(selected.value.page.badgeNodeHash ? ['badge' as const] : []), selected.value.page.category === 'Activities' ? 'triumphs' : 'raid'] : []);
 const known = computed(() => Object.values(players.value).filter(p => !!p.profile?.profileRecords?.data));
 const resolved = computed(() => Object.values(players.value).filter(p => p.status !== 'loading').length);
 const failedCount = computed(() => Object.values(players.value).filter(p => p.status === 'unavailable').length);
@@ -261,16 +271,18 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
   <div class="shell" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
     <aside class="sidebar" aria-label="Clan navigation">
       <button class="sidebar-toggle" :aria-label="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" :aria-expanded="!sidebarCollapsed" aria-controls="clan-menu" :title="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" @click="sidebarCollapsed = !sidebarCollapsed"><svg viewBox="0 0 20 20" aria-hidden="true" :class="{ reversed: sidebarCollapsed }"><path d="m12 4-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
-      <div class="clan-emblem" aria-hidden="true">◇<span>✦</span></div>
+      <ClanEmblem :emblem="roster?.emblem" :name="roster?.name ?? 'Clan'" />
       <p v-if="!sidebarCollapsed" class="eyebrow">YOUR CLAN</p>
       <h2 class="clan-name" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }">{{ roster?.name ?? (busy ? 'Loading clan…' : 'Clan unavailable') }}</h2>
       <div id="clan-menu" v-show="!sidebarCollapsed" class="sidebar-content">
       <p class="muted small">{{ roster ? `${roster.members.length} guardians` : busy ? 'Connecting to Bungie' : 'Check the connection notice' }}</p>
       <a href="#/" class="nav-home" :class="{ active: isHome }">Overview <span>↗</span></a>
-      <p class="eyebrow nav-label">RAIDS</p>
-      <nav class="seal-nav">
-        <a v-for="page in catalog" :key="page.id" :href="`#/${routeMode}/${page.id}`" :class="{ active: routeId === page.id }" :aria-current="routeId === page.id ? 'page' : undefined"><span>{{ page.name }}</span><svg class="nav-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="m7 4 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></a>
+      <template v-for="group in catalogGroups" :key="group.name">
+      <p class="eyebrow nav-label">{{ group.name }}</p>
+      <nav class="seal-nav" :aria-label="group.name">
+        <a v-for="page in group.pages" :key="page.id" :href="`#/${pageMode(page)}/${page.id}`" :class="{ active: routeId === page.id }" :aria-current="routeId === page.id ? 'page' : undefined"><span>{{ page.name }}</span><svg class="nav-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="m7 4 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></a>
       </nav>
+      </template>
       <div class="sidebar-bottom"><span class="small">Stored in this browser</span><button class="text-button" :disabled="busy" @click="clearCache">Clear API cache</button></div>
       </div>
     </aside>
@@ -278,20 +290,22 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
       <div v-if="issues.length || storageWarning" class="notice" role="alert"><p v-for="issue in issues" :key="issue">{{ issue }}</p><p v-if="storageWarning">{{ storageWarning }}</p><p v-if="definitions">Showing the last complete definitions{{ definitionsState === 'stale' ? ' (stale)' : '' }}. {{ rosterState === 'stale' ? 'The clan roster is also stale.' : '' }}</p></div>
       <template v-if="isHome">
         <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, find a fireteam, and make the next run count.</p></section>
-        <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => !s.unavailable).length || '—' }}</strong><span>Raid seals to explore</span></div></div>
-        <div class="section-title"><h2>Raid seals</h2><p class="muted">A title worth chasing.</p></div>
+        <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
+        <section v-for="group in catalogGroups" :key="group.name" class="catalog-section" :aria-label="group.name === 'Raids' ? 'Raid seals' : 'Activity seals'">
+        <div class="section-title"><h2>{{ group.name === 'Raids' ? 'Raid seals' : 'Activity seals' }}</h2><p class="muted">A title worth chasing.</p></div>
         <div class="seal-grid">
-          <a v-for="(page, i) in catalog" :key="page.id" :href="`#/seal/${page.id}`" class="seal-card" :style="{ '--card-hue': `${135 + i * 22}` }">
-            <span class="card-top"><span class="card-icon" aria-hidden="true">◇</span><span class="eyebrow">RAID {{ String(i + 1).padStart(2, '0') }}</span></span>
-            <h3>{{ seals[i]?.title ?? page.name }}</h3><p>{{ page.name }}</p>
-            <div class="card-bottom"><span v-if="seals[i]?.unavailable">Unavailable in current manifest</span><span v-else-if="definitions">{{ titleCount(seals[i]!) }} title holders <span class="muted">/ {{ known.length }} loaded</span></span><span v-else>Loading definitions…</span><span aria-hidden="true">↗</span></div>
+          <a v-for="(page, i) in group.pages" :key="page.id" :href="`#/seal/${page.id}`" class="seal-card" :style="{ '--card-hue': `${135 + i * 22}` }">
+            <span class="card-top"><span class="card-icon" aria-hidden="true">◇</span><span class="eyebrow">{{ group.name === 'Raids' ? 'RAID' : 'ACTIVITY' }} {{ String(i + 1).padStart(2, '0') }}</span></span>
+            <h3>{{ sealsById[page.id]?.title ?? page.name }}</h3><p>{{ page.name }}</p>
+            <div class="card-bottom"><span v-if="sealsById[page.id]?.unavailable">Unavailable in current manifest</span><span v-else-if="definitions">{{ titleCount(sealsById[page.id]!) }} title holders <span class="muted">/ {{ known.length }} loaded</span></span><span v-else>Loading definitions…</span><span aria-hidden="true">↗</span></div>
           </a>
         </div>
-        <p class="footnote">Counts cover loaded profiles, including any retained stale data. Choose a raid to explore its seal, collection badge, or full raid progress.</p>
+        </section>
+        <p class="footnote">Counts cover loaded profiles, including any retained stale data. Choose a raid or activity to explore its seal and triumphs, with collection badges where available.</p>
       </template>
       <template v-else-if="selected && !selected.unavailable">
-        <section class="page-heading seal-heading"><div><p class="eyebrow">{{ selected.page.name }} / {{ routeMode === 'badge' ? 'COLLECTION BADGE' : routeMode === 'raid' ? 'FULL RAID' : 'SEAL REQUIREMENTS' }}</p><h1>{{ selected.title }}</h1><p class="lede">{{ selected.description || 'Track every requirement, one guardian at a time.' }}</p></div><div v-if="routeMode !== 'badge'" class="title-tally"><strong>{{ titleCount(selected) }}</strong><span>title holders</span></div></section>
-        <nav class="page-modes" aria-label="Raid view"><a v-for="mode in (['seal', 'badge', 'raid'] as const)" :key="mode" :href="`#/${mode}/${selected.page.id}`" :aria-current="routeMode === mode ? 'page' : undefined">{{ mode === 'seal' ? 'Seal' : mode === 'badge' ? 'Badge' : 'Full raid' }}</a></nav>
+        <section class="page-heading seal-heading"><div><p class="eyebrow">{{ selected.page.name }} / {{ routeMode === 'badge' ? 'COLLECTION BADGE' : routeMode === 'raid' ? 'FULL RAID' : routeMode === 'triumphs' ? 'TRIUMPHS' : 'SEAL REQUIREMENTS' }}</p><h1>{{ selected.title }}</h1><p class="lede">{{ selected.description || 'Track every requirement, one guardian at a time.' }}</p></div><div v-if="routeMode !== 'badge'" class="title-tally"><strong>{{ titleCount(selected) }}</strong><span>title holders</span></div></section>
+        <nav class="page-modes" :aria-label="selected.page.category === 'Activities' ? 'Activity view' : 'Raid view'"><a v-for="mode in pageModes" :key="mode" :href="`#/${mode}/${selected.page.id}`" :aria-current="routeMode === mode ? 'page' : undefined">{{ mode === 'seal' ? 'Seal' : mode === 'badge' ? 'Badge' : mode === 'triumphs' ? 'Triumphs' : 'Full raid' }}</a></nav>
         <div class="table-tools"><label class="search"><svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><input v-model="search" aria-label="Search guardians" placeholder="Search guardians…" type="search"></label><label class="select-control"><span class="sr-only">Filter progress</span><select v-model="filter" aria-label="Filter progress"><option value="all">All guardians</option><option value="incomplete">Requirements incomplete</option><option value="complete">Requirements complete</option><option value="unavailable">No public data</option></select></label><label class="select-control"><span class="sr-only">Sort guardians</span><select v-model="sort" aria-label="Sort guardians"><option value="progress">Closest next · completed last</option><option value="highest">Highest progress first</option><option value="name">Guardian name</option><option value="tenure">Clan tenure · longest first</option></select></label><label v-if="routeMode !== 'seal' && badgeClasses.length" class="select-control"><span class="sr-only">Badge class</span><select v-model="badgeClass" aria-label="Badge class"><option value="best">Best class set</option><option v-for="(name, i) in badgeClasses" :key="name" :value="String(i)">{{ name }} set</option></select></label></div>
         <div class="table-caption"><span>{{ rows.length }} guardians shown</span><span>✓ Complete <span class="legend-progress">●</span> In progress <span class="muted">— No record</span></span></div>
         <div class="table-scroll" tabindex="0" :aria-label="`Scrollable ${routeMode} progress table`" :style="{ '--group-header-height': `${groupHeaderHeight}px`, '--category-header-height': hasColumnGroups ? '32px' : '0px', '--player-column-width': `${playerColumnWidth}px` }" @scroll="closeTooltip">
@@ -320,12 +334,18 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
                 <th scope="row" class="player-column"><div class="guardian-row"><button class="guardian-button" :aria-label="`Guardian details: ${row.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showGuardianTooltip($event, row)" @mouseleave="closeTooltip" @focus="showGuardianTooltip($event, row)" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="player-name">{{ row.name }} <span v-if="row.earned" class="earned" aria-label="Title requirement complete">✦</span><span v-if="['stale', 'private', 'unavailable'].includes(row.status)" class="guardian-warning" :aria-label="statusLabel(row)">●</span></span></button><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :disabled="busy" :aria-label="`Retry profile: ${row.name}`" @click="retryPlayer(row.id)">↻</button></div></th>
                 <td class="progress-column"><template v-if="row.hasData"><strong>{{ Math.round(row.fraction * 100) }}<small>%</small></strong><span class="mini-progress"><span :style="{ width: `${row.fraction * 100}%` }"></span></span></template><span v-else class="muted">{{ row.status === 'loading' ? 'Loading…' : 'No data' }}</span></td>
                 <template v-for="(cell, i) in row.cells" :key="selected.headings[i]!.hash">
-                  <td v-if="cell.complete || !cell.objectives.length" :colspan="objectiveColumns(selected.headings[i]!)" :class="{ 'cell-complete': cell.complete, 'cell-progress': cell.fraction > 0 && !cell.complete, 'cell-missing': cell.missing, 'cell-zero': !cell.missing && cell.text === '·', 'cell-unowned': cell.unowned }" class="record-end" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
-                    <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${cell.complete ? 'complete' : cell.missing ? 'no record' : 'incomplete'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ cell.text }}</button>
+                  <td v-if="cell.variants" class="record-end armor-ownership-cell" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-missing': cell.variants.every(v => v.missing) }" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
+                    <button class="cell-button armor-ownership" :style="{ '--class-count': cell.variants.length }" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${cell.variants.some(v => v.complete) ? 'collected for ' + cell.variants.filter(v => v.complete).map(v => v.name).join(', ') : cell.variants.some(v => v.missing) ? 'collection data unavailable' : 'not collected'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">
+                      <span v-for="variant in cell.variants" :key="variant.name" class="class-slot" :data-class="variant.name"><ClassIcon v-if="variant.complete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.missing" class="cell-missing" :aria-label="`${variant.name} data unavailable`">—</span></span>
+                      <span v-if="cell.variants.every(v => !v.complete && !v.missing)" class="cell-zero ownership-empty">·</span>
+                    </button>
+                  </td>
+                  <td v-else-if="cell.complete || !cell.objectives.length" :colspan="objectiveColumns(selected.headings[i]!)" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-progress': cell.fraction > 0 && !cell.complete, 'cell-missing': cell.missing, 'cell-zero': !cell.missing && cell.text === '·', 'cell-unowned': cell.unowned, 'cell-conditioned': !!cell.conditions?.length }" class="record-end" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
+                    <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${cell.complete ? cell.unclaimed ? 'complete, unclaimed' : 'complete' : cell.missing ? 'no record' : 'incomplete'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ cell.text }}</button><CellConditions :conditions="cell.conditions" />
                   </td>
                   <template v-else>
-                    <td v-for="(objective, j) in cell.objectives" :key="objective.hash" :class="{ 'cell-complete': objective.complete, 'cell-progress': objective.fraction > 0 && !objective.complete, 'cell-missing': objective.missing, 'cell-zero': !objective.missing && objective.text === '·', 'cell-unowned': cell.unowned, 'record-end': j === cell.objectives.length - 1 }" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name, objective.hash)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name, objective.hash)" @focusout="leaveRecordTooltip">
-                      <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${objective.name}: ${objective.missing ? 'no record' : objective.complete ? 'complete' : `${objective.progress}/${objective.target}`}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ objective.text }}</button>
+                    <td v-for="(objective, j) in cell.objectives" :key="objective.hash" :class="{ 'cell-complete': objective.complete, 'cell-progress': objective.fraction > 0 && !objective.complete, 'cell-missing': objective.missing, 'cell-zero': !objective.missing && objective.text === '·', 'cell-unowned': cell.unowned, 'cell-conditioned': !!cell.conditions?.length, 'record-end': j === cell.objectives.length - 1 }" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name, objective.hash)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name, objective.hash)" @focusout="leaveRecordTooltip">
+                      <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${objective.name}: ${objective.missing ? 'no record' : objective.complete ? 'complete' : `${objective.progress}/${objective.target}`}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ objective.text }}</button><CellConditions v-if="j === cell.objectives.length - 1" :conditions="cell.conditions" />
                     </td>
                   </template>
                 </template>
@@ -335,7 +355,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
           </table>
         </div>
         <aside v-if="detail" class="detail-panel" aria-live="polite"><button class="detail-close" aria-label="Close record details" @click="detail = undefined">×</button><RecordDetails :heading="detail.heading" :cell="detail.cell" :player="detail.player" /></aside>
-        <p class="footnote"><template v-if="routeMode !== 'seal'">Collection progress uses one whole class set (the most complete by default). Shared items count for every class. </template>Progress averages scored requirements. Day-one triumphs do not affect the percentage. A missing record is shown separately from an incomplete one. Click a cell for objective details.</p>
+        <p class="footnote"><template v-if="routeMode === 'raid' || routeMode === 'badge'">Collection progress uses one whole class set (the most complete by default). Shared items count for every class. </template>Progress averages scored requirements.<template v-if="selected.page.category === 'Activities'"> Labelled gilding requirements are included in this view’s percentage.</template> Day-one triumphs do not affect the percentage. A missing record is shown separately from an incomplete one. Corner markers explain content locks and visibility conditions on hover. Click a cell for objective details.</p>
       </template>
       <section v-else-if="!isHome" class="empty-state"><h1>{{ selected?.unavailable ? selected.page.name : definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions && !busy ? 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section>
       <Teleport to="body">

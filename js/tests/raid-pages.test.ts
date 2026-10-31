@@ -70,3 +70,36 @@ it('uses acquisition and objective units without guessing unspecified units', ()
   expect(objectiveGoal(h, { completionValue: 1 })).toBe('At least once');
   expect(objectiveGoal(h, { completionValue: 4 })).toBe('4 required');
 });
+
+it('normalizes Prismatic after the other elements and before same-class requirements', () => {
+  const extended: Definitions = { ...defs, records: { ...defs.records,
+    '17': record(17, 'Complete with a full fireteam of Prismatic subclasses.'),
+    '18': record(18, 'Complete with a full fireteam of the same Guardian class.'),
+  }, nodes: { ...defs.nodes, '3': { ...defs.nodes['3']!, children: { records: [18, 17, 16, 15].map(recordHash => ({ recordHash })) } } } };
+  const raid = buildSeal(page, extended, 'raid');
+  expect(raid.headings.filter(h => ['Arc', 'Void', 'Solar', 'Stasis', 'Strand', 'Prismatic', 'Class'].includes(h.label)).map(h => h.label)).toEqual(['Arc', 'Void', 'Solar', 'Stasis', 'Strand', 'Prismatic', 'Class']);
+});
+it('keeps two armor sets separate in headings and tooltip set-completion status', () => {
+  const titan = Array.from({ length: 10 }, (_, i) => 1000 + i), hunter = titan.map(h => h + 1000);
+  const extended: Definitions = { ...defs, nodes: { ...defs.nodes,
+    '4': { ...defs.nodes['4']!, children: { collectibles: [200, ...titan].map(collectibleHash => ({ collectibleHash })) } },
+    '5': { ...defs.nodes['5']!, children: { collectibles: [200, ...hunter].map(collectibleHash => ({ collectibleHash })) } },
+  }, collectibles: { ...defs.collectibles, ...Object.fromEntries([...titan, ...hunter].map(hash => [hash, { hash, scope: 1, itemHash: 301, displayProperties: { name: `${hash % 10 < 5 ? 'Collective Psyche' : 'Wayward Psyche'} ${['Helm', 'Arms', 'Chest', 'Legs', 'Mark'][hash % 5]}` } }])) } };
+  const badge = buildSeal(page, extended, 'badge');
+  const first = badge.headings.filter(h => h.armorSetName === 'Collective Psyche'), second = badge.headings.filter(h => h.armorSetName === 'Wayward Psyche');
+  expect(first.map(h => h.label)).toEqual(['Helmet', 'Arms', 'Chest', 'Legs', 'Class item']);
+  expect(second.map(h => h.label)).toEqual(['Helmet', 'Arms', 'Chest', 'Legs', 'Class item']);
+  expect(first.every(h => h.group === 'Armor · Collective Psyche')).toBe(true);
+  const profile: Profile = { profileCollectibles: { data: { collectibles: Object.fromEntries([200, ...titan, ...hunter].map(hash => [hash, { state: hash < 1005 ? 0 : 1 }])) } } };
+  expect(headingCell(profile, first[0]!, 0, badge.headings).variants?.[0]).toMatchObject({ complete: true, setComplete: true });
+  expect(headingCell(profile, second[0]!, 0, badge.headings).variants?.[0]).toMatchObject({ complete: false, setComplete: false });
+});
+
+it('builds activity triumphs without requiring a badge or mixing its collection into the percentage', () => {
+  const activity = { ...page, category: 'Activities', badgeNodeHash: undefined };
+  const view = buildSeal(activity, defs, 'triumphs');
+  expect(view.unavailable).toBeUndefined();
+  expect(view.headings.some(h => h.label === 'Strand')).toBe(true);
+  expect(view.headings.every(h => !h.collectibleHashes)).toBe(true);
+  expect(buildSeal({ ...activity, badgeNodeHash: page.badgeNodeHash }, defs, 'triumphs').headings.every(h => !h.collectibleHashes)).toBe(true);
+});

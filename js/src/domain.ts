@@ -1,18 +1,20 @@
+import { recordConditions } from './recordState';
 import type { Cell, Definitions, Heading, PageConfig, Profile, RecordProgress, Seal } from './types';
 
 const isDayOne = (record: Definitions['records'][string] | undefined) => !!record && /first (?:24|48) hours|contest mode|contest difficulty/i.test(record.displayProperties.description + ' ' + record.displayProperties.name);
-export type PageMode = 'seal' | 'badge' | 'raid';
+export type PageMode = 'seal' | 'badge' | 'raid' | 'triumphs';
 export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 'seal'): Seal {
   const node = defs.nodes[page.sealNodeHash];
   const completion = node && defs.records[String(node.completionRecordHash)];
   const base: Seal = { page, title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: completion?.displayProperties.description ?? '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
   if (!node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
   if (mode === 'badge') return buildBadge(page, defs, base);
+  const full = mode === 'raid' || mode === 'triumphs';
   let nextOrder = 100;
   const hashes = new Set(node.children.records.map(r => String(r.recordHash)));
   // Historical day-one achievements stay visible in either triumph view, never scored.
   for (const hash of page.otherNodeHashes ?? []) for (const r of defs.nodes[hash]?.children.records ?? []) if (isDayOne(defs.records[String(r.recordHash)])) hashes.add(String(r.recordHash));
-  if (mode === 'raid') {
+  if (full) {
     for (const hash of page.otherNodeHashes ?? []) for (const r of defs.nodes[hash]?.children.records ?? []) hashes.add(String(r.recordHash));
     for (const hash of Object.keys(page.records)) if (defs.records[hash]) hashes.add(hash);
   }
@@ -20,31 +22,33 @@ export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 
     const id = String(recordHash), rule = page.records[id];
     const record = defs.records[id];
     // Full raid pages include genuine raid records even when legacy seal views hid them.
-    if (rule?.suppress && mode !== 'raid' && !isDayOne(record)) continue;
+    if (rule?.suppress && !full && !isDayOne(record)) continue;
     if (!record || ![0, 1].includes(record.scope)) return { ...base, unavailable: 'A required record is missing or has an unsupported scope.' };
     const objectiveHashes = record.objectiveHashes ?? [];
     const intervalHashes = (record.intervalInfo?.intervalObjectives ?? []).map(i => i.intervalObjectiveHash).filter(Boolean);
     if ([...objectiveHashes, ...intervalHashes].some(hash => !defs.objectives[String(hash)])) return { ...base, unavailable: 'A required objective is missing from this manifest.' };
     const description = record.displayProperties.description ?? '';
-    const element = /(?:fireteam|team).*?\b(Arc|Void|Solar|Stasis|Strand)\b.*?subclass/i.exec(description)?.[1];
-    const elementIndex = ['arc', 'void', 'solar', 'stasis', 'strand'].indexOf(element?.toLowerCase() ?? '');
+    const element = /(?:fireteam|team).*?\b(Arc|Void|Solar|Stasis|Strand|Prismatic)\b.*?subclass/i.exec(description)?.[1];
+    const elementIndex = ['arc', 'void', 'solar', 'stasis', 'strand', 'prismatic'].indexOf(element?.toLowerCase() ?? '');
     const sameClass = /same (?:Guardian )?class/i.test(description);
     const dayOne = isDayOne(record);
     const badgeDisplay = defs.nodes[page.badgeNodeHash ?? '']?.displayProperties;
     const badgeRequirement = !!badgeDisplay && record.displayProperties.name === badgeDisplay.name && (description === (badgeDisplay.description ?? '') || /associated badge on the Collections screen/i.test(description));
-    base.headings.push({ badgeRequirement, group: record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? 'Day one' : rule?.column_name ?? record.displayProperties.name,
+    base.headings.push({ badgeRequirement, group: record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? (/Epic raid/i.test(description) ? 'Day one · Epic' : 'Day one') : rule?.column_name ?? record.displayProperties.name,
       description: record.displayProperties.description ?? '', scope: record.scope, gilding: !!record.forTitleGilding,
-      skip: dayOne || !!rule?.skip_for_completion, order: dayOne ? -100 : elementIndex >= 0 ? 4 + elementIndex / 10 : sameClass ? 4.5 : rule?.order ?? nextOrder++,
+      skip: dayOne || !!rule?.skip_for_completion, order: dayOne ? -100 : elementIndex >= 0 ? 4 + elementIndex / 10 : sameClass ? 4.6 : rule?.order ?? nextOrder++,
       objectives: objectiveHashes.map(h => defs.objectives[String(h)]!), intervals: intervalHashes.map(h => defs.objectives[String(h)]!),
     });
   }
   // Match PHP's positive/default columns first and negative-order extras last.
   const group = (n: number) => n === 0 ? 0 : n > 0 ? 1 : 3;
   base.headings.sort((a, b) => group(a.order) - group(b.order) || a.order - b.order);
-  if (mode === 'raid') {
-    const badge = buildBadge(page, defs, base);
-    if (badge.unavailable) return badge;
-    base.headings.push(...badge.headings);
+  if (full) {
+    if (page.badgeNodeHash && page.category !== 'Activities') {
+      const badge = buildBadge(page, defs, base);
+      if (badge.unavailable) return badge;
+      base.headings.push(...badge.headings);
+    }
     const extras = new Set(Object.keys(page.collectibles ?? {}));
     for (const hash of page.otherNodeHashes ?? []) for (const c of defs.nodes[hash]?.children.collectibles ?? []) extras.add(String(c.collectibleHash));
     const included = new Set(base.headings.flatMap(h => h.collectibleHashes ?? []));
@@ -69,7 +73,11 @@ export function selectRecord(profile: Profile, heading: Pick<Heading, 'hash' | '
   if (heading.scope === 0) return profile.profileRecords?.data?.records[heading.hash];
   const candidates = Object.values(profile.characterRecords?.data ?? {}).map(c => c.records[heading.hash]).filter((r): r is RecordProgress => !!r);
   // Select one whole character's record: do not invent completion by merging characters.
-  return candidates.reduce<RecordProgress | undefined>((best, next) => !best || recordFraction(next) > recordFraction(best) ? next : best, undefined);
+  return candidates.reduce<RecordProgress | undefined>((best, next) => {
+    if (!best) return next;
+    const difference = recordFraction(next) - recordFraction(best);
+    return difference > 0 || (difference === 0 && !!(next.state & 1) && !(best.state & 1)) ? next : best;
+  }, undefined);
 }
 
 export function recordCell(record: RecordProgress | undefined, heading: Heading): Cell {
@@ -88,7 +96,8 @@ export function recordCell(record: RecordProgress | undefined, heading: Heading)
       fraction: done ? 1 : Math.min(1, value / Math.max(1, target)) };
   });
   const detail = objectives.map(o => `${o.name}: ${o.progress}/${o.target}${o.complete ? ' (complete)' : ''}`).join('\n');
-  return { objectives, fraction, complete, missing: !record, text: !record ? '—' : complete ? '✓' : fraction > 0 ? `${Math.round(fraction * 100)}%` : '·',
+  const unclaimed = complete && !!record && !(record.state & 1) && !(record.state & 4);
+  return { conditions: record ? recordConditions(record.state) : [], objectives, fraction, complete, unclaimed, missing: !record, text: !record ? '—' : complete ? '✓' : fraction > 0 ? `${Math.round(fraction * 100)}%` : '·',
     detail: !record ? 'No record data available' : detail || (complete ? 'Complete' : 'Incomplete'), unowned: !!(record && (record.state & 32)) };
 }
 
@@ -129,11 +138,28 @@ function buildBadge(page: PageConfig, defs: Definitions, base: Seal): Seal {
     const hashes = classes.map(c => String(c.children.collectibles![i]!.collectibleHash));
     const h = collectibleHeading(hashes, classes.map(c => c.displayProperties.name), defs, page.name);
     if (!h) return { ...base, headings: [], unavailable: 'A required badge collectible is missing from this manifest.' };
+    h.classIcons = classes.map(c => c.displayProperties.icon);
     headings.push(h);
   }
-  // These raid badges end in the five parallel armor slots. Keep class-specific names in details.
+  // Parallel armor slots are listed in sets of five, including normal/Epic sets in newer raids.
   const armor = headings.filter(h => new Set(h.collectibleHashes).size > 1);
-  if (armor.length === 5 && headings.slice(-5).every(h => armor.includes(h))) armor.forEach((h, i) => { h.name = h.label = ['Helmet', 'Arms', 'Chest', 'Legs', 'Class item'][i]!; });
+  if (armor.length && armor.length % 5 === 0 && headings.slice(-armor.length).every(h => armor.includes(h))) {
+    for (let start = 0; start < armor.length; start += 5) {
+      const set = armor.slice(start, start + 5);
+      const words = set[0]!.name.split(/\s+/);
+      let prefixLength = words.length;
+      for (const h of set) {
+        const next = h.name.split(/\s+/);
+        while (prefixLength && words.slice(0, prefixLength).join(' ') !== next.slice(0, prefixLength).join(' ')) prefixLength--;
+      }
+      const setName = words.slice(0, prefixLength).join(' ') || `Armor set ${start / 5 + 1}`;
+      set.forEach((h, i) => {
+        h.armorSetKey = `${page.id}:${start / 5}`; h.armorSetName = setName;
+        h.name = h.label = ['Helmet', 'Arms', 'Chest', 'Legs', 'Class item'][i]!;
+        if (armor.length > 5) h.group = `Armor · ${setName}`;
+      });
+    }
+  }
   return { ...base, title: page.name + ' badge', description: node?.displayProperties.description ?? '', icon: node?.displayProperties.icon, headings: groupHeadings(headings) };
 }
 function collectibleState(profile: Profile, hash: string): number | undefined {
@@ -161,9 +187,9 @@ export function headingCell(profile: Profile | undefined, heading: Heading, clas
   const text = missing ? '—' : complete ? '✓' : '·';
   const variants = new Set(heading.collectibleHashes).size > 1 ? heading.collectibleHashes.map((hash, i) => {
     const state = profile ? collectibleState(profile, hash) : undefined;
-    const armor = badgeHeadings.filter(h => new Set(h.collectibleHashes).size > 1);
+    const armor = badgeHeadings.filter(h => new Set(h.collectibleHashes).size > 1 && h.armorSetKey === heading.armorSetKey);
     const setStates = armor.map(h => profile ? collectibleState(profile, h.collectibleHashes![i]!) : undefined);
-    return { name: heading.classNames?.[i] ?? `Class ${i + 1}`, complete: state !== undefined && !(state & 1), missing: state === undefined,
+    return { icon: heading.classIcons?.[i], name: heading.classNames?.[i] ?? `Class ${i + 1}`, complete: state !== undefined && !(state & 1), missing: state === undefined,
       setComplete: setStates.length > 0 && setStates.every(s => s !== undefined && !(s & 1)), setMissing: setStates.some(s => s === undefined) };
   }) : undefined;
   return { variants, fraction: complete ? 1 : 0, complete, missing, text, detail: name, unowned: false,
@@ -172,7 +198,8 @@ export function headingCell(profile: Profile | undefined, heading: Heading, clas
 
 const GROUP_ORDER = ['Triumphs', 'Weapons', 'Weapon Patterns', 'Armor', 'Armor Mods', 'Cosmetics', 'Collection'];
 function groupHeadings(headings: Heading[]): Heading[] {
-  return [...headings].sort((a, b) => GROUP_ORDER.indexOf(a.group ?? 'Triumphs') - GROUP_ORDER.indexOf(b.group ?? 'Triumphs'));
+  const order = (h: Heading) => GROUP_ORDER.indexOf(h.group?.startsWith('Armor · ') ? 'Armor' : h.group ?? 'Triumphs');
+  return [...headings].sort((a, b) => order(a) - order(b));
 }
 export function redundantSource(source: string, focus: string): boolean {
   const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
