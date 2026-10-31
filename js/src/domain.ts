@@ -92,7 +92,7 @@ export function recordCell(record: RecordProgress | undefined, heading: Heading)
     const done = complete || !!objective?.complete || (target > 0 && value >= target);
     return { hash: String(def.hash), name: def.progressDescription || def.displayProperties?.description || heading.name,
       progress: value, target, complete: done, missing: !record,
-      text: !record ? '—' : done ? '✓' : target === 1 ? '·' : `${value}/${target}`,
+      text: !record ? '—' : done ? '✓' : value === 0 ? '·' : `${value}/${target}`,
       fraction: done ? 1 : Math.min(1, value / Math.max(1, target)) };
   });
   const detail = objectives.map(o => `${o.name}: ${o.progress}/${o.target}${o.complete ? ' (complete)' : ''}`).join('\n');

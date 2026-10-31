@@ -18,6 +18,8 @@ const description = computed(() => {
   <div class="record-details">
     <p v-if="player" class="eyebrow">{{ player }}</p>
     <h3>{{ heading.name }}</h3>
+    <p v-if="heading.gilding" class="record-scoring">Gilding requirement.</p>
+    <p v-if="heading.skip" class="record-scoring"><svg class="scoring-marker" viewBox="0 0 16 16" aria-hidden="true"><path d="m8 2 6 6-6 6-6-6Z" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>Not counted toward completion.</p>
     <p v-if="heading.group?.startsWith('Armor · ')" class="item-type">{{ heading.armorSetName }}</p>
     <p v-if="heading.itemType" class="item-type">{{ heading.itemType }}</p>
     <ul v-if="heading.perks?.length" class="item-perks"><li v-for="(perk, i) in heading.perks" :key="i"><strong>{{ perk.name }}</strong><p v-if="perk.description">{{ perk.description }}</p></li></ul>

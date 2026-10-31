@@ -20,3 +20,15 @@ it('keeps progress and flags together, distinct from absent profile data', () =>
   expect(cell.conditions).toHaveLength(3);
   expect(recordCell(undefined, heading).conditions).toEqual([]);
 });
+
+it('uses a pip at zero for any goal, retaining counts for hidden progress', () => {
+  for (const state of [4, 4 | 16]) {
+    for (const target of [1, 10, 350]) {
+      const cell = recordCell({ state, objectives: [{ objectiveHash: 101, progress: 0, completionValue: target, complete: false }] }, heading);
+      expect(cell.objectives[0]?.text).toBe('·');
+    }
+    const partial = recordCell({ state, objectives: [{ objectiveHash: 101, progress: 2, completionValue: 10, complete: false }] }, heading);
+    expect(partial.objectives[0]?.text).toBe('2/10');
+    expect(partial.fraction).toBe(.2);
+  }
+});

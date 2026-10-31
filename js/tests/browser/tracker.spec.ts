@@ -323,6 +323,9 @@ test('badge and full raid navigation keep collection progress and unscored day o
   await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Badge', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Last Wish badge');
   await expect(page.locator('thead')).toContainText('Raid weapon');
+  for (const heading of await page.locator('.record-header-row .record-heading').all()) {
+    await expect(heading).toHaveCSS('vertical-align', 'middle');
+  }
   await expect(page.locator('.category-header-row')).toContainText('Weapons');
   await expect(page.locator('.category-header-row')).toContainText('Armor');
   await expect(page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('.progress-column')).toContainText('100');
@@ -363,8 +366,12 @@ test('badge and full raid navigation keep collection progress and unscored day o
   await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Full raid', exact: true }).click();
   await expect(page.locator('thead')).toContainText('Strand');
   await expect(page.locator('thead')).toContainText('Day one');
-  await expect(page.locator('thead')).toContainText('Not scored');
+  await expect(page.locator('thead .heading-unscored').first()).toBeVisible();
+  await expect(page.locator('thead .heading-unscored').first().getByRole('img', { name: 'Not counted toward completion' })).toBeVisible();
   await expect(page.locator('thead')).toContainText('Raid weapon');
+  for (const heading of await page.locator('.record-header-row .record-heading').all()) {
+    await expect(heading).toHaveCSS('vertical-align', 'middle');
+  }
   await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Seal', exact: true }).click();
   await expect(page.locator('thead')).not.toContainText('Strand');
   await expect(page.locator('thead')).toContainText('Day one');
@@ -569,7 +576,7 @@ test('activity seals and triumphs have separate navigation and optional badges',
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(activity.title);
     const views = page.getByRole('navigation', { name: 'Activity view' });
     await expect(views.getByRole('link', { name: 'Badge', exact: true })).toHaveCount(activity.badge ? 1 : 0);
-    await expect(page.locator('thead')).toContainText('Gilding');
+    await expect(page.locator('thead .heading-gilding').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(0);
     await views.getByRole('link', { name: 'Triumphs', exact: true }).click();
     await expect(page).toHaveURL(new RegExp('#/triumphs/' + activity.id + '$'));
@@ -623,6 +630,9 @@ test('restricted and hidden triumphs retain progress with a cell indicator and t
   await expect(cell).toHaveClass(/cell-unowned/);
   await expect(cell.getByRole('img')).toHaveAccessibleName('Content locked; Hidden in game; Obscured in game');
   await expect(cell.locator('.condition-more')).toHaveText('+');
+  await expect(cell.locator('.cell-hidden-watermark')).toBeVisible();
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.cell-hidden-watermark')).toHaveCount(2);
+  await expect(cell.locator('.cell-state')).toHaveCSS('pointer-events', 'none');
   await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.cell-conditions')).toHaveCount(1);
   await button.hover();
   const tooltip = page.getByRole('tooltip');

@@ -284,6 +284,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Consider a new favicon?
 - [ ] Consider optional per-clan styling for the page, based on the clan's colors.
 - [ ] Option to show progress without gilding. Could also allow a "full completion" mode that includes day 1 or any other excluded entries.
+- [ ] Improve gilding requirement column header styling
 
 ## Clan tenure and ranks — 2026-10-30
 
@@ -425,3 +426,14 @@ Do not call every missing entitlement “missing DLC”: DLC is one example of t
 
 Removed RewardUnavailable and CanEquipTitle from cell indicators and tooltip notes at the user’s request. Their inconsistent presence does not offer a useful distinction here. Retain missing entitlement, hidden/invisible, obscured, and the separate completed-but-unclaimed treatment; raw API flags remain cached.
 Valent has the Deadeye triumph Weapon Archivist with only one of these two statuses, while other triumphs for him have both statuses. The actual meaning isn't clear.
+
+
+## Hidden watermark and collection headings — 2026-10-31
+
+Center collection header names vertically for both single and multiple lines. Hidden triumphs use a faint eye-off watermark in each affected cell, behind readable progress. Locked and obscured conditions retain corner indicators (lock takes priority when both apply), while the tooltip continues to explain every condition. Unlike the PHP gray background override for restricted states, the watermark preserves the progress and completed/unclaimed colors.
+
+
+## Header status markers — 2026-10-31
+
+Replace Gilding and Not scored header labels with gold diagonal border stripes for gilding requirements and a small hollow diamond for unscored requirements. Neither treatment reserves title space; names remain vertically centered. Tooltips explain both statuses without implying that unscored triumphs are unavailable or less valuable.
+Swapped to solid gold with an internal fade. Can revisit later.
