@@ -6,6 +6,8 @@ $format = strtolower($_GET['format'] ?? 'member_table');
 $force_refresh = isset($_GET['refresh']);
 
 $members = get_clan_members($force_refresh);
+/** @disregard P1114 PHP accepts a temporary sort key here; only $members needs to be reordered
+*/
 array_multisort(array_column($members, 'joined_clan'), SORT_ASC, $members);
 
 if ($format === 'csv') {
@@ -19,7 +21,7 @@ if ($format === 'csv') {
 
 
 
-function get_clan_members($force_refresh) {
+function get_clan_members(bool $force_refresh) {
   $members = groups::get_group_members(get_setting("group_id"));
   profiles::precache_players($members, $force_refresh);
 
@@ -36,6 +38,7 @@ function get_clan_members($force_refresh) {
     // 254 => array('name' => 'bungie next', 'icon' => ''), // bungie.net
   );
 
+  $rows = [];
   foreach ($members as $member) {
     // echo_pretty_json($member); exit();
 
@@ -140,7 +143,7 @@ function get_clan_members($force_refresh) {
   return $rows;
 }
 
-function display_member_table($members) {
+function display_member_table(array $members) {
   $rows = array();
 
   foreach($members as $member) {
@@ -209,7 +212,7 @@ function display_member_table($members) {
 }
 
 
-function get_name_span($member, $type) {
+function get_name_span(array$member, string|int $type) {
   $name = $member[$type.'_name'];
   $number = '';
   $href = '';
@@ -247,7 +250,7 @@ function get_name_span($member, $type) {
 
   return '<a '.$href.'>'.$span.'</a>';
 }
-function get_number_span($number, $color='lightgrey') { // royalblue?
+function get_number_span(mixed $number, $color='lightgrey') { // royalblue?
   if ($number === '' || $number === null) { // 0 is a real number
     return '';
   }

@@ -3,10 +3,10 @@
 
 class groups {
 
-  private static $dir = APP_ROOT . '/groups';
+  private static string $dir = APP_ROOT . '/groups';
 
   private static $group_members = array(); // cache
-  public static function get_group_members($group_id, $refresh = 3 * 60) {
+  public static function get_group_members(int|string $group_id, int $refresh = 3 * 60) {
     // refresh: if true, always get new data. if int, use cache if it's less than that many seconds old
     $group_id = (int) $group_id;
 

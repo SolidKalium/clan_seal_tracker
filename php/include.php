@@ -3,12 +3,13 @@
 // SETUP
 define('APP_ROOT', __DIR__); // file paths resolve from here, not the working directory
 
-function exception_error_handler($errno, $errstr, $errfile, $errline ) {
+function exception_error_handler(int $errno, string $errstr, string $errfile, int $errline ) {
   echo '<pre>';
   throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 set_error_handler("exception_error_handler");
 
+// Note: between season 20 and year 2026, the size of the definition files and profiles have roughly doubled.
 $limit = ini_get('memory_limit');
 if (
   (strtolower(substr($limit, -1)) === 'k') ||
@@ -24,13 +25,13 @@ include_once APP_ROOT . '/library/groups.php';
 
 
 // DEBUG ASSIST
-function echo_pretty_json(...$jsons) {
+function echo_pretty_json(mixed ...$jsons) {
   foreach ($jsons as $json) {
     echo '<pre>' . htmlspecialchars(json_encode($json, JSON_PRETTY_PRINT)) . PHP_EOL . PHP_EOL . '</pre>';
   }
 }
 
-function display_table($rows) {
+function display_table(array $rows) {
   if (empty($rows)) {
     echo 'No data to display' . PHP_EOL;
     return;
@@ -52,7 +53,7 @@ function display_table($rows) {
 
   echo $html;
 }
-function get_csv($rows) {
+function get_csv(array $rows) {
   // assume all keys are the same and in a consistent order...
   $columns = array_keys(current($rows));
 
@@ -104,7 +105,7 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $d
           $definitions = definitions::get($info['definition_type']);
           foreach (array_column($node['children'][$key], $info['name'] . 'Hash') as $child_hash) {
             $child = $definitions[$child_hash];
-            echo echo_definition_line($child, $current_depth + 1);
+            echo_definition_line($child, $current_depth + 1);
           }
         }
       }
@@ -121,7 +122,7 @@ function display_node_hierarchy($root_hash = '1866538467' /* records root */, $d
     echo PHP_EOL;
   }
 }
-function display_node_hierarchy_reverse($root_hash, $current_depth = 0) {
+function display_node_hierarchy_reverse(string $root_hash, $current_depth = 0) {
   $type = '';
 
   $nodes = definitions::get('PresentationNode');
@@ -159,7 +160,7 @@ function display_node_hierarchy_reverse($root_hash, $current_depth = 0) {
   }
 }
 
-function display_hash_info($hash) {
+function display_hash_info(string $hash) {
   $types = array(
     'PresentationNode',
     'Record',
@@ -228,7 +229,7 @@ function enable_implicit_flush() {
 }
 
 $settings = null;
-function get_setting($key) { // TODO defaults?
+function get_setting(string $key) { // TODO defaults?
   global $settings;
   if (empty($settings)) {
     $settings = load_json(APP_ROOT . '/settings.json');
@@ -247,7 +248,7 @@ function get_page_definitions() {
   return $page_definitions;
 }
 
-function load_json($path) {
+function load_json(string $path) {
   $file_contents = file_get_contents($path);
 
   // minimalist comment stripping and hanging comma stripping
@@ -262,14 +263,14 @@ function load_json($path) {
   return $json;
 }
 
-function echo_definition_line($definition, $depth = 0, $extra_description = '') {
+function echo_definition_line(array $definition, int $depth = 0, string $extra_description = '') {
   $padding = str_pad('', 2 * $depth);
   echo $padding . "<span style='color:silver; display: inline-block; vertical-align: top;'>" . str_pad($definition['hash'], 10) . "</span>"
     . " <span style='display: inline-block; vertical-align: top;'>{$definition['displayProperties']['name']}</span>"
     . " <span style='color:silver; display: inline-block; vertical-align: top;'>{$definition['displayProperties']['description']}$extra_description</span>"
     . PHP_EOL;
 }
-function echo_info_line($start, $focus, $end = '', $depth = 0) {
+function echo_info_line(string $start, int $focus, $end = '', $depth = 0) {
   $padding = str_pad('', 2 * $depth);
   echo $padding . "<span style='color:silver;''>$start<span style='color:grey;''>$focus</span>$end</span>" . PHP_EOL;
 }

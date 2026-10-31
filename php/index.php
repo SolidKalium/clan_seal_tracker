@@ -1,5 +1,7 @@
 <?php
 
+use BcMath\Number;
+
 include __DIR__ . '/include.php';
 
 enable_implicit_flush(); // doesn't work with <link> css
@@ -158,11 +160,11 @@ function list_pages() {
 /**
  * Notes:
  * - Private players aren't shown at all
- * @param  [string] $page_name
- * @param  [string?] $type
- * @return null
+ * @param  string  $page_key
+ * @param  ?string $page_type
+ * @return void
  */
-function show_page($page_key, $type = null) {
+function show_page(string $page_key, ?string $page_type = null) {
   $pages = get_page_definitions();
 
   if (empty($pages[$page_key])) {
@@ -171,7 +173,7 @@ function show_page($page_key, $type = null) {
 
   $page = $pages[$page_key];
 
-  if ($type === 'seal') {
+  if ($page_type === 'seal') {
     $nodes = definitions::get('PresentationNode');
     $records = definitions::get('Record');
 
@@ -181,7 +183,7 @@ function show_page($page_key, $type = null) {
     $seal_titles = $seal_record['titleInfo']['titlesByGender'] ?? array();
     $seal_title = !empty($seal_titles) ? reset($seal_titles) : $seal_record['displayProperties']['name']; // Classified seals don't have titles
     $title = $seal_title . ' (' . $page['name'] . ' Seal)';
-  } else if ($type === 'badge') {
+  } else if ($page_type === 'badge') {
     $nodes = definitions::get('PresentationNode');
 
     $badge_node = $nodes[$page['badge_node_hash']];
@@ -203,7 +205,7 @@ function show_page($page_key, $type = null) {
     $players = groups::get_group_members(get_setting("group_id"), INF);
   }
 
-  $headings = get_headings($page, $type);
+  $headings = get_headings($page, $page_type);
   $rows = get_rows($page_key, $headings, $players);
   $max_completion = get_max_completion($headings);
 
@@ -299,7 +301,7 @@ function show_page($page_key, $type = null) {
   $table .= '</tbody></table>';
   echo $table;
 }
-function get_player_record_tds($player_data, $heading) {
+function get_player_record_tds(array $player_data, array $heading) {
   $player_record = $player_data['records'][$heading['record_hash']];
 
   $progress_override = null;
@@ -374,12 +376,12 @@ function get_player_record_tds($player_data, $heading) {
   echo_pretty_json($player_record);
   throw new Exception('unhandled heading');
 }
-function get_player_checklist_entry_td($player_data, $heading) {
+function get_player_checklist_entry_td(array $player_data, array $heading) {
   $complete = $player_data['checklist_entries'][$heading['checklist_entry_hash']];
   $recordState = $complete ? 'complete' : 'incomplete';
   return "<td recordState='$recordState'></td>";
 }
-function get_player_collectible_td($player_data, $heading) {
+function get_player_collectible_td(array $player_data, array $heading) {
   // echo_pretty_json($heading, $player_data);
 
   if (!empty($heading['collectible_hash'])) {
@@ -394,7 +396,7 @@ function get_player_collectible_td($player_data, $heading) {
 
   return "<td recordState='{$player_collectible['state_text']}'>{$player_collectible['description']}</td>";
 }
-function get_player_metric_td($player_data, $heading) { // including commendations
+function get_player_metric_td(array $player_data, array $heading) { // including commendations
   $metric_hash = $heading['metric_hash'];
   $player_metric = $player_data['metrics'][$metric_hash];
   $text = $player_metric > 0 ? $player_metric : '';
@@ -407,7 +409,7 @@ function get_player_metric_td($player_data, $heading) { // including commendatio
   return "<td {$heading_attributes}>{$text}</td>";
 }
 
-function get_headings($page, $type = null) {
+function get_headings(array $page, ?string $type = null) {
   $headings = array();
 
   $headings[] = array(
@@ -524,9 +526,9 @@ function get_headings($page, $type = null) {
     $items = definitions::get('InventoryItemLite');
     $perks = definitions::get('SandboxPerk');
 
+    $artifact_item_hashes = array();
     if (!empty($page['suppress_seasonal_mods'])) {
       $artifacts = definitions::get('Artifact');
-      $artifact_item_hashes = array();
       foreach ($artifacts as $artifact) {
         foreach ($artifact['tiers'] as $tier) {
           foreach ($tier['items'] as $item) {
@@ -740,7 +742,7 @@ function get_headings($page, $type = null) {
   // echo_pretty_json($headings);
   return $headings;
 }
-function get_normalized_item_name($item) {
+function get_normalized_item_name(array $item) {
   // DestinyClass
     // Titan: 0
     // Hunter: 1
@@ -815,7 +817,7 @@ function get_normalized_item_name($item) {
   return $name;
 }
 
-function get_rows($page_key, $headings, $players) {
+function get_rows(string $page_key, array $headings, array $players) {
   $rows = array();
 
   $private_players = array(); // Players whose privacy settings prevent us from getting data
@@ -921,6 +923,7 @@ function get_rows($page_key, $headings, $players) {
   if ($max_completion) {
     usort($rows, get_row_sorter($max_completion));
   } else if ($page_key === 'commendations') {
+    /** @disregard P1114 PHP accepts a temporary sort key here; only $rows needs to be reordered */
     array_multisort(array_column(array_column($rows, 'metrics'), 'commendations_total_score'), SORT_DESC, $rows);
   }
 
@@ -928,7 +931,7 @@ function get_rows($page_key, $headings, $players) {
 
   return $rows;
 }
-function update_player_data_for_record_heading(&$player_data, $profile, $heading) {
+function update_player_data_for_record_heading(array &$player_data, array $profile, array $heading) {
   if ($heading['scope'] === 0) { // account scope
       $profile_record = $profile['profileRecords']['data']['records'][$heading['record_hash']] ?? fake_empty_record_for_heading($heading);
       $player_data['records'][$heading['record_hash']] = $profile_record;
@@ -979,7 +982,7 @@ function update_player_data_for_record_heading(&$player_data, $profile, $heading
     throw new Exception('scope ' . $heading['scope'] . ' not handled');
   }
 }
-function fake_empty_record_for_heading($heading) {
+function fake_empty_record_for_heading(array $heading) {
   // works for both profile and character records
 
   $record = array(
@@ -1003,7 +1006,7 @@ function fake_empty_record_for_heading($heading) {
 
   return $record;
 }
-function estimate_player_record_progress($record) {
+function estimate_player_record_progress(array $record) {
   $progress = 0;
   $count = null;
 
@@ -1045,7 +1048,7 @@ function estimate_player_record_progress($record) {
 
   return $progress / $count;
 }
-function update_player_data_for_checklist_heading(&$player_data, $profile, $heading) {
+function update_player_data_for_checklist_heading(array &$player_data, array $profile, array $heading) {
   if ($heading['scope'] !== 0) {
     throw new Exception('scope ' . $heading['scope'] . ' not handled');
   }
@@ -1054,8 +1057,9 @@ function update_player_data_for_checklist_heading(&$player_data, $profile, $head
   $player_data['checklist_entries'][$heading['checklist_entry_hash']] = $collected;
   $player_data['total_completion'] += (int) $collected;
 }
-function update_player_data_for_collectible_heading(&$player_data, $profile, $heading) {
+function update_player_data_for_collectible_heading(array &$player_data, array $profile, array $heading) {
   $state_text = array();
+  $states = array();
   $description = '';
 
   // use first character's info. Except for a few dozen exceptions, they have the same values. Mainly mida minitool, drang, and man o war.
@@ -1080,7 +1084,6 @@ function update_player_data_for_collectible_heading(&$player_data, $profile, $he
     ));
   } else {
     $hash = implode(',', array_values($heading['collectible_hash_set']));
-    $states = array();
 
     foreach ($heading['collectible_hash_set'] as $key => $collectible_hash) {
       if (empty($character_collectibles['collectibles'][$collectible_hash])) {
@@ -1120,7 +1123,7 @@ function update_player_data_for_collectible_heading(&$player_data, $profile, $he
   );
   $player_data['total_completion'] += (empty($state_text['complete']) ? 0 : 1);
 }
-function update_player_data_for_commendations(&$player_data, $profile) { // one call for all values
+function update_player_data_for_commendations(array &$player_data, array $profile) { // one call for all values
   $commendations = $profile['profileCommendations']['data'];
   $player_data['metrics'] += $commendations['commendationScoresByHash'] + array(
     'commendations_total_score' => $commendations['totalScore'],
@@ -1130,7 +1133,7 @@ function update_player_data_for_commendations(&$player_data, $profile) { // one 
 }
 
 
-function get_player_objective_state($record, $key) {
+function get_player_objective_state(array $record, string $key) {
   // Combines objective progress with overall record state
 
   if ($record['state'] === 0) {
@@ -1168,7 +1171,7 @@ function get_player_objective_state($record, $key) {
   return implode(' ', array_keys(array_filter($enums)));
 }
 
-function get_max_completion($headings) {
+function get_max_completion(array $headings) {
   $max_completion = 0;
   foreach ($headings as $heading) {
     if ($heading['name'] !== 'Player' && empty($heading['skip_for_completion'])) {
@@ -1177,7 +1180,7 @@ function get_max_completion($headings) {
   }
   return $max_completion;
 }
-function get_row_sorter($max_completion) {
+function get_row_sorter(int $max_completion) {
     return function ($a, $b) use ($max_completion) {
         // return value is cast to int, so returning a float less than 1 may cause incorrect sort order.
         if ($a['pinned'] && !$b['pinned']) {
@@ -1202,7 +1205,7 @@ function get_row_sorter($max_completion) {
     };
 }
 
-function column_sorter($a, $b) {
+function column_sorter(array $a, array $b) {
   // This is not a stable sort. Provide default values to columns to guarantee an order.
 
   // order
@@ -1220,7 +1223,7 @@ function column_sorter($a, $b) {
   return $ao - $bo;
 }
 
-function json_encode_character_record_reduced($character_record) {
+function json_encode_character_record_reduced(array $character_record) {
   $character_record['state'] &= 5; // ignore obscured/etc
   return json_encode($character_record);
 }

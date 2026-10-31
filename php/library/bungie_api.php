@@ -10,7 +10,7 @@ class bungie_api {
     return self::api('/Destiny2/Manifest/');
   }
 
-  public static function get_memberships($membership_id, $membership_type = '-1') {
+  public static function get_memberships(string $membership_id, $membership_type = '-1') {
     // This works with any kind of membership id.
     // Type -1 means the type doesn't need to be specified
 
@@ -20,7 +20,7 @@ class bungie_api {
     return bungie_api::api('/User/GetMembershipsById/' . $membership_id . '/' . $membership_type . '/');
   }
 
-  public static function get_group_members($group_id) {
+  public static function get_group_members(string $group_id) {
     // takes about 0.7 seconds
     $group_id = (int) $group_id;
 
@@ -30,7 +30,7 @@ class bungie_api {
     // non-clan groups might have more than 100 members
   }
 
-  public static function get_profile($membership_type, $membership_id, $components = array(100)) {
+  public static function get_profile(string $membership_type, string $membership_id, $components = array(100)) {
     // Needs to be called with the primary destiny membership details
 
     $membership_type = (int) $membership_type;
@@ -169,7 +169,7 @@ class bungie_api {
 
   ///// HELPERS
 
-  public static function api($path, $post = false) {
+  public static function api(string $path, $post = false) {
     // PCGR must go through stats.bungie.net. This does not provide affinitization to a bungie server.
     // Other requests can go through www.bungie.net. This does provide affinitizaation.
     $base = 'https://www.bungie.net/Platform';
@@ -223,7 +223,7 @@ class bungie_api {
     return $result['Response'];
   }
 
-  public static function fetch_resource($path) {
+  public static function fetch_resource(string $path) {
     $base = 'https://www.bungie.net';
     $curl_opts = array(
       CURLOPT_URL => $base . $path,
@@ -279,8 +279,8 @@ class bungie_api {
 
   ///// INTERNAL
 
-  private static $ch = null;
-  private static function _fetch($curl_opts) {
+  private static ?CurlHandle $ch = null;
+  private static function _fetch(array $curl_opts) {
     if (!self::$ch) {
       self::$ch = curl_init();
     }

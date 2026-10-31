@@ -6,13 +6,13 @@ class profiles {
   // Not memoizing profiles. That would need over 500M
   // Not currently using cookies, even if it might help in the event of two webrequests being made at the same time
 
-  private static $dir = APP_ROOT . '/profiles';
+  private static string $dir = APP_ROOT . '/profiles';
   private static $standard_components = array('Profiles', 'ProfileProgression', 'CharacterProgressions', 'PresentationNodes', 'Collectibles', 'Records', 'SocialCommendations'); // These are the components that will be fetched and stored
   private static $cache_minutes = 5;
 
   private static $updated_profiles = array();
 
-  public static function get($membership_type, $membership_id, $last_seen = null, $refresh = 7 * 24 * 60 * 60) {
+  public static function get(int|string $membership_type, int|string $membership_id, $last_seen = null, int $refresh = 7 * 24 * 60 * 60) {
     // refresh: if int, use api if file is older than that many seconds. if true, always use api.
     // last_seen: optional timestamp of when the player was last online
 
@@ -58,7 +58,7 @@ class profiles {
     self::$updated_profiles[$key] = true;
     return $profile;
   }
-  private static function _use_cache($membership_type, $membership_id, $last_seen, $refresh = 7 * 24 * 60 * 60) {
+  private static function _use_cache(int $membership_type, string $membership_id, ?int $last_seen, int $refresh = 7 * 24 * 60 * 60) {
     $key = self::get_key($membership_type, $membership_id);
     $path = self::$dir . '/' . $key . '.json';
 
@@ -110,14 +110,14 @@ class profiles {
     return $use_cache;
   }
 
-  public static function get_key($membership_type, $membership_id = null) { // accepts array of values or two separate values
+  public static function get_key(int|array $membership_type, ?string $membership_id = null) { // accepts array of values or two separate values
     if (is_array($membership_type)) {
       return $membership_type['membership_type'] . '_' . $membership_type['membership_id'];
     }
     return $membership_type . '_' . $membership_id;
   }
 
-  private static function get_filename_meaning($filename) {
+  private static function get_filename_meaning(string $filename) {
     $parts = explode('.', $filename); // remove extension
     $parts = explode('_', $parts[0]);
 
@@ -163,7 +163,7 @@ class profiles {
     return $players;
   }
 
-  public static function normalize_name($name) {
+  public static function normalize_name(string $name) {
     // could also pass in the membership type or the whole profile. This is good enough for now.
     // membership lists don't have all of the names, nor does profile.
     // The only way to get it all is from getting the membership list
@@ -175,7 +175,7 @@ class profiles {
     return $name;
   }
 
-  public static function is_stadia($name) {
+  public static function is_stadia(string $name) {
     if (
       substr($name, -2) === '#0' ||
       (substr($name, -5, 1) === '#' && is_numeric(substr($name, -4)))
@@ -185,7 +185,7 @@ class profiles {
     return false;
   }
 
-  public static function get_display_name($profile_data, $type = null) {
+  public static function get_display_name(array $profile_data, $type = null) {
     if ($type && !empty($profile_data['destinyMemberships'])) {
       foreach ($profile_data['destinyMemberships'] as $membership) {
         if ($membership['membershipType'] === $type) {
@@ -199,7 +199,7 @@ class profiles {
 
     // return self::normalize_name($profile_data['profile']['data']['userInfo']['displayName']);
   }
-  public static function get_display_names($profile_data) {
+  public static function get_display_names(array $profile_data) {
     $names = array();
 
     $user_info = $profile_data['profile']['data']['userInfo'];
@@ -236,11 +236,11 @@ class profiles {
   }
 
 
-  public static function precache_players($players, $force_refresh = false) {
+  public static function precache_players(array $players, $force_refresh = false) {
     self::_precache_players($players, $force_refresh);
     gc_collect_cycles(); // bonus magic
   }
-  private static function _precache_players($players, $force_refresh) {
+  private static function _precache_players(array $players, bool $force_refresh) {
     $queue = array();
 
     if (!is_dir(self::$dir)) {
@@ -298,11 +298,9 @@ class profiles {
 
           if (isset($profile_chs[$i])) {
             curl_multi_remove_handle($mh, $profile_chs[$i]);
-            // curl_close($profile_chs[$i]);
             unset($profile_chs[$i]);
 
             curl_multi_remove_handle($mh, $membership_chs[$i]);
-            // curl_close($membership_chs[$i]);
             unset($membership_chs[$i]);
           }
 
@@ -430,15 +428,13 @@ class profiles {
     // cleanup
     foreach ($profile_chs as $i => $ch) {
       curl_multi_remove_handle($mh, $ch);
-      // curl_close($ch);
 
       curl_multi_remove_handle($mh, $membership_chs[$i]);
-      // curl_close($membership_chs[$i]);
     }
     curl_multi_close($mh);
   }
 
-  public static function normalize_component_codes($components) {
+  public static function normalize_component_codes(array $components) {
     // returns an array of ints
 
     $map = array(

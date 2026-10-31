@@ -4,7 +4,7 @@
 class definitions {
 
   private static $definitions_updated = false;
-  private static $dir = APP_ROOT . '/definitions';
+  private static string $dir = APP_ROOT . '/definitions';
   private static $manifest_filename = 'd2_manifest.json';
 
   public static function update() {
@@ -88,7 +88,7 @@ class definitions {
   }
 
   private static $memo = array();
-  public static function get($type, $only_warn_if_missing = false) {
+  public static function get(string $type, $only_warn_if_missing = false) {
     if (isset(self::$memo[$type])) {
       return self::$memo[$type];
     }
