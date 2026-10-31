@@ -1,10 +1,10 @@
 <?php
 
-include 'include.php';
+include __DIR__ . '/include.php';
 
 enable_implicit_flush(); // doesn't work with <link> css
-echo '<style> ' . file_get_contents('resources/tracker.css') . ' </style>';
-echo '<script> ' . file_get_contents('resources/tracker.js') . ' </script>';
+echo '<style> ' . file_get_contents(APP_ROOT . '/resources/tracker.css') . ' </style>';
+echo '<script> ' . file_get_contents(APP_ROOT . '/resources/tracker.js') . ' </script>';
 echo '<link rel="shortcut icon" href="resources/favicon_16.png" type="image/x-icon">';
 echo '<pre>';
 

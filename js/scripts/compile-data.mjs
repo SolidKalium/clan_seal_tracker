@@ -44,8 +44,7 @@ export function compile(settings, pages) {
   return { config: { apiKey: settings.secret_key, clanId, language: 'en' }, catalog };
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const root = new URL('../../', import.meta.url);
-  const settings = readJsonc(await readFile(new URL('settings.json', root), 'utf8'), 'settings.json');
+  const settings = readJsonc(await readFile(new URL('../settings.json', import.meta.url), 'utf8'), 'js/settings.json');
   const pages = readJsonc(await readFile(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'js/pages.jsonc');
   const output = new URL('../.generated/', import.meta.url);
   await mkdir(output, { recursive: true });

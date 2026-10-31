@@ -1,6 +1,6 @@
 <?php
 // Evaluate the existing calculation without invoking index.php's rendering/API side effects.
-$source = file_get_contents(__DIR__ . '/../../index.php');
+$source = file_get_contents(__DIR__ . '/../../php/index.php');
 $start = strpos($source, 'function estimate_player_record_progress(');
 $end = strpos($source, 'function update_player_data_for_checklist_heading(', $start);
 if ($start === false || $end === false) { throw new Exception('Legacy calculation could not be located'); }

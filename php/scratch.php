@@ -1,7 +1,7 @@
 <?php
 
 // testing and development page
-include 'include.php';
+include __DIR__ . '/include.php';
 
 enable_implicit_flush();
 echo '<pre>';

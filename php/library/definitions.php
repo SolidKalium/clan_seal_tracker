@@ -4,7 +4,7 @@
 class definitions {
 
   private static $definitions_updated = false;
-  private static $dir = 'definitions';
+  private static $dir = APP_ROOT . '/definitions';
   private static $manifest_filename = 'd2_manifest.json';
 
   public static function update() {

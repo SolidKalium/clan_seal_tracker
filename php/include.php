@@ -1,6 +1,8 @@
 <?php
 
 // SETUP
+define('APP_ROOT', __DIR__); // file paths resolve from here, not the working directory
+
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
   echo '<pre>';
   throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
@@ -15,10 +17,10 @@ if (
   ini_set('memory_limit', '512M');
 }
 
-include_once 'library/bungie_api.php';
-include_once 'library/definitions.php';
-include_once 'library/profiles.php';
-include_once 'library/groups.php';
+include_once APP_ROOT . '/library/bungie_api.php';
+include_once APP_ROOT . '/library/definitions.php';
+include_once APP_ROOT . '/library/profiles.php';
+include_once APP_ROOT . '/library/groups.php';
 
 
 // DEBUG ASSIST
@@ -54,7 +56,7 @@ function get_csv($rows) {
   // assume all keys are the same and in a consistent order...
   $columns = array_keys(current($rows));
 
-  $handle = fopen('temp.csv', 'w');
+  $handle = fopen(APP_ROOT . '/temp.csv', 'w');
 
   fputcsv($handle, $columns);
   foreach ($rows as $row) {
@@ -63,9 +65,9 @@ function get_csv($rows) {
 
   fclose($handle);
 
-  $csv = file_get_contents('temp.csv');
+  $csv = file_get_contents(APP_ROOT . '/temp.csv');
 
-  unlink('temp.csv');
+  unlink(APP_ROOT . '/temp.csv');
 
   return $csv;
 }
@@ -229,7 +231,7 @@ $settings = null;
 function get_setting($key) { // TODO defaults?
   global $settings;
   if (empty($settings)) {
-    $settings = load_json('settings.json');
+    $settings = load_json(APP_ROOT . '/settings.json');
   }
 
   return $settings[$key];
@@ -239,7 +241,7 @@ $page_definitions = null;
 function get_page_definitions() {
   global $page_definitions;
   if (empty($page_definitions)) {
-    $page_definitions = load_json('pages.json');
+    $page_definitions = load_json(APP_ROOT . '/pages.json');
   }
 
   return $page_definitions;

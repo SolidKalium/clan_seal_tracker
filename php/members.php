@@ -1,6 +1,6 @@
 <?php
 
-include 'include.php';
+include __DIR__ . '/include.php';
 
 $format = strtolower($_GET['format'] ?? 'member_table');
 $force_refresh = isset($_GET['refresh']);

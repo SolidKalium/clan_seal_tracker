@@ -3,7 +3,7 @@
 
 class groups {
 
-  private static $dir = 'groups';
+  private static $dir = APP_ROOT . '/groups';
 
   private static $group_members = array(); // cache
   public static function get_group_members($group_id, $refresh = 3 * 60) {

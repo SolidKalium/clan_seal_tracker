@@ -1,21 +1,11 @@
-
 # Clan Seal Tracker
 
-The new browser edition is in [`js/`](js/README.md). Run `npm --prefix js ci` then `npm --prefix js run dev` and open `http://localhost:5173/js/`. The PHP app below remains available for comparison.
+Track Destiny 2 clan progress on seals, badges, and triumphs.
 
-## Setup this project to run on your own server
-- Checkout this git repository on your server
-- Register for a developer app at https://www.bungie.net/en/Application
-  - Select public auth to enable a few features (TODO in development. private might allow longer times between authorizations)
-  - The application is automatically approved and can be edited later.
-- Create settings.json and add your api key and clan group_id
-- There are no dependencies to install, put you'll need PHP with CURL
-- Each profile fetch API call needs seconds and megabytes of data, so everything is cached in files. You may need to enable folder and file creation/editing for the profiles/ and definitions/ directories.
-- Individual users do not need to authenticate. Only public data is used.
-- Apache may need to be given permission to write files and folders
+- [`js/`](js/README.md) — the browser edition (Vue + TypeScript). Run `npm --prefix js ci` then `npm --prefix js run dev` and open `http://localhost:5173/js/`.
+- [`php/`](php/README.md) — the legacy PHP edition, kept for comparison until the browser edition reaches parity.
 
-- share your feedback or submit pull requests for improvements
-
+The notes below on the Bungie API apply to both.
 
 ## Resources
 ### API and development resources
@@ -72,14 +62,6 @@ The new browser edition is in [`js/`](js/README.md). Run `npm --prefix js ci` th
 ### Meme sites
 - https://oracles.report/
 
-## Debugging
-- Several ids are automatically populated on column and row headings
-- There are some useful functions in include.php
-- Run the server locally with `php -S localhost:8000` in the project folder
-- If some profiles have old data, you can force an update for all clan members with: `members.php?refresh`
-
------
-
 ## Key concepts
 ### Group
 A Destiny 2 clan is a Bungie group
@@ -124,20 +106,8 @@ Entries for "kinetic"
 
 ## INTERNAL NOTES
 
-### Implementation next steps
-Files that should be accessible need to be in their own folder. (Security)
-Setup database ? just use a file for now
-Setup on remote server
-Create github page
-Add a license?
-Add an info page
-Add privacy info
-Add disclaimer that I am not affiliated with Bungie
-rewrite front end to provide better realtime info in browser? (use js)
-
 ### Feature ideas
 track historical triumph values?
-look into php 7 features
 if automatically checking player data frequently, could add custom events to send to discord
   For example, notify users of mods they are missing being on sale
   Integration with Charlemagne LFG to show progress for the relevant activity and users that have joined (plus maybe those who have commented)

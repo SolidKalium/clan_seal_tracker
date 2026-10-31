@@ -6,7 +6,7 @@ class profiles {
   // Not memoizing profiles. That would need over 500M
   // Not currently using cookies, even if it might help in the event of two webrequests being made at the same time
 
-  private static $dir = 'profiles';
+  private static $dir = APP_ROOT . '/profiles';
   private static $standard_components = array('Profiles', 'ProfileProgression', 'CharacterProgressions', 'PresentationNodes', 'Collectibles', 'Records', 'SocialCommendations'); // These are the components that will be fetched and stored
   private static $cache_minutes = 5;
 

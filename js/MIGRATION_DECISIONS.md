@@ -455,3 +455,7 @@ API reference: https://bungie-net.github.io/multi/schema_Destiny-Definitions-Pre
 ## Collapsible sidebar sections — 2026-10-31
 
 Each category has an independent, keyboard-accessible toggle. Initial load and navigation to another category open the current category and collapse the others; the overview defaults to Raids. Manual toggles can leave multiple categories open, and changing view within the same category preserves those choices. Section state is derived from the route on reload rather than stored as a separate preference. The existing whole-sidebar collapse remains independent.
+
+## PHP moved to `php/` — 2026-10-31
+
+The legacy PHP edition, its caches, and its settings moved from the repository root to `php/`. PHP resolves files from an `APP_ROOT` constant rather than the working directory. The browser edition now reads its own ignored `js/settings.json` (API key and clan id only) instead of the PHP settings. The only remaining cross-edition reference is the PHP progress comparison test, which reads `php/index.php`; remove it with the PHP edition.

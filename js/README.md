@@ -1,6 +1,6 @@
 # Browser edition
 
-Vue + TypeScript + Vite, with browser-managed Bungie requests and a Dexie/IndexedDB cache. PHP remains in the repository root.
+Vue + TypeScript + Vite, with browser-managed Bungie requests and a Dexie/IndexedDB cache. The legacy PHP edition is in [`php/`](../php/README.md).
 
 ## Run
 
@@ -13,15 +13,15 @@ npm --prefix js run dev
 
 Open **http://localhost:5173/js/** through the dev container's forwarded port 5173. The server binds to `0.0.0.0` and requires port 5173 rather than silently selecting a different origin. If VS Code accepts connections but never forwards them, reload the VS Code window.
 
-The parent `settings.json` must contain `secret_key` and `group_id`. `predev` and `prebuild` compile those two values, the default language, and the page catalog from `js/pages.jsonc` into ignored `.generated/*.json`. Restart dev after changing source settings/content. The rest of the PHP settings and caches are not copied. No JSONC parser is shipped to the browser.
+Copy `js/settings.example.json` to the ignored `js/settings.json` and fill in `secret_key` and `group_id`. It is independent of `php/settings.json`. `predev` and `prebuild` compile those two values, the default language, and the page catalog from `js/pages.jsonc` into ignored `.generated/*.json`. Restart dev after changing source settings/content. No PHP settings or caches are read. No JSONC parser is shipped to the browser.
 
-**The Bungie API key is intentionally client-visible** in the dev app and built JavaScript. This does not make the rest of `settings.json` public. Do not use this mechanism for OAuth client secrets or other confidential credentials. A production host must serve only `dist/` under `/js/`, not the repository or generated/source directories.
+**The Bungie API key is intentionally client-visible** in the dev app and built JavaScript. Keep `js/settings.json` limited to browser-safe values. Do not use this mechanism for OAuth client secrets or other confidential credentials. A production host must serve only `dist/` under `/js/`, not the repository or generated/source directories.
 
 Bungie must allow the browser's exact origin in the application registration. For normal local use that is `http://localhost:5173`; `http://127.0.0.1:5173` is a different origin. If using a different forwarded address, register that origin instead. Manifest downloads can succeed even while clan/profile endpoints reject the origin. The app displays the registration error and current origin. There is no development proxy masking this requirement.
 
 ## Page catalog
 
-Edit `js/pages.jsonc` for the browser site's raid/activity list and display exceptions. It is independent of the root PHP `pages.json`; the compiler no longer reads the old file. Pages are ordered by their position in this array, grouped as `Raid seals` (default) or `Activities`. Use `sealNodeHash`, `badgeNodeHash`, and `otherNodeHashes` for scope, with `records`/`collectibles` for extra full-raid content and supported display/scoring overrides. Element ordering (including Prismatic), day-one exclusions, numbered stages, item groups, and armor slots are derived from the manifest. Recompile with `npm --prefix js run prepare:data`, or restart dev after catalog edits.
+Edit `js/pages.jsonc` for the browser site's raid/activity list and display exceptions. It is independent of the PHP `php/pages.json`; the compiler no longer reads the old file. Pages are ordered by their position in this array, grouped as `Raid seals` (default) or `Activities`. Use `sealNodeHash`, `badgeNodeHash`, and `otherNodeHashes` for scope, with `records`/`collectibles` for extra full-raid content and supported display/scoring overrides. Element ordering (including Prismatic), day-one exclusions, numbered stages, item groups, and armor slots are derived from the manifest. Recompile with `npm --prefix js run prepare:data`, or restart dev after catalog edits.
 
 Crota's End, Salvation's Edge, and The Desert Perpetual include all three page modes. The Desert Perpetual's Collective Psyche and Wayward Psyche armor sets have separate groups and set-completion tooltips; badge scoring still uses one whole class across the entire badge.
 
@@ -29,7 +29,7 @@ Activity pages use `#/seal/<id>` and `#/triumphs/<id>`. Crucible, Gambit, and Tr
 
 ## Included
 
-- Clan from the existing settings file, with a local overview and ten raids with Seal, Badge, and Full raid views, plus six activity seals with Seal/Triumphs views and optional collection badges. Raids and Activities have separate overview sections and navigation groups. The sidebar can collapse to an emblem and vertical clan name; its state persists locally. Cache status and refresh live in the top bar, with an explanatory status-color tooltip.
+- Clan from `js/settings.json`, with a local overview and ten raids with Seal, Badge, and Full raid views, plus six activity seals with Seal/Triumphs views and optional collection badges. Raids and Activities have separate overview sections and navigation groups. The sidebar can collapse to an emblem and vertical clan name; its state persists locally. Cache status and refresh live in the top bar, with an explanatory status-color tooltip.
 - Collection badge items, with a best-whole-class default and Titan/Hunter/Warlock selection. Tooltips show each class’s ownership. Armor stays in five compact slot columns.
 - Column groups separate triumphs, weapons, patterns, armor, mods, and cosmetics. Collection tooltips show item types, mod perks, and contextual acquisition goals; redundant raid sources are omitted.
 - Full raid pages combine seal requirements, extra raid triumphs, configured patterns/mods/collectibles, and badge items. Elemental requirements normalize to Arc, Void, Solar, Stasis, Strand; seal scope follows the manifest, so extra Strand triumphs remain full-raid only. Day-one achievements appear in both triumph views, marked Not scored.
