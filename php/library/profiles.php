@@ -298,11 +298,11 @@ class profiles {
 
           if (isset($profile_chs[$i])) {
             curl_multi_remove_handle($mh, $profile_chs[$i]);
-            curl_close($profile_chs[$i]);
+            // curl_close($profile_chs[$i]);
             unset($profile_chs[$i]);
 
             curl_multi_remove_handle($mh, $membership_chs[$i]);
-            curl_close($membership_chs[$i]);
+            // curl_close($membership_chs[$i]);
             unset($membership_chs[$i]);
           }
 
@@ -430,10 +430,10 @@ class profiles {
     // cleanup
     foreach ($profile_chs as $i => $ch) {
       curl_multi_remove_handle($mh, $ch);
-      curl_close($ch);
+      // curl_close($ch);
 
       curl_multi_remove_handle($mh, $membership_chs[$i]);
-      curl_close($membership_chs[$i]);
+      // curl_close($membership_chs[$i]);
     }
     curl_multi_close($mh);
   }

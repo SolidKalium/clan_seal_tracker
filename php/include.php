@@ -12,9 +12,9 @@ set_error_handler("exception_error_handler");
 $limit = ini_get('memory_limit');
 if (
   (strtolower(substr($limit, -1)) === 'k') ||
-  (strtolower(substr($limit, -1)) === 'm' && ((int) substr($limit, 0, strlen($limit) - 1) < 512))
+  (strtolower(substr($limit, -1)) === 'm' && ((int) substr($limit, 0, strlen($limit) - 1) < 1024))
 ) {
-  ini_set('memory_limit', '512M');
+  ini_set('memory_limit', '1024M');
 }
 
 include_once APP_ROOT . '/library/bungie_api.php';
@@ -37,7 +37,7 @@ function display_table($rows) {
   }
 
   $keys = array_keys(array_merge(...array_map('array_flip', array_map('array_keys', $rows))));
-  
+
   $html = '<table><thead><tr><th>' . implode('</th><th>', $keys) . '</th></tr></thead><tbody>';
   foreach ($rows as $row) {
     $html .= '<tr>';
@@ -145,11 +145,11 @@ function display_node_hierarchy_reverse($root_hash, $current_depth = 0) {
       }
     }
   }
-  
+
 
   echo_definition_line($node, $current_depth, $type);
 
-  
+
   foreach ($node['parentNodeHashes'] as $parent_hash) {
     display_node_hierarchy_reverse($parent_hash, $current_depth + 1);
   }
