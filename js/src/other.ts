@@ -13,7 +13,7 @@ export function buildOtherPage(page: PageConfig, defs: Definitions): Seal | unde
     ]) base.headings.push({ ...baseHeading('rank:' + key, name!, description), metric: 'guardianRank', metricKey: key, skip: true, group: 'Guardian Ranks' });
   } else if (page.kind === 'commendations') {
     if (!defs.commendationNodes || !Object.keys(defs.commendationNodes).length) return { ...base, unavailable: 'Commendation definitions are unavailable.' };
-    base.description = 'Commendations are activity-specific cards given to fellow guardians. Total score includes retained score from past seasons; the other columns show the current season.';
+    base.description = 'Commendations are activity-specific cards given to fellow guardians. Total score includes retained score from past seasons. Category scores are shown separately from the current season’s individual cards and given/received counts.';
     const metric = (key: string, name: string, description: string, group: string, color?: string) => ({ ...baseHeading('commendation:' + key, name, description), metric: 'commendation' as const, metricKey: key, skip: true, group, color });
     base.headings.push(metric('total', 'Total score', 'Total commendation score across seasons, including retained score.', 'Score'), metric('given', 'Given', 'Commendations given this season.', 'Current details'), metric('received', 'Received', 'Commendations received this season.', 'Current details'));
     const root = defs.commendationNodes['1062358355'];
@@ -21,7 +21,7 @@ export function buildOtherPage(page: PageConfig, defs: Definitions): Seal | unde
       const node = defs.commendationNodes[String(hash)];
       if (!node) continue;
       const color = node.color ? `rgb(${node.color.red} ${node.color.green} ${node.color.blue})` : undefined;
-      base.headings.push(metric('node:' + hash, node.displayProperties.name, node.displayProperties.description ?? '', node.displayProperties.name, color));
+      base.headings.push(metric('node:' + hash, node.displayProperties.name, [node.displayProperties.description, 'Aggregate category score, rather than an individual card count.'].filter(Boolean).join('\n'), node.displayProperties.name, color));
       const hashes = new Set([...(node.childCommendationHashes ?? []).map(String), ...Object.values(defs.commendations ?? {}).filter(c => c.parentCommendationNodeHash === hash).map(c => String(c.hash))]);
       for (const cardHash of hashes) {
         const card = defs.commendations?.[cardHash];

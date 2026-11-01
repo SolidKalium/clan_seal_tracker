@@ -143,3 +143,31 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 .heading-owner-icon.heading-badge-icon{width:auto;margin-right:6px}
 
 .cell-metric .cell-button{font-variant-numeric:tabular-nums;color:var(--ink);font-size:13px}
+
+/* Carry each commendation category's API color through its whole section. */
+.table-scroll .category-header-row th.commendation-section:not(.player-column):not(.progress-column),
+.table-scroll .record-header-row th.commendation-section.commendation-total{
+  background:color-mix(in srgb,var(--commendation-color) 32%,white);
+  color:color-mix(in srgb,var(--commendation-color) 55%,#17221e);
+  border-color:color-mix(in srgb,var(--commendation-color) 38%,white);
+}
+.table-scroll .record-header-row th.commendation-section{
+  background:color-mix(in srgb,var(--commendation-color) 23%,white);
+  color:color-mix(in srgb,var(--commendation-color) 45%,#17221e);
+  border-color:color-mix(in srgb,var(--commendation-color) 30%,white);
+}
+.table-scroll tbody td.commendation-section{
+  background:color-mix(in srgb,var(--commendation-color) 12%,white);
+  border-color:color-mix(in srgb,var(--commendation-color) 23%,white);
+}
+.commendation-section.cell-metric .cell-button{color:color-mix(in srgb,var(--commendation-color) 40%,#17221e)}
+.commendation-section.cell-missing .cell-button{color:#8b9786}
+tbody tr:hover>td.commendation-section,tbody tr:focus-within>td.commendation-section{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--commendation-color) 9%,transparent)}
+.commendation-section .cell-button:hover{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--commendation-color) 50%,white)}
+
+/* Category scores stand apart from the current-season card counts. */
+.table-scroll tbody td.commendation-total{
+  background:color-mix(in srgb,var(--commendation-color) 20%,white);
+  border-right-color:color-mix(in srgb,var(--commendation-color) 38%,white);
+}
+.commendation-total .cell-button{font-weight:600}

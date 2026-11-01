@@ -1405,7 +1405,7 @@ test('Other groups individual ranks, commendations, and chronological checklist 
   await page.getByRole('link', { name: 'Commendations', exact: true }).click();
   await expect(page.locator('.summary-cell')).toHaveCount(0);
   const ally = page.locator('.category-header-row th').filter({ hasText: 'Ally' });
-  await expect(ally).toHaveCSS('color', 'rgb(54, 163, 137)');
+  expect(await ally.evaluate(el => (el as HTMLElement).style.getPropertyValue('--commendation-color'))).toBe('rgb(54 163 137)');
   await page.getByRole('button', { name: 'Ada: Selfless: Selfless: 0', exact: true }).hover();
   await expect(page.getByRole('tooltip')).toContainText('Activities: Raids');
   await expect(page.getByRole('tooltip')).not.toContainText('Excluded');
