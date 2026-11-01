@@ -35,13 +35,15 @@ export function compile(settings, pages) {
     ids.add(p.id);
     if (p.otherNodeHashes !== undefined && !Array.isArray(p.otherNodeHashes)) throw new Error(`Invalid extra nodes for ${p.id}`);
     // Explicit allowlist: never send historical user overrides or private settings.
-    if (p.category !== undefined && !['Raid seals', 'Activities', 'Expansions', 'Seasons & Episodes', 'Destinations', 'Events', 'Dungeons', 'Exotic missions'].includes(p.category)) throw new Error(`Invalid page category ${p.id}`);
+    if (p.category !== undefined && !['Raid seals', 'Activities', 'Expansions', 'Seasons & Episodes', 'Destinations', 'Events', 'Dungeons', 'Exotic missions', 'Other'].includes(p.category)) throw new Error(`Invalid page category ${p.id}`);
+    if (p.kind !== undefined && (!['ranks', 'commendations'].includes(p.kind) || p.category !== 'Other')) throw new Error(`Invalid Other view ${p.id}`);
+    if (p.guardianRank !== undefined && (p.category !== 'Other' || !Number.isInteger(p.guardianRank) || p.guardianRank < 1 || p.guardianRank > 11)) throw new Error(`Invalid Guardian Rank ${p.id}`);
     if (p.seasonNumber !== undefined && (!Number.isInteger(p.seasonNumber) || p.seasonNumber < 1)) throw new Error(`Invalid season number ${p.id}`);
-    if (p.sealNodeHash === undefined && !['Destinations', 'Events', 'Dungeons', 'Exotic missions', 'Activities', 'Raid seals'].includes(p.category)) throw new Error(`Missing seal hash ${p.id}`);
+    if (p.sealNodeHash === undefined && !['Destinations', 'Events', 'Dungeons', 'Exotic missions', 'Other', 'Activities', 'Raid seals'].includes(p.category)) throw new Error(`Missing seal hash ${p.id}`);
     if (p.unavailableReason !== undefined && (typeof p.unavailableReason !== 'string' || !p.unavailableReason.trim())) throw new Error(`Invalid unavailable reason ${p.id}`);
     if (p.tabLabel !== undefined && (typeof p.tabLabel !== 'string' || !p.tabLabel.trim())) throw new Error(`Invalid tab label ${p.id}`);
     if (p.parentPageId !== undefined && (!pages.some(parent => parent.id === p.parentPageId && parent.category === p.category && !parent.parentPageId) || typeof p.tabLabel !== 'string' || !p.tabLabel.trim())) throw new Error(`Invalid page tab ${p.id}`);
-    return { parentPageId: p.parentPageId, tabLabel: p.tabLabel, id: p.id, name: p.name, category: p.category ?? 'Raid seals', seasonNumber: p.seasonNumber, unavailableReason: p.unavailableReason,
+    return { kind: p.kind, guardianRank: p.guardianRank, checklistHash: p.checklistHash === undefined ? undefined : hash(p.checklistHash, p.id), parentPageId: p.parentPageId, tabLabel: p.tabLabel, id: p.id, name: p.name, category: p.category ?? 'Raid seals', seasonNumber: p.seasonNumber, unavailableReason: p.unavailableReason,
       sealNodeHash: p.sealNodeHash === undefined ? undefined : hash(p.sealNodeHash, p.id), badgeNodeHash: p.badgeNodeHash === undefined ? undefined : hash(p.badgeNodeHash, p.id),
       otherNodeHashes: (p.otherNodeHashes ?? []).map(h => hash(h, p.id)),
       collectibles: rules(p.collectibles, 'collectible'), records: rules(p.records, 'record') };

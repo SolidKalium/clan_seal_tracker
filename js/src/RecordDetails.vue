@@ -21,7 +21,7 @@ const description = computed(() => {
     <p v-if="player" class="eyebrow">{{ player }}</p>
     <h3>{{ heading.name }}</h3>
     <p v-if="heading.gilding" class="record-scoring">Gilding requirement.</p>
-    <p v-if="heading.skip" class="record-scoring">Excluded from this table's completion column.</p>
+    <p v-if="heading.skip && (!heading.metric || heading.metric === 'gildingCount')" class="record-scoring">Excluded from this table's completion column.</p>
     <p v-if="heading.group?.startsWith('Armor · ')" class="item-type">{{ heading.armorSetName }}</p>
     <p v-if="heading.itemType" class="item-type">{{ heading.itemType }}</p>
     <ul v-if="heading.perks?.length" class="item-perks"><li v-for="(perk, i) in heading.perks" :key="i"><strong>{{ perk.name }}</strong><p v-if="perk.description">{{ perk.description }}</p></li></ul>
@@ -44,7 +44,7 @@ const description = computed(() => {
           <tr class="armor-set-status"><th scope="row">Set Collected</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.setComplete ? 'Set collected' : variant.setMissing ? 'No data' : 'Set not fully collected'"><ClassIcon v-if="variant.setComplete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.setMissing">—</span></td></tr>
         </tbody>
       </table>
-      <p v-else-if="heading.collectibleHashes" class="objective-state">{{ cell.missing ? 'No collection data available' : cell.complete ? 'Collected' : 'Acquire' }}</p>
+      <p v-else-if="heading.collectibleHashes || heading.checklist" class="objective-state">{{ cell.missing ? 'No collection data available' : cell.complete ? 'Collected' : 'Acquire' }}</p>
       <p v-else-if="cell.missing" class="record-empty">No record data available.</p>
       <p v-else-if="heading.badgeRequirement" class="objective-state">Objective: Acquire badge<span class="badge-acquisition"> · {{ cell.complete ? 'Acquired' : 'Not acquired' }}</span></p>
       <ul v-else-if="cell.objectives.length" class="objective-details">
@@ -55,9 +55,9 @@ const description = computed(() => {
         </li>
       </ul>
 
-      <p v-if="!heading.metric && !cell.objectives.length && !cell.missing" class="objective-state">{{ cell.complete ? 'Complete' : 'Incomplete' }}</p>
+      <p v-if="!heading.metric && !heading.checklist && !cell.objectives.length && !cell.missing" class="objective-state">{{ cell.complete ? 'Complete' : 'Incomplete' }}</p>
     </template>
-    <p v-else-if="heading.collectibleHashes" class="objective-state">Objective: Acquire</p>
+    <p v-else-if="heading.collectibleHashes || heading.checklist" class="objective-state">Objective: Acquire</p>
     <ul v-else-if="!heading.metric" class="objective-details">
       <li v-for="(objective, stage) in headerObjectives" :key="objective.hash" :class="{ 'objective-active': activeObjectiveHash === String(objective.hash) }">
         <span v-if="!hideObjectiveLabel(objective.progressDescription || objective.displayProperties?.description || 'Progress', headerObjectives.length)" class="objective-name"><span v-if="heading.objectives.length > 1" class="stage-number">{{ stage + 1 }}</span>{{ objective.progressDescription || objective.displayProperties?.description || 'Progress' }}</span><span class="objective-count"><span class="objective-target">Objective: </span>{{ objectiveGoal(heading, objective) }}</span>

@@ -88,3 +88,20 @@ it('upgrades an old roster cache and retains its emblem when banner lookup fails
   await repo.roster(noop);
   expect(t.api).toHaveBeenCalledTimes(calls);
 });
+
+it('upgrades a complete pre-Other cache at the same manifest version and rejects partial new tables atomically', async () => {
+  const old = { ...snapshot, collectibles: { '1': { hash: 1, scope: 0, displayProperties: { name: 'Item' } } }, items: { '1': { displayProperties: { name: 'Item' } } }, perks: { '1': { displayProperties: { name: 'Perk' } } } };
+  await store.put({ key: 'definitions:en', value: old, fetchedAt: Date.now() });
+  const paths = Object.fromEntries(['DestinyPresentationNodeDefinition', 'DestinyRecordDefinition', 'DestinyObjectiveDefinition', 'DestinyCollectibleDefinition', 'DestinyInventoryItemLiteDefinition', 'DestinySandboxPerkDefinition', 'DestinyGuardianRankDefinition', 'DestinyChecklistDefinition', 'DestinySocialCommendationDefinition', 'DestinySocialCommendationNodeDefinition'].map((p, i) => [p, String(i)]));
+  const tables = [old.nodes, old.records, old.objectives, old.collectibles, old.items, old.perks, { '1': { hash: 1, rankNumber: 1, presentationNodeHash: 1, displayProperties: { name: 'New Light' } } }, { '1': { hash: 1, scope: 0, displayProperties: { name: 'Chest' }, entries: [] } }, { '1': { hash: 1, displayProperties: { name: 'Card' } } }, { '1': { hash: 1, displayProperties: { name: 'Ally' } } }];
+  const t: Transport = { api: vi.fn().mockResolvedValue({ version: 'old', jsonWorldComponentContentPaths: { en: paths } }), resource: vi.fn().mockImplementation(async path => tables[Number(path)]) };
+  const repo = new TrackerRepository(store, t, '1');
+  expect((await repo.definitions(noop)).entry?.value).toMatchObject({ otherDefinitionsVersion: 1, guardianRanks: tables[6], checklists: tables[7], commendations: tables[8], commendationNodes: tables[9] });
+  expect(t.resource).toHaveBeenCalledTimes(10);
+  await repo.definitions(noop);
+  expect(t.resource).toHaveBeenCalledTimes(10);
+  vi.mocked(t.api).mockResolvedValue({ version: 'new', jsonWorldComponentContentPaths: { en: paths } });
+  tables[7] = {};
+  expect((await repo.definitions(noop, true)).status).toBe('stale');
+  expect((await store.get<Definitions>('definitions:en'))?.value).toMatchObject({ version: 'old', checklists: { '1': { hash: 1 } } });
+});

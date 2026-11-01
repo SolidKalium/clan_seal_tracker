@@ -106,3 +106,17 @@ it('includes dungeon seals, newer collections, and exotic mission levels with th
     expect(compile({ secret_key: 'key', group_id: 1 }, [{ id: 'test', name: 'Test', category, otherNodeHashes: [1], records: {} }]).catalog[0].sealNodeHash).toBeUndefined();
   }
 });
+
+it('groups ranks and chronological checklists into just two Other pages', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const other = catalog.filter(p => p.category === 'Other');
+  expect(other.filter(p => !p.parentPageId).map(p => p.id)).toEqual(['guardian_ranks', 'checklists']);
+  expect(other.filter(p => p.guardianRank).map(p => p.guardianRank)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  expect(other.find(p => p.kind === 'commendations').parentPageId).toBe('guardian_ranks');
+  const checklists = other.filter(p => p.checklistHash);
+  expect(checklists).toHaveLength(22);
+  expect(checklists[0].tabLabel).toBe('Region Chests');
+  expect(checklists.findIndex(p => p.tabLabel === 'Lucent Moths')).toBeLessThan(checklists.findIndex(p => p.tabLabel === 'Apogee Repeaters'));
+  expect(checklists.at(-1).tabLabel).toBe('Renegades Tapes');
+});

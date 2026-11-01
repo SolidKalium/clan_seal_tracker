@@ -1,3 +1,4 @@
+import { buildOtherPage, otherCell } from './other';
 import { sealRequirements } from './completion';
 import { resolveSealStrings, type StringVariables } from './stringVariables';
 import { sealMembershipIndex } from './sealMembership';
@@ -26,20 +27,24 @@ export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 
   return resolveSealStrings(buildSealTemplate(page, defs, mode), variables);
 }
 export function buildSealTemplate(page: PageConfig, defs: Definitions, mode: PageMode = 'seal'): Seal {
+  const other = buildOtherPage(page, defs);
+  if (other) return other;
+  const rank = page.guardianRank !== undefined ? Object.values(defs.guardianRanks ?? {}).find(r => r.rankNumber === page.guardianRank) : undefined;
+  if (page.guardianRank !== undefined && !rank) return { page, title: page.name, description: '', completionHash: '', headings: [], unavailable: 'Guardian Rank definitions are unavailable.' };
   const node = defs.nodes[page.sealNodeHash ?? ''];
   const completion = node && defs.records[String(node.completionRecordHash)];
   const legacyTriumphs = !page.sealNodeHash ? new Set(presentationTree(defs, ['3215903653']).map(n => String(n.hash))) : undefined;
   const explicitRecords = Object.keys(page.records);
   const legacyRecords = !page.sealNodeHash && !page.otherNodeHashes?.length && explicitRecords.length
     ? new Set([...presentationTree(defs, ['3215903653', '1881970629'])].flatMap(n => (n.children.records ?? []).map(r => String(r.recordHash)))) : undefined;
-  const base: Seal = { page, requirements: sealRequirements(node, defs), legacy: page.sealNodeHash ? presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash) : page.otherNodeHashes?.length ? page.otherNodeHashes.every(hash => legacyTriumphs!.has(hash)) : !!legacyRecords && explicitRecords.every(hash => legacyRecords.has(hash)), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
+  const base: Seal = { page, requirements: sealRequirements(node, defs), legacy: page.sealNodeHash ? presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash) : page.otherNodeHashes?.length ? page.otherNodeHashes.every(hash => legacyTriumphs!.has(hash)) : !!legacyRecords && explicitRecords.every(hash => legacyRecords.has(hash)), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: rank?.displayProperties.description || node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
   if (page.unavailableReason) return { ...base, unavailable: page.unavailableReason };
   if (page.sealNodeHash && !node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
   if (mode === 'badge') return buildBadge(page, defs, base);
   const full = !page.sealNodeHash || mode === 'raid' || mode === 'triumphs';
   let nextOrder = 100;
   const hashes = new Set((node?.children.records ?? []).map(r => String(r.recordHash)));
-  const extraNodes = presentationTree(defs, page.otherNodeHashes ?? []);
+  const extraNodes = presentationTree(defs, rank ? [String(rank.presentationNodeHash)] : page.otherNodeHashes ?? []);
   // Historical day-one achievements stay visible in either triumph view, never scored.
   for (const extra of extraNodes) for (const r of extra.children.records ?? []) if (isDayOne(defs.records[String(r.recordHash)])) hashes.add(String(r.recordHash));
   if (full) {
@@ -62,7 +67,7 @@ export function buildSealTemplate(page: PageConfig, defs: Definitions, mode: Pag
     const dayOne = isDayOne(record);
     const badgeDisplay = defs.nodes[page.badgeNodeHash ?? '']?.displayProperties;
     const badgeRequirement = !!badgeDisplay && record.displayProperties.name === badgeDisplay.name && (description === (badgeDisplay.description ?? '') || /associated badge on the Collections screen/i.test(description));
-    base.headings.push({ seals: sealMembershipIndex(defs).get(id), badgeRequirement, group: record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? (/Epic raid/i.test(description) ? 'Day one · Epic' : 'Day one') : rule?.column_name ?? record.displayProperties.name,
+    base.headings.push({ seals: sealMembershipIndex(defs).get(id), badgeRequirement, group: rank ? extraNodes.find(n => n.children.records?.some(r => String(r.recordHash) === id))?.displayProperties.name ?? 'Requirements' : record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? (/Epic raid/i.test(description) ? 'Day one · Epic' : 'Day one') : rule?.column_name ?? record.displayProperties.name,
       description: record.displayProperties.description ?? '', scope: record.scope, gilding: !!record.forTitleGilding,
       skip: dayOne || !!rule?.skip_for_completion, order: dayOne ? -100 : elementIndex >= 0 ? 4 + elementIndex / 10 : sameClass ? 4.6 : rule?.order ?? nextOrder++,
       objectives: objectiveHashes.map(h => defs.objectives[String(h)]!), intervals: intervalHashes.map(h => defs.objectives[String(h)]!),
@@ -240,6 +245,8 @@ export function bestBadgeClass(profile: Profile | undefined, headings: Heading[]
   return scores.indexOf(Math.max(...scores));
 }
 export function headingCell(profile: Profile | undefined, heading: Heading, classIndex = 0, badgeHeadings: Heading[] = [heading], classSelection: 'best' | 'selected' = 'selected'): Cell {
+  const other = otherCell(profile, heading, badgeHeadings);
+  if (other) return other;
   if (!heading.collectibleHashes) return recordCell(profile ? selectRecord(profile, heading) : undefined, heading);
   const index = Math.min(classIndex, heading.collectibleHashes.length - 1);
   const state = profile ? collectibleState(profile, heading.collectibleHashes[index]!) : undefined;

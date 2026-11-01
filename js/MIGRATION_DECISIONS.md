@@ -289,6 +289,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Option to show progress without gilding. Could also allow a "full completion" mode that includes day 1 or any other excluded entries.
 - [ ] Improve gilding requirement column header styling
 - [ ] Show score, rewards, or other details on triumph heading tooltips. Could show preview of armor or weapons.
+- [ ] Double check for any signs of season-by-season guardian rank history. Game might only show immediate past season to the player themself. Or it could be a feature only for a logged-in player.
 
 ## Known quirks
 
@@ -591,3 +592,13 @@ Player-supplied variables are exclusively for that player's cells, tooltips, acc
 ## Badge artwork beside ownership counts — 2026-11-01
 
 Show the badge node's image beside the badge-owner count on Badge views, superseding the earlier decision to omit badge artwork there. Share the seal image's responsive size and close spacing, using contain sizing to preserve rectangular badge proportions. Keep the seal-specific downward optical adjustment separate. This change is to the badge-page heading, not overview tile artwork.
+
+### Other: Guardian ranks, commendations, and checklists
+
+- Other contains two pages: Guardian ranks and Checklists. Individual requirements/checklists use the existing flat tab navigation rather than separate sidebar entries.
+- Guardian ranks has a summary of current, renewed, and lifetime-highest rank; separate tabs for ranks 2–11; and a Commendations tab. Rank 1 has no requirements, and there is no combined early-ranks view. Requirement nodes come from `DestinyGuardianRankDefinition`, rather than PHP's older record lists.
+- The current [Bungie API schema](https://github.com/Bungie-net/api) and a public profile expose those three rank values, but no season-by-season rank history. We therefore do not construct a history table. Recording our own snapshots would be a separate future feature; those would not reconstruct earlier seasons. Rank descriptions avoid promising the old seasonal reset rules, which have changed since the original schema descriptions were written.
+- Commendations are separate from ranks, with no completion goal or percentage. Category names and colors come from the manifest: Ally (green), Mastery (orange), Fun (pink), and Leadership (blue). Category scores, individual cards, and available category percentages are shown, with card activities in tooltips. Total score includes retained score from earlier seasons; the other columns describe the current breakdown. Zero is a valid numeric value; absent fields remain unavailable.
+- Checklists include all 22 definitions currently exposed by the API. Tabs run oldest to newest, with the multi-era Region Chests and Lost Sectors first, followed by Forsaken through Renegades. Within a release, related checklists stay together. This intentionally moves Neomuna after the older content.
+- Account checklist booleans come from component 104. Character checklists come from component 202 and select the most complete whole character checklist, without combining entries across characters. Missing entries remain unavailable rather than becoming uncollected. Commendations use component 1400.
+- Existing cached profiles and definitions are upgraded automatically to fetch these additional components/tables. Definition snapshots remain atomic; a failed new-table download retains the last usable snapshot.

@@ -141,3 +141,5 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 
 /* Let rectangular badge artwork fill the icon height instead of a square box. */
 .heading-owner-icon.heading-badge-icon{width:auto;margin-right:6px}
+
+.cell-metric .cell-button{font-variant-numeric:tabular-nums;color:var(--ink);font-size:13px}

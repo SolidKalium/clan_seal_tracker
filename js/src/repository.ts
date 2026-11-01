@@ -21,28 +21,38 @@ export class TrackerRepository {
       const key = `definitions:${this.language}`;
       const cached = await this.store.get<Definitions>(key);
       if (cached) onCached({ entry: cached, status: fresh(cached, 5 * MINUTE) ? 'cached' : 'stale' });
-      if (!force && cached?.value.collectibles && cached.value.items && cached.value.perks && fresh(cached, 5 * MINUTE)) return { entry: cached, status: 'cached' };
+      if (!force && cached?.value.collectibles && cached.value.items && cached.value.perks && cached.value.otherDefinitionsVersion === 1 && fresh(cached, 5 * MINUTE)) return { entry: cached, status: 'cached' };
       try {
         const manifest = await this.transport.api<Manifest>('/Destiny2/Manifest/');
         if (typeof manifest.version !== 'string') throw new Error('Manifest version is missing.');
         let value = cached?.value;
-        if (!value || value.version !== manifest.version || !value.collectibles || !value.items || !value.perks) {
+        if (!value || value.version !== manifest.version || !value.collectibles || !value.items || !value.perks || value.otherDefinitionsVersion !== 1) {
           const paths = manifest.jsonWorldComponentContentPaths[this.language];
           if (!paths) throw new Error('Manifest language is unavailable.');
-          const [nodes, records, objectives, collectibles, items, perks] = await Promise.all([
+          const optionalTable = async <K extends 'guardianRanks' | 'checklists' | 'commendations' | 'commendationNodes'>(key: K, path: string | undefined): Promise<NonNullable<Definitions[K]>> => {
+            if (!path) return {};
+            const table = await this.transport.resource<NonNullable<Definitions[K]>>(path);
+            if (!table || typeof table !== 'object' || Array.isArray(table) || !Object.keys(table).length) throw new Error(`${key} definition download was incomplete.`);
+            return table;
+          };
+          const [nodes, records, objectives, collectibles, items, perks, guardianRanks, checklists, commendations, commendationNodes] = await Promise.all([
             this.transport.resource<Definitions['nodes']>(paths.DestinyPresentationNodeDefinition!),
             this.transport.resource<Definitions['records']>(paths.DestinyRecordDefinition!),
             this.transport.resource<Definitions['objectives']>(paths.DestinyObjectiveDefinition!),
             this.transport.resource<NonNullable<Definitions['collectibles']>>(paths.DestinyCollectibleDefinition!),
             this.transport.resource<NonNullable<Definitions['items']>>(paths.DestinyInventoryItemLiteDefinition!),
             this.transport.resource<NonNullable<Definitions['perks']>>(paths.DestinySandboxPerkDefinition!),
+            optionalTable('guardianRanks', paths.DestinyGuardianRankDefinition),
+            optionalTable('checklists', paths.DestinyChecklistDefinition),
+            optionalTable('commendations', paths.DestinySocialCommendationDefinition),
+            optionalTable('commendationNodes', paths.DestinySocialCommendationNodeDefinition),
           ]);
           if (![nodes, records, objectives, collectibles, items, perks].every(table => table && typeof table === 'object' && !Array.isArray(table) && Object.keys(table).length)) throw new Error('Definition download was incomplete.');
           // Retain just the item fields used by collection details, not inventory/equipping payloads.
           const compactItems = Object.fromEntries(Object.entries(items).map(([hash, item]) => [hash, {
             displayProperties: item.displayProperties, itemTypeDisplayName: item.itemTypeDisplayName, itemType: item.itemType, perks: item.perks,
           }]));
-          value = { version: manifest.version, language: this.language, nodes, records, objectives, collectibles, items: compactItems, perks };
+          value = { version: manifest.version, language: this.language, nodes, records, objectives, collectibles, items: compactItems, perks, guardianRanks, checklists, commendations, commendationNodes, otherDefinitionsVersion: 1 };
         }
         // One complete snapshot, one atomic IndexedDB put. Never expose half a manifest.
         const entry: Cached<Definitions> = { key, value, fetchedAt: Date.now(), lastAttemptAt: Date.now() };

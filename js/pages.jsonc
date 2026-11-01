@@ -2111,5 +2111,309 @@
     "records": {
       "3891840283": {}
     }
+  },
+  {
+    "id": "guardian_ranks",
+    "name": "Guardian ranks",
+    "category": "Other",
+    "kind": "ranks",
+    "tabLabel": "Ranks",
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_2",
+    "name": "Explorer",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "2 · Explorer",
+    "guardianRank": 2,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_3",
+    "name": "Initiate",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "3 · Initiate",
+    "guardianRank": 3,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_4",
+    "name": "Scout",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "4 · Scout",
+    "guardianRank": 4,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_5",
+    "name": "Adventurer",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "5 · Adventurer",
+    "guardianRank": 5,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_6",
+    "name": "Veteran",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "6 · Veteran",
+    "guardianRank": 6,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_7",
+    "name": "Elite",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "7 · Elite",
+    "guardianRank": 7,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_8",
+    "name": "Justiciar",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "8 · Justiciar",
+    "guardianRank": 8,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_9",
+    "name": "Vanquisher",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "9 · Vanquisher",
+    "guardianRank": 9,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_10",
+    "name": "Exemplar",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "10 · Exemplar",
+    "guardianRank": 10,
+    "records": {}
+  },
+  {
+    "id": "guardian_rank_11",
+    "name": "Paragon",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "11 · Paragon",
+    "guardianRank": 11,
+    "records": {}
+  },
+  {
+    "id": "commendations",
+    "name": "Commendations",
+    "category": "Other",
+    "parentPageId": "guardian_ranks",
+    "tabLabel": "Commendations",
+    "kind": "commendations",
+    "records": {}
+  },
+  {
+    "id": "checklists",
+    "name": "Checklists",
+    "category": "Other",
+    "tabLabel": "Region Chests",
+    "checklistHash": "1697465175",
+    "records": {}
+  },
+  {
+    "id": "checklist_3142056444",
+    "name": "Lost Sectors",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Lost Sectors",
+    "checklistHash": "3142056444",
+    "records": {}
+  },
+  {
+    "id": "checklist_2609997025",
+    "name": "Corrupted Eggs",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Corrupted Eggs",
+    "checklistHash": "2609997025",
+    "records": {}
+  },
+  {
+    "id": "checklist_1297424116",
+    "name": "Ahamkara Bones",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Ahamkara Bones",
+    "checklistHash": "1297424116",
+    "records": {}
+  },
+  {
+    "id": "checklist_2726513366",
+    "name": "Cat Statues",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Cat Statues",
+    "checklistHash": "2726513366",
+    "records": {}
+  },
+  {
+    "id": "checklist_1856270404",
+    "name": "Dead Ghosts - Moon",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Dead Ghosts - Moon",
+    "checklistHash": "1856270404",
+    "records": {}
+  },
+  {
+    "id": "checklist_1912364094",
+    "name": "Jade Rabbits",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Jade Rabbits",
+    "checklistHash": "1912364094",
+    "records": {}
+  },
+  {
+    "id": "checklist_817948795",
+    "name": "Penguin Souvenirs",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Penguin Souvenirs",
+    "checklistHash": "817948795",
+    "records": {}
+  },
+  {
+    "id": "checklist_1885088224",
+    "name": "Entropic Shards",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Entropic Shards",
+    "checklistHash": "1885088224",
+    "records": {}
+  },
+  {
+    "id": "checklist_2568476210",
+    "name": "Dead Exos",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Dead Exos",
+    "checklistHash": "2568476210",
+    "records": {}
+  },
+  {
+    "id": "checklist_3595926713",
+    "name": "Eternity Ancient Skulls",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Eternity Ancient Skulls",
+    "checklistHash": "3595926713",
+    "records": {}
+  },
+  {
+    "id": "checklist_3373333905",
+    "name": "Lucent Moths",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Lucent Moths",
+    "checklistHash": "3373333905",
+    "records": {}
+  },
+  {
+    "id": "checklist_3089927156",
+    "name": "Darkness Rifts",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Darkness Rifts",
+    "checklistHash": "3089927156",
+    "records": {}
+  },
+  {
+    "id": "checklist_703136805",
+    "name": "Apogee Repeaters",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Apogee Repeaters",
+    "checklistHash": "703136805",
+    "records": {}
+  },
+  {
+    "id": "checklist_1793940260",
+    "name": "Nimbus Action Figures",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Nimbus Action Figures",
+    "checklistHash": "1793940260",
+    "records": {}
+  },
+  {
+    "id": "checklist_626486626",
+    "name": "Feathers of Light",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Feathers of Light",
+    "checklistHash": "626486626",
+    "records": {}
+  },
+  {
+    "id": "checklist_2844537300",
+    "name": "Lost Encryption Bits",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Lost Encryption Bits",
+    "checklistHash": "2844537300",
+    "records": {}
+  },
+  {
+    "id": "checklist_3048564473",
+    "name": "Visions of the Traveler",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Visions of the Traveler",
+    "checklistHash": "3048564473",
+    "records": {}
+  },
+  {
+    "id": "checklist_1062690000",
+    "name": "Kepler Ability Chests",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Kepler Ability Chests",
+    "checklistHash": "1062690000",
+    "records": {}
+  },
+  {
+    "id": "checklist_2526495740",
+    "name": "Kepler Urns",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Kepler Urns",
+    "checklistHash": "2526495740",
+    "records": {}
+  },
+  {
+    "id": "checklist_3430812784",
+    "name": "Paracausal Geometries",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Paracausal Geometries",
+    "checklistHash": "3430812784",
+    "records": {}
+  },
+  {
+    "id": "checklist_853997642",
+    "name": "Renegades Tapes",
+    "category": "Other",
+    "parentPageId": "checklists",
+    "tabLabel": "Renegades Tapes",
+    "checklistHash": "853997642",
+    "records": {}
   }
 ]

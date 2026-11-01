@@ -29,7 +29,7 @@ export function completionCounts(headings: Heading[], cells: Cell[]): Completion
   headings.forEach((heading, i) => {
     if (heading.skip || heading.metric) return;
     const cell = cells[i];
-    const count = heading.collectibleHashes ? counts.collections : counts.triumphs;
+    const count = (heading.collectibleHashes || heading.checklist) ? counts.collections : counts.triumphs;
     count.total++;
     if (!cell || cell.missing) count.missing++;
     else if (cell.complete) count.complete++;

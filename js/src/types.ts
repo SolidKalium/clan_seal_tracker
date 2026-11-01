@@ -1,3 +1,8 @@
+export interface Color { red: number; green: number; blue: number; alpha: number }
+export interface GuardianRankDefinition { hash: number; rankNumber: number; presentationNodeHash: number; displayProperties: Display }
+export interface ChecklistDefinition { hash: number; scope: number; displayProperties: Display; entries: { hash: number; scope: number; displayProperties: Display }[] }
+export interface CommendationDefinition { hash: number; displayProperties: Display; parentCommendationNodeHash?: number; childCommendationHashes?: number[]; childCommendationNodeHashes?: number[]; color?: Color; displayActivities?: Display[]; displayPriority?: number }
+export interface Commendations { totalScore?: number; scoreDetailValues?: number[]; commendationNodeScoresByHash?: Record<string, number>; commendationNodePercentagesByHash?: Record<string, number>; commendationScoresByHash?: Record<string, number> }
 export interface Display { name: string; description?: string; icon?: string }
 export interface ObjectiveDefinition { hash: number; completionValue: number; progressDescription?: string; displayProperties?: Display }
 export interface RecordDefinition {
@@ -11,6 +16,7 @@ export interface NodeDefinition {
 }
 export interface Manifest { version: string; jsonWorldComponentContentPaths: Record<string, Record<string, string>> }
 export interface Definitions {
+  otherDefinitionsVersion?: number; guardianRanks?: Record<string, GuardianRankDefinition>; checklists?: Record<string, ChecklistDefinition>; commendations?: Record<string, CommendationDefinition>; commendationNodes?: Record<string, CommendationDefinition>;
   version: string; language: string;
   collectibles?: Record<string, { hash: number; displayProperties: Display; scope: number; sourceString?: string; itemHash?: number }>;
   items?: Record<string, { displayProperties: Display; itemTypeDisplayName?: string; itemType?: number; perks?: { perkHash: number }[] }>;
@@ -23,16 +29,19 @@ export interface UserInfo { membershipType: number; membershipId: string; displa
 export interface Member { joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
 export interface Roster { name: string; members: Member[]; emblem?: import('./clanBanner').ClanEmblemData; emblemChecked?: boolean }
 export interface Profile {
+  profileProgression?: { data?: { checklists?: Record<string, Record<string, boolean>> }; privacy?: number };
+  characterProgressions?: { data?: Record<string, { checklists?: Record<string, Record<string, boolean>> }>; privacy?: number };
+  profileCommendations?: { data?: Commendations; privacy?: number };
   profileStringVariables?: { data?: { integerValuesByHash?: Record<string, number> }; privacy?: number };
   characterStringVariables?: { data?: Record<string, { integerValuesByHash?: Record<string, number> }>; privacy?: number };
   profileCollectibles?: { data?: { collectibles: Record<string, { state: number }> }; privacy?: number };
   characterCollectibles?: { data?: Record<string, { collectibles: Record<string, { state: number }> }>; privacy?: number };
-  profile?: { data?: { userInfo: UserInfo; dateLastPlayed?: string }; privacy?: number };
+  profile?: { data?: { userInfo: UserInfo; dateLastPlayed?: string; currentGuardianRank?: number; renewedGuardianRank?: number; lifetimeHighestGuardianRank?: number }; privacy?: number };
   profileRecords?: { data?: { records: Record<string, RecordProgress> }; privacy?: number };
   characterRecords?: { data?: Record<string, { records: Record<string, RecordProgress> }>; privacy?: number };
 }
-export interface PageConfig { parentPageId?: string; tabLabel?: string; seasonNumber?: number; id: string; name: string; category: string; sealNodeHash?: string; unavailableReason?: string; badgeNodeHash?: string; otherNodeHashes?: string[]; collectibles?: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean } | undefined>; records: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean; order?: number } | undefined> }
-export interface Heading { seals?: import('./sealMembership').SealMembership[]; metric?: 'gildingCount'; armorSetKey?: string; armorSetName?: string; badgeRequirement?: boolean; group?: string; source?: string; itemType?: string; perks?: Display[]; collectibleHashes?: string[]; classNames?: string[]; classIcons?: (string | undefined)[]; hash: string; name: string; label: string; description: string; scope: number; gilding: boolean; skip: boolean; order: number; objectives: ObjectiveDefinition[]; intervals: ObjectiveDefinition[] }
+export interface PageConfig { kind?: 'ranks' | 'commendations'; guardianRank?: number; checklistHash?: string; parentPageId?: string; tabLabel?: string; seasonNumber?: number; id: string; name: string; category: string; sealNodeHash?: string; unavailableReason?: string; badgeNodeHash?: string; otherNodeHashes?: string[]; collectibles?: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean } | undefined>; records: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean; order?: number } | undefined> }
+export interface Heading { seals?: import('./sealMembership').SealMembership[]; metric?: 'gildingCount' | 'guardianRank' | 'commendation'; metricKey?: string; checklist?: { hash: string; entryHash: string }; color?: string; armorSetKey?: string; armorSetName?: string; badgeRequirement?: boolean; group?: string; source?: string; itemType?: string; perks?: Display[]; collectibleHashes?: string[]; classNames?: string[]; classIcons?: (string | undefined)[]; hash: string; name: string; label: string; description: string; scope: number; gilding: boolean; skip: boolean; order: number; objectives: ObjectiveDefinition[]; intervals: ObjectiveDefinition[] }
 export interface Seal { requirements?: import('./completion').SealRequirements; legacy?: boolean; page: PageConfig; title: string; description: string; icon?: string; completionHash: string; completionScope?: number; headings: Heading[]; unavailable?: string }
 export type DataStatus = 'fresh' | 'cached' | 'stale' | 'private' | 'unavailable';
 export interface Cached<T> { key: string; value: T; fetchedAt: number; components?: number[]; lastAttemptAt?: number; error?: string; private?: boolean }

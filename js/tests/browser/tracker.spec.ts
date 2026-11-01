@@ -8,7 +8,7 @@ const records = { '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male
 const objectives = { '103': { hash: 103, completionValue: 10, progressDescription: 'Final encounter' }, '101': { hash: 101, completionValue: 10, progressDescription: 'Encounters' }, '102': { hash: 102, completionValue: 1, progressDescription: 'Challenge' } };
 const members = ['Ada', 'Banshee', 'Crow'].map((name, i) => ({ destinyUserInfo: { membershipType: 3, membershipId: `461168601848564558${i}`, displayName: name, bungieGlobalDisplayName: name }, isOnline: false, lastOnlineStatusChange: '1', joinDate: ['2020-06-01T12:00:00Z', '2022-06-01T12:00:00Z', '2018-06-01T12:00:00Z'][i], memberType: [5, 3, 2][i] }));
 const envelope = (Response: unknown) => ({ ErrorCode: 1, ErrorStatus: 'Success', ThrottleSeconds: 0, Response });
-async function setup(page: Page, state: { offline: boolean; calls: number; originError?: boolean; delay?: number; profileGate?: Promise<void>; extended?: boolean }) {
+async function setup(page: Page, state: { offline: boolean; calls: number; originError?: boolean; delay?: number; profileGate?: Promise<void>; extended?: boolean; other?: boolean }) {
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://www.bungie.net/**', async route => {
     const path = new URL(route.request().url()).pathname;
@@ -17,7 +17,11 @@ async function setup(page: Page, state: { offline: boolean; calls: number; origi
     if (state.delay) await new Promise(resolve => setTimeout(resolve, state.delay));
     if (state.offline) return route.abort('failed');
     if (state.originError && path.includes('/Members/')) return route.fulfill({ status: 500, json: { ErrorCode: 2107, ErrorStatus: 'OriginHeaderDoesNotMatchKey' } });
-    if (path === '/Platform/Destiny2/Manifest/') return route.fulfill({ json: envelope({ version: 'test-manifest', jsonWorldComponentContentPaths: { en: { DestinyPresentationNodeDefinition: root + 'nodes.json', DestinyRecordDefinition: root + 'records.json', DestinyObjectiveDefinition: root + 'objectives.json', DestinyCollectibleDefinition: root + 'collectibles.json', DestinyInventoryItemLiteDefinition: root + 'items.json', DestinySandboxPerkDefinition: root + 'perks.json' } } }) });
+    if (path === '/Platform/Destiny2/Manifest/') return route.fulfill({ json: envelope({ version: 'test-manifest', jsonWorldComponentContentPaths: { en: { DestinyPresentationNodeDefinition: root + 'nodes.json', DestinyRecordDefinition: root + 'records.json', DestinyObjectiveDefinition: root + 'objectives.json', DestinyCollectibleDefinition: root + 'collectibles.json', DestinyInventoryItemLiteDefinition: root + 'items.json', DestinySandboxPerkDefinition: root + 'perks.json', ...(state.other ? { DestinyGuardianRankDefinition: root + 'ranks.json', DestinyChecklistDefinition: root + 'checklists.json', DestinySocialCommendationDefinition: root + 'commendations.json', DestinySocialCommendationNodeDefinition: root + 'commendation-nodes.json' } : {}) } } }) });
+    if (state.other && path === root + 'ranks.json') return route.fulfill({ json: { '1': { hash: 1, rankNumber: 2, presentationNodeHash: Number(nodeHash), displayProperties: { name: 'Explorer' } } } });
+    if (state.other && path === root + 'checklists.json') return route.fulfill({ json: { '1697465175': { hash: 1697465175, scope: 0, displayProperties: { name: 'Region Chests' }, entries: [1, 2].map(hash => ({ hash, scope: 0, displayProperties: { name: `Chest ${hash}` } })) } } });
+    if (state.other && path === root + 'commendation-nodes.json') return route.fulfill({ json: { '1062358355': { hash: 1062358355, childCommendationNodeHashes: [1] }, '1': { hash: 1, displayProperties: { name: 'Ally' }, color: { red: 54, green: 163, blue: 137 }, childCommendationHashes: [2] } } });
+    if (state.other && path === root + 'commendations.json') return route.fulfill({ json: { '2': { hash: 2, parentCommendationNodeHash: 1, displayProperties: { name: 'Selfless' }, displayActivities: [{ name: 'Raids' }] } } });
     if (path === root + 'nodes.json') return route.fulfill({ json: state.extended ? { ...nodes, '1525933460': { children: { records: [{ recordHash: 901 }, { recordHash: 902 }] } }, '1086048586': { displayProperties: { name: 'Badge', description: 'Raid collection' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } }, '4': { displayProperties: { name: 'Titan', icon: root + 'icons/test-titan.png' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 202 }] } }, '5': { displayProperties: { name: 'Hunter', icon: root + 'icons/test-hunter.png' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 203 }] } } } : nodes });
     if (path === root + 'records.json') return route.fulfill({ json: state.extended ? { ...records, '901': record(901, 'Woven Wish', { displayProperties: { name: 'Woven Wish', description: 'Complete with a fireteam made entirely of Strand subclasses.' } }), '902': record(902, 'Day one', { displayProperties: { name: 'Day one', description: 'Complete within the first 24 hours of release.' } }) } : records });
     if (path === root + 'items.json') return route.fulfill({ json: { '301': { displayProperties: { name: 'Raid weapon' }, itemType: 3, itemTypeDisplayName: 'Scout Rifle' }, '302': { displayProperties: { name: 'Armor' }, itemType: 2, itemTypeDisplayName: 'Helmet' } } });
@@ -35,7 +39,7 @@ async function setup(page: Page, state: { offline: boolean; calls: number; origi
       const member = members.find(m => path.includes(m.destinyUserInfo.membershipId))!;
       if (member.destinyUserInfo.displayName === 'Crow') return route.fulfill({ json: envelope({ profile: { privacy: 2 }, profileRecords: { privacy: 2 } }) });
       const complete = member.destinyUserInfo.displayName === 'Ada';
-      return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileCollectibles: { data: { collectibles: { '201': { state: complete ? 0 : 1 }, '202': { state: complete ? 0 : 1 }, '203': { state: 0 } } } }, profileRecords: { data: { records: { '99': { state: complete ? 1 : 4 }, '42': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 101, completionValue: 10, progress: complete ? 10 : 5, complete }, { objectiveHash: 103, completionValue: 10, progress: complete ? 10 : 5, complete }] }, '43': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 102, completionValue: 1, progress: complete ? 1 : 0, complete }] } } } } }) });
+      return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo, ...(state.other ? { currentGuardianRank: complete ? 11 : 5, renewedGuardianRank: complete ? 10 : 4, lifetimeHighestGuardianRank: 11 } : {}) } }, ...(state.other ? { profileProgression: { data: { checklists: { '1697465175': { '1': complete, '2': true } } } }, profileCommendations: { data: { totalScore: complete ? 500 : 100, scoreDetailValues: [0, 7], commendationNodeScoresByHash: { '1': 12 }, commendationNodePercentagesByHash: { '1': 25 }, commendationScoresByHash: { '2': 0 } } } } : {}), profileCollectibles: { data: { collectibles: { '201': { state: complete ? 0 : 1 }, '202': { state: complete ? 0 : 1 }, '203': { state: 0 } } } }, profileRecords: { data: { records: { '99': { state: complete ? 1 : 4 }, '42': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 101, completionValue: 10, progress: complete ? 10 : 5, complete }, { objectiveHash: 103, completionValue: 10, progress: complete ? 10 : 5, complete }] }, '43': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 102, completionValue: 1, progress: complete ? 1 : 0, complete }] } } } } }) });
     }
     throw new Error(`Unmocked API route: ${path}`);
   });
@@ -1378,4 +1382,43 @@ test('player triumph cells substitute values from the character supplying that p
   await page.reload(); await ready(page);
   await page.getByRole('button', { name: 'Banshee: Never De-Feated: 4 encounters completed with feats active: 3/5', exact: true }).hover();
   await expect(page.getByRole('tooltip')).toContainText('4 encounters completed with feats active');
+});
+
+
+test('Other groups individual ranks, commendations, and chronological checklist tabs with cached values', async ({ page }) => {
+  const state = { offline: false, calls: 0, other: true }; await setup(page, state);
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto(''); await ready(page);
+  const section = page.getByRole('region', { name: 'Other', exact: true });
+  await expect(section.locator('.seal-card')).toHaveCount(2);
+  await section.getByRole('link').filter({ hasText: 'Guardian ranks' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Guardian ranks');
+  await expect(page.locator('.view-description')).toContainText('does not expose a season-by-season');
+  await expect(page.locator('thead')).toContainText('Lifetime highest');
+  await expect(page.locator('.summary-cell')).toHaveCount(0);
+  await expect(page.locator('tbody tr').first()).toContainText('Ada');
+  await expect(page.getByRole('button', { name: 'Ada: Current: Current: 11', exact: true })).toHaveText('11');
+  await expect(page.getByRole('button', { name: 'Crow: Current: Rank unavailable.', exact: true })).toHaveText('—');
+  await page.getByRole('link', { name: '2 · Explorer', exact: true }).click();
+  await expect(page.locator('thead')).toContainText('First challenge');
+  await expect(page.locator('.summary-cell')).toHaveCount(3);
+  await page.getByRole('link', { name: 'Commendations', exact: true }).click();
+  await expect(page.locator('.summary-cell')).toHaveCount(0);
+  const ally = page.locator('.category-header-row th').filter({ hasText: 'Ally' });
+  await expect(ally).toHaveCSS('color', 'rgb(54, 163, 137)');
+  await page.getByRole('button', { name: 'Ada: Selfless: Selfless: 0', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Activities: Raids');
+  await expect(page.getByRole('tooltip')).not.toContainText('Excluded');
+  await page.goto('#/triumphs/checklists'); await ready(page);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Checklists');
+  await expect(page.locator('.page-modes a')).toHaveCount(22);
+  await expect(page.getByRole('button', { name: 'Banshee: Chest 1: not collected', exact: true })).toHaveText('·');
+  await expect(page.getByRole('button', { name: 'Ada: Chest 1: collected', exact: true })).toHaveText('✓');
+  const calls = state.calls;
+  await page.reload(); await ready(page);
+  expect(state.calls).toBe(calls);
+  state.offline = true;
+  await page.getByRole('button', { name: 'Refresh data', exact: true }).click(); await ready(page);
+  await expect(page.getByRole('button', { name: 'Ada: Chest 1: collected', exact: true })).toHaveText('✓');
+  expect(errors).toEqual([]);
 });
