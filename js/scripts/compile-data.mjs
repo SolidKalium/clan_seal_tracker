@@ -35,9 +35,9 @@ export function compile(settings, pages) {
     ids.add(p.id);
     if (p.otherNodeHashes !== undefined && !Array.isArray(p.otherNodeHashes)) throw new Error(`Invalid extra nodes for ${p.id}`);
     // Explicit allowlist: never send historical user overrides or private settings.
-    if (p.category !== undefined && !['Raid seals', 'Activities', 'Expansions', 'Seasons & Episodes', 'Destinations', 'Events'].includes(p.category)) throw new Error(`Invalid page category ${p.id}`);
+    if (p.category !== undefined && !['Raid seals', 'Activities', 'Expansions', 'Seasons & Episodes', 'Destinations', 'Events', 'Dungeons', 'Exotic missions'].includes(p.category)) throw new Error(`Invalid page category ${p.id}`);
     if (p.seasonNumber !== undefined && (!Number.isInteger(p.seasonNumber) || p.seasonNumber < 1)) throw new Error(`Invalid season number ${p.id}`);
-    if (p.sealNodeHash === undefined && !['Destinations', 'Events', 'Activities', 'Raid seals'].includes(p.category)) throw new Error(`Missing seal hash ${p.id}`);
+    if (p.sealNodeHash === undefined && !['Destinations', 'Events', 'Dungeons', 'Exotic missions', 'Activities', 'Raid seals'].includes(p.category)) throw new Error(`Missing seal hash ${p.id}`);
     if (p.unavailableReason !== undefined && (typeof p.unavailableReason !== 'string' || !p.unavailableReason.trim())) throw new Error(`Invalid unavailable reason ${p.id}`);
     if (p.tabLabel !== undefined && (typeof p.tabLabel !== 'string' || !p.tabLabel.trim())) throw new Error(`Invalid tab label ${p.id}`);
     if (p.parentPageId !== undefined && (!pages.some(parent => parent.id === p.parentPageId && parent.category === p.category && !parent.parentPageId) || typeof p.tabLabel !== 'string' || !p.tabLabel.trim())) throw new Error(`Invalid page tab ${p.id}`);

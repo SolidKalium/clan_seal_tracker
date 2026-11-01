@@ -1739,5 +1739,377 @@
       "974101911": {},
       "1778986403": {}
     }
+  },
+  {
+    "id": "shattered_throne",
+    "name": "Shattered Throne",
+    "category": "Dungeons",
+    "otherNodeHashes": [
+      "1347078175"
+    ],
+    "records": {
+      "3918836030": {}
+    },
+    "collectibles": {
+      "3163873689": {}
+    }
+  },
+  {
+    "id": "pit_of_heresy",
+    "name": "Pit of Heresy",
+    "category": "Dungeons",
+    "otherNodeHashes": [
+      "2828966211"
+    ],
+    "records": {
+      "2624728885": {}
+    },
+    "collectibles": {
+      "3187653285": {}
+    }
+  },
+  {
+    "id": "prophecy",
+    "name": "Prophecy",
+    "category": "Dungeons",
+    "otherNodeHashes": [
+      "2228154284"
+    ],
+    "records": {}
+  },
+  {
+    "id": "grasp_of_avarice",
+    "name": "Grasp of Avarice",
+    "category": "Dungeons",
+    "otherNodeHashes": [
+      "1476825620"
+    ],
+    "records": {
+      "1705576010": {},
+      "1770021330": {},
+      "1855685192": {}
+    }
+  },
+  {
+    "id": "duality",
+    "name": "Duality",
+    "category": "Dungeons",
+    "sealNodeHash": "854126634",
+    "badgeNodeHash": "3487512928",
+    "otherNodeHashes": [
+      "4032492628"
+    ],
+    "records": {
+      "911294620": {},
+      "1629497825": {},
+      "1801613309": {
+        "column_name": "Void"
+      },
+      "1864837600": {
+        "column_name": "Solar"
+      },
+      "1968204778": {},
+      "2105786548": {
+        "column_name": "Badge"
+      },
+      "2388189655": {
+        "column_name": "Clan"
+      },
+      "2547048326": {},
+      "3200960029": {
+        "column_name": "Class"
+      },
+      "3952021245": {
+        "column_name": "Arc"
+      }
+    }
+  },
+  {
+    "id": "spire_of_the_watcher",
+    "name": "Spire of the Watcher",
+    "category": "Dungeons",
+    "sealNodeHash": "4183969062",
+    "badgeNodeHash": "2268797508",
+    "otherNodeHashes": [
+      "3846053700"
+    ],
+    "records": {
+      "185032465": {},
+      "395235013": {
+        "column_name": "Class"
+      },
+      "466074981": {
+        "column_name": "Void"
+      },
+      "905181048": {
+        "column_name": "Badge"
+      },
+      "1990962776": {
+        "column_name": "Solar"
+      },
+      "3006836031": {
+        "column_name": "Clan"
+      },
+      "3561230229": {
+        "column_name": "Arc"
+      },
+      "3610349332": {}
+    }
+  },
+  {
+    "id": "ghosts_of_the_deep",
+    "name": "Ghosts of the Deep",
+    "category": "Dungeons",
+    "sealNodeHash": "1705744655",
+    "badgeNodeHash": "164858691",
+    "otherNodeHashes": [
+      "2279316529"
+    ],
+    "records": {
+      "278051646": {},
+      "646449162": {
+        "column_name": "Void"
+      },
+      "1169793114": {},
+      "2238420633": {},
+      "2519881105": {
+        "column_name": "Badge"
+      },
+      "3187362676": {
+        "column_name": "Class"
+      },
+      "3202440564": {
+        "column_name": "Arc"
+      },
+      "3358913961": {
+        "column_name": "Solar"
+      },
+      "3817062456": {
+        "column_name": "Clan"
+      }
+    }
+  },
+  {
+    "id": "warlords_ruin",
+    "name": "Warlord's Ruin",
+    "category": "Dungeons",
+    "sealNodeHash": "1021469803",
+    "otherNodeHashes": [
+      "3022435577"
+    ],
+    "badgeNodeHash": "3754709239",
+    "records": {
+      "23667519": {}
+    }
+  },
+  {
+    "id": "vespers_host",
+    "name": "Vesper's Host",
+    "category": "Dungeons",
+    "sealNodeHash": "2723381343",
+    "otherNodeHashes": [
+      "3254829425"
+    ],
+    "badgeNodeHash": "2157285411",
+    "records": {}
+  },
+  {
+    "id": "sundered_doctrine",
+    "name": "Sundered Doctrine",
+    "category": "Dungeons",
+    "sealNodeHash": "2105055614",
+    "otherNodeHashes": [
+      "2009673092"
+    ],
+    "badgeNodeHash": "2142982716",
+    "records": {}
+  },
+  {
+    "id": "equilibrium",
+    "name": "Equilibrium",
+    "category": "Dungeons",
+    "sealNodeHash": "1504131436",
+    "otherNodeHashes": [
+      "3851744670"
+    ],
+    "badgeNodeHash": "1208791766",
+    "records": {
+      "3422590101": {}
+    }
+  },
+  {
+    "id": "harbinger",
+    "name": "Harbinger",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "1460167656"
+    ],
+    "records": {
+      "1107121513": {
+        "order": -1
+      }
+    }
+  },
+  {
+    "id": "vox_obscura",
+    "name": "Vox Obscura",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "3419158345"
+    ],
+    "records": {}
+  },
+  {
+    "id": "seraphs_shield",
+    "name": "Operation: Seraph's Shield",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "3968203274"
+    ],
+    "records": {}
+  },
+  {
+    "id": "avalon",
+    "name": "//node.ovrd.AVALON//",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "4017297210"
+    ],
+    "records": {}
+  },
+  {
+    "id": "presage",
+    "name": "Presage",
+    "category": "Exotic missions",
+    "otherNodeHashes": [],
+    "records": {
+      "15917031": {},
+      "846398159": {}
+    }
+  },
+  {
+    "id": "presage_legacy",
+    "name": "Presage (Legacy)",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "3108806378"
+    ],
+    "records": {
+      "15917031": {
+        "order": -1
+      }
+    },
+    "parentPageId": "presage",
+    "tabLabel": "Legacy triumphs"
+  },
+  {
+    "id": "the_whisper",
+    "name": "The Whisper",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "3818825440"
+    ],
+    "records": {
+      "4213978314": {}
+    }
+  },
+  {
+    "id": "zero_hour",
+    "name": "Zero Hour",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "142994346"
+    ],
+    "records": {
+      "476814483": {},
+      "3828243410": {}
+    }
+  },
+  {
+    "id": "starcrossed",
+    "name": "Starcrossed",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "2612647205"
+    ],
+    "records": {}
+  },
+  {
+    "id": "encore",
+    "name": "Encore",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "1688234294"
+    ],
+    "records": {}
+  },
+  {
+    "id": "kells_fall",
+    "name": "Kell's Fall",
+    "category": "Exotic missions",
+    "otherNodeHashes": [
+      "97625532"
+    ],
+    "records": {}
+  },
+  {
+    "id": "dual_destiny",
+    "name": "Dual Destiny",
+    "category": "Exotic missions",
+    "otherNodeHashes": [],
+    "records": {
+      "2547616574": {},
+      "3225424862": {},
+      "3706398661": {}
+    }
+  },
+  {
+    "id": "oblation",
+    "name": "Oblation",
+    "category": "Exotic missions",
+    "otherNodeHashes": [],
+    "records": {
+      "109458567": {},
+      "226708009": {},
+      "1113748224": {},
+      "1401561385": {}
+    }
+  },
+  {
+    "id": "fire_and_ice",
+    "name": "Fire and Ice",
+    "category": "Exotic missions",
+    "otherNodeHashes": [],
+    "records": {
+      "2129873423": {}
+    }
+  },
+  {
+    "id": "whetstone",
+    "name": "Whetstone",
+    "category": "Exotic missions",
+    "otherNodeHashes": [],
+    "records": {
+      "2331933042": {},
+      "2733426143": {}
+    }
+  },
+  {
+    "id": "the_other_side",
+    "name": "The Other Side",
+    "category": "Exotic missions",
+    "otherNodeHashes": [],
+    "records": {
+      "1662610173": {}
+    }
+  },
+  {
+    "id": "wild_card",
+    "name": "Wild Card",
+    "category": "Exotic missions",
+    "otherNodeHashes": [],
+    "records": {
+      "3891840283": {}
+    }
   }
 ]

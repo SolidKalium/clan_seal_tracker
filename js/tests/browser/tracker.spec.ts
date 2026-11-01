@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import neverDefeated from '../fixtures/never-defeated.json' with { type: 'json' };
 const root = '/common/destiny2_content/';
 const nodeHash = '1486062207';
 const record = (hash: number, name: string, extra = {}) => ({ hash, displayProperties: { name, description: `${name} description` }, scope: 0, ...extra });
@@ -39,7 +40,16 @@ async function setup(page: Page, state: { offline: boolean; calls: number; origi
     throw new Error(`Unmocked API route: ${path}`);
   });
 }
-async function ready(page: Page) { await expect(page.getByRole('button', { name: 'Refresh data', exact: true })).toBeEnabled({ timeout: 20_000 }); }
+async function noUnresolvedVariables(page: Page) {
+  await expect(page.locator('body')).not.toContainText('{var:');
+  const labels = await page.locator('[aria-label], [title]').evaluateAll(elements => elements.map(e => [e.getAttribute('aria-label'), e.getAttribute('title')]).flat().join(' '));
+  expect(labels).not.toContain('{var:');
+}
+async function ready(page: Page) {
+  await expect(page.getByRole('button', { name: 'Refresh data', exact: true })).toBeEnabled({ timeout: 20_000 });
+  await noUnresolvedVariables(page);
+}
+test.afterEach(async ({ page }) => { if (!page.isClosed()) await noUnresolvedVariables(page); });
 
 test('clan overview, seal table, filters, sort, details, and persisted preferences', async ({ page }) => {
   const state = { offline: false, calls: 0 }; await setup(page, state);
@@ -218,8 +228,9 @@ test('compact header status and persistent collapsible clan rail', async ({ page
   await page.screenshot({ path: 'test-results/mobile-collapsed-sidebar.png', fullPage: true });
   await page.getByRole('button', { name: 'Expand side menu', exact: true }).click();
   await expect(page.locator('.seal-nav').first()).toBeVisible();
-  // Compact navigation rows include all content categories.
-  expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height)).toBeLessThan(280);
+  // Each category stays compact as new categories are added to the catalog.
+  for (const toggle of await page.locator('.section-toggle').all()) expect((await toggle.boundingBox())!.height).toBeLessThanOrEqual(24);
+  expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height)).toBeLessThan(page.viewportSize()!.height / 2);
 });
 
 test('status stays anchored during refresh and the collapsed clan name uses the rail', async ({ page }) => {
@@ -1237,4 +1248,131 @@ test('activity headings distinguish seals, named badges, and current triumphs wi
   await expect(page.locator('.active-triumphs-notice')).toHaveCount(0);
   await expect(page.locator('.heading-tally')).toHaveText('1badge owners');
   await expect(page.locator('.heading-seal-icon')).toHaveCount(0);
+});
+
+test('dungeons and exotic missions expose seal, collection, full dungeon, and archived mission views', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '854126634': { hash: 854126634, displayProperties: { name: 'Duality' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }, { recordHash: 43 }] } },
+    '4032492628': { hash: 4032492628, children: { records: [{ recordHash: 44 }] } },
+    '3487512928': { hash: 3487512928, displayProperties: { name: 'Dungeon: Duality' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } },
+    '4': { hash: 4, displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 202 }] } },
+    '5': { hash: 5, displayProperties: { name: 'Hunter' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 203 }] } },
+    '1347078175': { hash: 1347078175, children: { records: [{ recordHash: 42 }] } },
+    '3818825440': { hash: 3818825440, children: { records: [{ recordHash: 42 }] } },
+    '3108806378': { hash: 3108806378, children: { records: [{ recordHash: 43 }] } },
+    '3215903653': { hash: 3215903653, children: { presentationNodes: [{ presentationNodeHash: 3108806378 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male: 'Discerptor' } } }),
+    '44': record(44, 'Extra dungeon triumph', { objectiveHashes: [102] }),
+    '846398159': record(846398159, 'Tell the Tale', { objectiveHashes: [102] }),
+  } }));
+  await page.goto(''); await ready(page);
+  await expect(page.getByRole('region', { name: 'Dungeons', exact: true }).locator('.seal-card')).toHaveCount(11);
+  await expect(page.getByRole('region', { name: 'Exotic missions', exact: true }).locator('.seal-card')).toHaveCount(16);
+  await page.getByRole('region', { name: 'Dungeons', exact: true }).getByRole('link', { name: /Duality/ }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Discerptor seal');
+  const dungeonViews = page.getByRole('navigation', { name: 'Dungeon view' });
+  await dungeonViews.getByRole('link', { name: 'Badge', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dungeon: Duality badge');
+  await expect(page.locator('thead')).toContainText('Raid weapon');
+  await dungeonViews.getByRole('link', { name: 'Full dungeon', exact: true }).click();
+  await expect(page).toHaveURL(/#\/raid\/duality$/);
+  await expect(page.locator('.seal-heading .eyebrow')).toHaveText('Dungeons / Duality / Full dungeon');
+  await expect(page.locator('thead')).toContainText('Extra dungeon triumph');
+  await expect(page.locator('thead')).toContainText('Raid weapon');
+  await expect(page.getByRole('button', { name: 'Dungeons', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await page.goto('#/triumphs/shattered_throne');
+  await expect(dungeonViews.getByRole('link', { name: 'Seal', exact: true })).toHaveCount(0);
+  await expect(page.locator('tbody tr')).toHaveCount(3);
+  await page.goto('#/triumphs/the_whisper');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('The Whisper triumphs');
+  await expect(page.getByRole('navigation', { name: 'Exotic mission view' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Exotic missions', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await page.goto('#/triumphs/presage');
+  await expect(page.locator('thead')).toContainText('Tell the Tale');
+  await expect(page.locator('.active-triumphs-notice')).toContainText('This view only shows active triumphs');
+  await page.getByRole('navigation', { name: 'Exotic mission view' }).getByRole('link', { name: 'Legacy triumphs', exact: true }).click();
+  await expect(page).toHaveURL(/#\/triumphs\/presage_legacy$/);
+  await expect(page.locator('.legacy-notice')).toContainText('Objective progress is likely missing');
+  await expect(page.getByRole('navigation', { name: 'Exotic missions', exact: true }).getByRole('link', { name: 'Presage', exact: true })).toHaveAttribute('aria-current', 'page');
+});
+
+for (const hasVariables of [true, false]) {
+  test(`Praxic page and Never De-Feated tooltips contain no unresolved {var: tokens (${hasVariables ? 'resolved' : 'unavailable'})`, async ({ page }) => {
+    await setup(page, { offline: false, calls: 0 });
+    await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+      '1504131436': { hash: 1504131436, displayProperties: { name: 'Equilibrium' }, completionRecordHash: 99, children: { records: [{ recordHash: 4184277958 }] } },
+    } }));
+    await page.route('**/records.json', route => route.fulfill({ json: { ...records, '4184277958': neverDefeated.record,
+      '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male: 'Praxic' } } }),
+    } }));
+    await page.route('**/objectives.json', route => route.fulfill({ json: { ...objectives, ...neverDefeated.objectives } }));
+    let profileRequests = 0;
+    await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+      profileRequests++;
+      const request = new URL(route.request().url());
+      expect(request.searchParams.get('components')?.split(',')).toContain('1200');
+      const member = members.find(m => request.pathname.includes(m.destinyUserInfo.membershipId))!;
+      return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: { '99': { state: 4 } } } },
+        characterRecords: { data: { a: { records: { '4184277958': { state: 4, intervalObjectives: [{ objectiveHash: 1670545459, progress: 2, completionValue: 5, complete: false }] } } } } },
+        ...(hasVariables ? { characterStringVariables: { data: { a: { integerValuesByHash: { '713619738': 3 } } } } } : {}),
+      }) });
+    });
+
+    await page.goto('#/seal/equilibrium'); await ready(page);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Praxic seal');
+    await noUnresolvedVariables(page);
+    const expected = `${hasVariables ? '3' : '?'} encounters completed with feats active`;
+    await page.getByRole('button', { name: 'Never De-Feated', exact: true }).hover();
+    await expect(page.getByRole('tooltip')).toContainText('? encounters completed with feats active');
+    await noUnresolvedVariables(page);
+    await page.getByRole('button', { name: /Banshee: Never De-Feated:/ }).hover();
+    await expect(page.getByRole('tooltip')).toContainText(expected);
+    await expect(page.getByRole('tooltip').locator('.objective-count')).toHaveText(/2\s*\/\s*5/);
+    await noUnresolvedVariables(page);
+    const fetched = profileRequests;
+    await page.reload(); await ready(page);
+    await page.getByRole('button', { name: 'Never De-Feated', exact: true }).hover();
+    await expect(page.getByRole('tooltip')).toContainText('? encounters completed with feats active');
+    await noUnresolvedVariables(page);
+    expect(profileRequests).toBe(fetched);
+  });
+}
+
+test('player triumph cells substitute values from the character supplying that player record', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '1504131436': { hash: 1504131436, displayProperties: { name: 'Equilibrium' }, completionRecordHash: 99, children: { records: [{ recordHash: 4184277958 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, '4184277958': neverDefeated.record,
+    '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male: 'Praxic' } } }),
+  } }));
+  await page.route('**/objectives.json', route => route.fulfill({ json: { ...objectives, ...neverDefeated.objectives } }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const member = members.find(m => route.request().url().includes(m.destinyUserInfo.membershipId))!;
+    const value = { Ada: 2, Banshee: 4, Crow: 0 }[member.destinyUserInfo.displayName]!;
+    const progress = (value: number) => ({ state: 4, intervalObjectives: [{ objectiveHash: 1670545459, progress: value, completionValue: 5, complete: false }] });
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: { '99': { state: 4 } } } },
+      profileStringVariables: { data: { integerValuesByHash: { '713619738': 99 } } },
+      characterRecords: { data: { a: { records: { '4184277958': progress(1) } }, b: { records: { '4184277958': progress(3) } } } },
+      characterStringVariables: { data: { a: { integerValuesByHash: { '713619738': 10 } }, b: { integerValuesByHash: { '713619738': value } } } },
+    }) });
+  });
+  await page.goto('#/seal/equilibrium'); await ready(page);
+  await page.getByRole('button', { name: 'Never De-Feated', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('? encounters completed with feats active');
+  for (const [name, value] of [['Ada', 2], ['Banshee', 4], ['Crow', 0]] as const) {
+    const cell = page.getByRole('button', { name: `${name}: Never De-Feated: ${value} encounters completed with feats active: 3/5`, exact: true });
+    await cell.hover();
+    await expect(page.getByRole('tooltip')).toContainText(`${value} encounters completed with feats active`);
+    await expect(page.getByRole('tooltip').locator('.objective-count')).toHaveText(/3\s*\/\s*5/);
+    await cell.click();
+    await expect(page.locator('.detail-panel')).toContainText(`${value} encounters completed with feats active`);
+    await page.getByRole('button', { name: 'Close record details', exact: true }).click();
+  }
+  await page.reload(); await ready(page);
+  await page.getByRole('button', { name: 'Banshee: Never De-Feated: 4 encounters completed with feats active: 3/5', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('4 encounters completed with feats active');
 });

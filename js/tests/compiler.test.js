@@ -92,3 +92,17 @@ it('groups historical activity seals and Leviathan content under their parent pa
   expect(catalog.filter(p => p.parentPageId === 'leviathan').map(p => p.id)).toEqual(['crown', 'menagerie', 'tribute_hall']);
   expect(catalog.find(p => p.id === 'scourge_of_the_past').records).toHaveProperty('2925485370');
 });
+
+it('includes dungeon seals, newer collections, and exotic mission levels with their own categories', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  expect(catalog.filter(p => p.category === 'Dungeons')).toHaveLength(11);
+  expect(catalog.filter(p => p.category === 'Exotic missions' && !p.parentPageId)).toHaveLength(16);
+  expect(catalog.find(p => p.id === 'equilibrium')).toMatchObject({ sealNodeHash: '1504131436', badgeNodeHash: '1208791766', otherNodeHashes: ['3851744670'] });
+  expect(catalog.find(p => p.id === 'pit_of_heresy')).toMatchObject({ otherNodeHashes: ['2828966211'] });
+  expect(catalog.find(p => p.id === 'presage_legacy')).toMatchObject({ parentPageId: 'presage', category: 'Exotic missions', otherNodeHashes: ['3108806378'] });
+  expect(catalog.find(p => p.id === 'oblation').records).toHaveProperty('1401561385');
+  for (const category of ['Dungeons', 'Exotic missions']) {
+    expect(compile({ secret_key: 'key', group_id: 1 }, [{ id: 'test', name: 'Test', category, otherNodeHashes: [1], records: {} }]).catalog[0].sealNodeHash).toBeUndefined();
+  }
+});

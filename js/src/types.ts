@@ -23,6 +23,8 @@ export interface UserInfo { membershipType: number; membershipId: string; displa
 export interface Member { joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
 export interface Roster { name: string; members: Member[]; emblem?: import('./clanBanner').ClanEmblemData; emblemChecked?: boolean }
 export interface Profile {
+  profileStringVariables?: { data?: { integerValuesByHash?: Record<string, number> }; privacy?: number };
+  characterStringVariables?: { data?: Record<string, { integerValuesByHash?: Record<string, number> }>; privacy?: number };
   profileCollectibles?: { data?: { collectibles: Record<string, { state: number }> }; privacy?: number };
   characterCollectibles?: { data?: Record<string, { collectibles: Record<string, { state: number }> }>; privacy?: number };
   profile?: { data?: { userInfo: UserInfo; dateLastPlayed?: string }; privacy?: number };

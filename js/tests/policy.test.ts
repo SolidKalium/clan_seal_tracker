@@ -11,6 +11,7 @@ it('uses older inactive-player data but refreshes active players after five minu
 it('refreshes changed activity, missing components, old data, and errors', () => {
   expect(profileFresh(entry, { ...member, lastOnlineStatusChange: String((now + MINUTE) / 1000) }, now)).toBe(false);
   expect(profileFresh({ ...entry, components: [100] }, member, now)).toBe(false);
+  expect(profileFresh({ ...entry, components: [100, 800, 900] }, member, now)).toBe(false);
   expect(profileFresh({ ...entry, fetchedAt: now - 8 * 24 * 60 * MINUTE }, member, now)).toBe(false);
   expect(profileFresh({ ...entry, error: 'network failed' }, member, now)).toBe(false);
   expect(profileFresh({ ...entry, private: true }, member, now)).toBe(false);

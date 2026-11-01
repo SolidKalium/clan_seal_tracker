@@ -290,6 +290,12 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Improve gilding requirement column header styling
 - [ ] Show score, rewards, or other details on triumph heading tooltips. Could show preview of armor or weapons.
 
+## Known quirks
+
+Recorded 2026-11-01. Observations and uncertainties to retain; no immediate implementation is planned.
+
+- **Character-scoped triumphs show the best whole record.** For each triumph, the site selects the character record with the highest aggregate progress; it does not merge objectives across characters. The user recalls that the game may display this best-record result across all characters, but that recollection is unverified. This can matter for requirements such as collecting feathers x/9 when all feathers must be collected on one character: the summary does not show how the other characters differ. Low priority: consider an indication of differing character records or a per-character breakdown when such differences exist, without implying that progress can be combined. Some separate options: "debug" alert in html or console when this is noticed, possibly for noting in the page json; automatically showing on the cell for the affected player; labelling the column automatically or from the json.
+
 ## Clan tenure and ranks — 2026-10-30
 
 Added persistent “Clan tenure · longest first” sorting using the roster's `joinDate`. This order is independent of profile visibility and completion; missing/invalid dates sort last, with guardian name breaking ties. Guardian tooltips now include the clan role and join date, using roster data already cached by the app.
@@ -559,3 +565,25 @@ Seal views show the awarded title with a smaller muted “seal” suffix, a seal
 On the current All triumphs view, show an “Active triumphs” notice when its page has configured legacy editions. Explain that this view shows only active triumphs and legacy records are in separate tabs. Do not show that notice on Seal, Badge, or the archived editions themselves. Change the legacy seal notice's opening label from “Legacy title” to “Legacy seal,” retaining Bungie's Legacy Titles terminology when naming its manifest tree.
 
 Make the seal image comparable to the height of the two-line holder count (64px desktop, 48px mobile), separated by 4px. Remove the tally's fixed minimum width and left-align its contents, so a short number sits close to the seal and larger counts grow naturally.
+
+## Dungeons and exotic mission levels — 2026-10-31
+
+Add Dungeons and Exotic missions as collapsible sidebar/overview categories. Migrate the PHP dungeon pages and their supported display rules, catalysts, and selected random collection drops; correct the internal Pit of Heresy spelling. Extend dungeon coverage through Warlord's Ruin, Vesper's Host, Sundered Doctrine, and Equilibrium using their manifest seal, triumph, and badge nodes. Older dungeons without seals remain triumph-only pages. Dungeons with seals/badges offer Seal, Badge, and Full dungeon; reuse the combined-view data pipeline and class-set scoring behind Full raid, with dungeon-specific visible labels. Do not infer a full historical loot pool for older dungeons without a badge node. Add named current Combat dungeon challenges that live outside the activity's own tree.
+
+Migrate Harbinger, Presage, Vox Obscura, Operation: Seraph's Shield, and //node.ovrd.AVALON//. Add The Whisper, Zero Hour, Starcrossed, Encore, Kell's Fall, Dual Destiny, Oblation, Fire and Ice, Whetstone, The Other Side, and Wild Card using their named mission nodes or explicitly identified surviving triumphs. Include named mission-specific Combat triumphs without importing the entire Combat: Exotic Missions category. Presage's current Combat/catalyst records are the main view; preserve its original quest tree as a Legacy triumphs tab. Keep manifest-derived archive classification, which describes the triumph records rather than asserting that the mission itself is unavailable. Some mission levels have only one or two surviving triumphs; show those without inventing additional objectives.
+
+Verified all eleven dungeon pages in each available view and all sixteen mission pages plus the Presage historical tab against the cached manifest; every view resolves. Catalog compilation and browser coverage include the new categories, Seal/Badge/Full dungeon navigation, a seal-less dungeon, a newer mission, and current-versus-archived mission navigation.
+
+## String variable rendering and regression guard — 2026-10-31
+
+Request StringVariables (profile component 1200) alongside the existing components; profiles cached before this component was requested refresh through the normal component-version check. Bungie documents `{var:hash}` placeholders as per-account/per-character integer substitutions. Keep raw manifest definitions cached unchanged, and resolve display strings when building page headings/objectives, including interval objectives such as Never De-Feated on Praxic. Shared table headings use a value only when the available account/character values agree; unavailable or conflicting substitutions render `?`, never a guessed number or the raw token. Preserve valid zero values and all objective targets/progress calculations.
+
+Add the actual Never De-Feated record and five interval-objective definitions as a compact fixture. Unit checks cover interval rendering, missing/conflicting variables, zero, and manifest immutability. Browser coverage checks the Praxic page, accessibility labels, header and guardian-cell tooltips, and cached reloads with and without available variables. A shared browser guard checks for unresolved `{var:` text/accessible labels after readiness and at the end of every test, so the check also applies to other pages.
+
+## Per-player string variable substitution — 2026-10-31
+
+Keep an unresolved selected-page template separate from its shared-header display copy. Each guardian row resolves its heading/objective text from that player's variables. For character-scoped triumphs, identify the same character selected by the existing record-selection logic and let that character's variables override account values; account-scoped records prefer the account values, with agreed character values as fallback. Do not mix values between guardians or choose a different character just for display. Row tooltips, accessible labels, and click-opened details use the row-specific heading. Shared header tooltips continue to require agreement across available player/character values. Tests cover three different guardian values including zero, two competing character records, account-versus-character precedence, and cached reloads.
+
+## Strict player scope for variables — 2026-10-31
+
+Player-supplied variables are exclusively for that player's cells, tooltips, accessible labels, and details. Shared headers, page descriptions, overview metadata, and badge names never consult player variables, even if every loaded player has the same value. Unavailable substitutions in those shared contexts remain `?`. This supersedes the earlier agreement-across-players behavior. Character agreement remains only as a fallback inside one player's data. Regression coverage explicitly supplies the same variable value to every player and verifies that shared header tooltips still show `?` while player tooltips show their own value.

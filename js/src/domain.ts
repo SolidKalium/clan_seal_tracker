@@ -1,4 +1,5 @@
 import { sealRequirements } from './completion';
+import { resolveSealStrings, type StringVariables } from './stringVariables';
 import { sealMembershipIndex } from './sealMembership';
 import { recordConditions } from './recordState';
 import type { Cell, Definitions, Heading, PageConfig, Profile, RecordProgress, Seal } from './types';
@@ -21,7 +22,10 @@ export function presentationTree(defs: Definitions, roots: string[]): Definition
   return result;
 }
 
-export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 'seal'): Seal {
+export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 'seal', variables: StringVariables = {}): Seal {
+  return resolveSealStrings(buildSealTemplate(page, defs, mode), variables);
+}
+export function buildSealTemplate(page: PageConfig, defs: Definitions, mode: PageMode = 'seal'): Seal {
   const node = defs.nodes[page.sealNodeHash ?? ''];
   const completion = node && defs.records[String(node.completionRecordHash)];
   const legacyTriumphs = !page.sealNodeHash ? new Set(presentationTree(defs, ['3215903653']).map(n => String(n.hash))) : undefined;

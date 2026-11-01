@@ -4,6 +4,7 @@ import RecordDetails from './RecordDetails.vue';
 import ViewTabs from './ViewTabs.vue';
 import CompletionDetails from './CompletionDetails.vue';
 import { completionCounts } from './completion';
+import { resolveStringVariables, playerStringVariables, resolveHeadingStrings, resolveSealStrings } from './stringVariables';
 import type { CompletionCounts } from './completion';
 import ClassIcon from './ClassIcon.vue';
 import SealWatermark from './SealWatermark.vue';
@@ -15,7 +16,7 @@ import catalogJson from '../.generated/catalog.json';
 import { BungieTransport } from './api';
 import { CacheStore } from './storage';
 import { eachLimited, TrackerRepository } from './repository';
-import { buildSeal, headingCell, bestBadgeClass, badgeOwnership, formatClasses, sealAwarded } from './domain';
+import { buildSeal, buildSealTemplate, selectRecord, headingCell, bestBadgeClass, badgeOwnership, formatClasses, sealAwarded } from './domain';
 import type { PageMode, BadgeOwnership } from './domain';
 import { profileFresh } from './policy';
 import { compareClanTenure } from './clan';
@@ -154,9 +155,11 @@ const routeId = computed(() => /^#\/(?:seal|badge|raid|triumphs)\/(.+)$/.exec(ha
 const groupedPage = computed(() => { const page = catalog.find(p => p.id === routeId.value); return page && (page.parentPageId || catalog.some(p => p.parentPageId === page.id)) ? catalog.find(p => p.id === (page.parentPageId ?? page.id)) : undefined; });
 const pageEditions = computed(() => groupedPage.value ? [groupedPage.value, ...catalog.filter(p => p.parentPageId === groupedPage.value!.id).sort((a, b) => groupedPage.value?.category === 'Events' ? (b.tabLabel ?? '').localeCompare(a.tabLabel ?? '') : 0)] : []);
 const isHome = computed(() => !hash.value || hash.value === '#' || hash.value === '#/');
-const seals = computed(() => definitions.value ? catalog.map(page => buildSeal(page, definitions.value!)) : []);
+const seals = computed(() => definitions.value ? catalog.map(page => buildSeal(page, definitions.value!, 'seal')) : []);
 const catalogGroups = [
   { name: 'Raids', title: 'Raid seals', kind: 'Raid', category: 'Raid seals' },
+  { name: 'Dungeons', title: 'Dungeons', kind: 'Dungeon', category: 'Dungeons' },
+  { name: 'Exotic missions', title: 'Exotic missions', kind: 'Exotic mission', category: 'Exotic missions' },
   { name: 'Activities', title: 'Activity seals', kind: 'Activity', category: 'Activities' },
   { name: 'Expansions', title: 'Expansion seals', kind: 'Expansion', category: 'Expansions' },
   { name: 'Destinations', title: 'Destinations', kind: 'Destination', category: 'Destinations' },
@@ -181,14 +184,15 @@ function hasDuplicateTriumphs(page: PageConfig): boolean {
 }
 function pageMode(page: PageConfig): PageMode {
   if (routeMode.value === 'seal' && page.sealNodeHash || routeMode.value === 'badge' && page.badgeNodeHash) return routeMode.value;
-  return hasDuplicateTriumphs(page) ? 'seal' : page.category === 'Raid seals' && page.sealNodeHash ? 'raid' : 'triumphs';
+  return hasDuplicateTriumphs(page) ? 'seal' : ['Raid seals', 'Dungeons'].includes(page.category) && page.sealNodeHash ? 'raid' : 'triumphs';
 }
-const selected = computed(() => { const page = catalog.find(p => p.id === routeId.value); return page && definitions.value ? buildSeal(page, definitions.value, routeMode.value) : undefined; });
+const selectedTemplate = computed(() => { const page = catalog.find(p => p.id === routeId.value); return page && definitions.value ? buildSealTemplate(page, definitions.value, routeMode.value) : undefined; });
+const selected = computed(() => selectedTemplate.value ? resolveSealStrings(selectedTemplate.value, {}) : undefined);
 const currentPage = computed(() => catalog.find(p => p.id === routeId.value));
 const viewPage = computed(() => groupedPage.value ?? currentPage.value);
 
 const headingTitle = computed(() => routeMode.value === 'badge'
-  ? definitions.value?.nodes[currentPage.value?.badgeNodeHash ?? '']?.displayProperties.name || currentPage.value?.name
+  ? resolveStringVariables(definitions.value?.nodes[currentPage.value?.badgeNodeHash ?? '']?.displayProperties.name || currentPage.value?.name || '')
   : routeMode.value === 'seal' ? selected.value?.title ?? viewPage.value?.name : viewPage.value?.name);
 const headingKind = computed(() => routeMode.value === 'badge' ? 'badge' : routeMode.value === 'seal' && currentPage.value?.sealNodeHash ? 'seal' : routeMode.value === 'triumphs' ? 'triumphs' : undefined);
 const badgeOwnerCount = computed(() => selected.value ? Object.values(players.value).filter(p => badgeOwnership(p.profile, selected.value!.headings).completeClasses.length > 0).length : 0);
@@ -198,15 +202,15 @@ const breadcrumb = computed(() => {
   const page = viewPage.value;
   if (!page) return '';
   const category = catalogGroups.find(group => group.category === page.category)?.name ?? page.category;
-  const view = currentPage.value?.tabLabel ?? ({ seal: 'Seal requirements', badge: 'Collection badge', raid: 'Full raid', triumphs: 'All triumphs' }[routeMode.value]);
+  const view = currentPage.value?.tabLabel ?? ({ seal: 'Seal requirements', badge: 'Collection badge', raid: viewPage.value?.category === 'Dungeons' ? 'Full dungeon' : 'Full raid', triumphs: 'All triumphs' }[routeMode.value]);
   return `${category} / ${page.name} / ${view}`;
 });
-const viewLabel = computed(() => ({ 'Raid seals': 'Raid view', Activities: 'Activity view', Expansions: 'Expansion view', Destinations: 'Destination view', Events: 'Event view' }[viewPage.value?.category ?? ''] ?? 'Seasonal view'));
+const viewLabel = computed(() => ({ 'Raid seals': 'Raid view', Activities: 'Activity view', Expansions: 'Expansion view', Destinations: 'Destination view', Events: 'Event view', Dungeons: 'Dungeon view', 'Exotic missions': 'Exotic mission view' }[viewPage.value?.category ?? ''] ?? 'Seasonal view'));
 const viewTabs = computed(() => {
   const page = viewPage.value;
   if (!page) return [];
-  const modes: PageMode[] = [...(page.sealNodeHash ? ['seal' as const] : []), ...(page.badgeNodeHash ? ['badge' as const] : []), ...(page.category === 'Raid seals' && page.sealNodeHash ? ['raid' as const] : hasDuplicateTriumphs(page) ? [] : ['triumphs' as const])];
-  return [...modes.map(mode => ({ href: `#/${mode}/${page.id}`, label: page.tabLabel && !page.sealNodeHash ? page.tabLabel : mode === 'seal' ? 'Seal' : mode === 'badge' ? 'Badge' : mode === 'raid' ? 'Full raid' : 'All triumphs', active: routeId.value === page.id && routeMode.value === mode })), ...pageEditions.value.filter(tab => tab.parentPageId).map(tab => ({ href: `#/${tab.sealNodeHash ? 'seal' : 'triumphs'}/${tab.id}`, label: tab.tabLabel!, active: routeId.value === tab.id }))];
+  const modes: PageMode[] = [...(page.sealNodeHash ? ['seal' as const] : []), ...(page.badgeNodeHash ? ['badge' as const] : []), ...(['Raid seals', 'Dungeons'].includes(page.category) && page.sealNodeHash ? ['raid' as const] : hasDuplicateTriumphs(page) ? [] : ['triumphs' as const])];
+  return [...modes.map(mode => ({ href: `#/${mode}/${page.id}`, label: page.tabLabel && !page.sealNodeHash ? page.tabLabel : mode === 'seal' ? 'Seal' : mode === 'badge' ? 'Badge' : mode === 'raid' ? page.category === 'Dungeons' ? 'Full dungeon' : 'Full raid' : 'All triumphs', active: routeId.value === page.id && routeMode.value === mode })), ...pageEditions.value.filter(tab => tab.parentPageId).map(tab => ({ href: `#/${tab.sealNodeHash ? 'seal' : 'triumphs'}/${tab.id}`, label: tab.tabLabel!, active: routeId.value === tab.id }))];
 });
 const collectionView = computed(() => routeMode.value === 'badge' || !!selected.value?.headings.length && selected.value.headings.every(h => h.collectibleHashes || h.metric));
 const summaryLabel = computed(() => collectionView.value ? 'Collected' : routeMode.value === 'seal' ? 'Requirements' : 'Completion');
@@ -235,14 +239,19 @@ const rows = computed(() => {
   return Object.entries(players.value).map(([id, p]) => {
     const hasData = routeMode.value === 'badge' ? !!(p.profile?.profileCollectibles?.data || p.profile?.characterCollectibles?.data) : !!p.profile?.profileRecords?.data;
     const classIndex = badgeClass.value === 'best' ? bestBadgeClass(p.profile, seal.headings) : Math.max(0, Number(badgeClass.value));
-    const cells = seal.headings.map(h => headingCell(p.profile, h, classIndex, seal.headings, badgeClass.value === 'best' ? 'best' : 'selected'));
+    const headings = (selectedTemplate.value?.headings ?? seal.headings).map(h => {
+      const record = p.profile && selectRecord(p.profile, h);
+      const characterId = h.scope === 1 && record ? Object.entries(p.profile?.characterRecords?.data ?? {}).find(([, character]) => character.records[h.hash] === record)?.[0] : undefined;
+      return resolveHeadingStrings(h, playerStringVariables(p.profile, characterId));
+    });
+    const cells = headings.map(h => headingCell(p.profile, h, classIndex, headings, badgeClass.value === 'best' ? 'best' : 'selected'));
     const score = cells.reduce((sum, cell, i) => sum + (seal.headings[i]!.skip ? 0 : cell.fraction), 0);
     const fraction = scored.length ? score / scored.length : 0;
     const gildings = gildingIndex >= 0 && !cells[gildingIndex]!.missing ? Number(cells[gildingIndex]!.text) : -1;
     const badge = routeMode.value === 'badge' ? badgeOwnership(p.profile, seal.headings) : undefined;
     const earned = badge ? badge.completeClasses.length > 0 : sealAwarded(p.profile, seal);
     const earnedLabel = badge ? `${seal.page.name} badge collected on ${badge.allClasses ? 'all 3 classes' : formatClasses(badge.completeClasses)}` : `${seal.title} title earned`;
-    return { id, ...p, badge, earned, earnedLabel, name: nameOf(p), cells, counts: completionCounts(seal.headings, cells), fraction, gildings, hasData, complete: hasData && scored.length > 0 && fraction >= 1 };
+    return { id, ...p, badge, earned, earnedLabel, name: nameOf(p), headings, cells, counts: completionCounts(seal.headings, cells), fraction, gildings, hasData, complete: hasData && scored.length > 0 && fraction >= 1 };
   }).filter(row => row.name.toLowerCase().includes(search.value.trim().toLowerCase()) && (filter.value === 'all' || (filter.value === 'complete' ? row.complete : filter.value === 'incomplete' ? row.hasData && !row.complete : !row.hasData)))
     .sort((a, b) => {
       if (sort.value === 'tenure') return compareClanTenure(a.member, b.member) || a.name.localeCompare(b.name);
@@ -388,7 +397,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
           </a>
         </div>
         </section>
-        <p class="footnote">Counts cover loaded profiles, including any retained stale data. Choose a raid, activity, expansion, season, or episode to explore its seal and triumphs, with collection badges where available.</p>
+        <p class="footnote">Counts cover loaded profiles, including any retained stale data. Choose a raid, dungeon, exotic mission, activity, expansion, season, or episode to explore its seal and triumphs, with collection badges where available.</p>
       </template>
       <template v-else-if="selected && !selected.unavailable">
 
@@ -422,19 +431,19 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
               <tr v-for="row in rows" :key="row.id" :class="{ 'row-complete': row.complete }">
                 <th scope="row" class="player-column" :data-guardian-id="row.id" :data-membership-id="row.member.destinyUserInfo.membershipId" :data-membership-type="row.member.destinyUserInfo.membershipType"><div class="guardian-row"><button class="guardian-button" :aria-label="`Guardian details: ${row.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showGuardianTooltip($event, row)" @mouseleave="closeTooltip" @focus="showGuardianTooltip($event, row)" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="player-name">{{ row.name }} <span v-if="row.earned" class="earned" :class="{ 'earned-gold': row.badge?.allClasses }" :aria-label="row.earnedLabel">✦</span><span v-if="['stale', 'private', 'unavailable'].includes(row.status)" class="guardian-warning" :aria-label="statusLabel(row)">●</span></span></button><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :disabled="busy" :aria-label="`Retry profile: ${row.name}`" @click="retryPlayer(row.id)">↻</button></div></th>
                 <td class="progress-column summary-cell" tabindex="0" :aria-label="`${row.name}: ${summaryLabel}`" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event, row.name, row.counts)" @mouseleave="closeTooltip" @focus="showSummary($event, row.name, row.counts)" @blur="closeTooltip" @keydown.esc="closeTooltip"><template v-if="row.hasData"><strong>{{ Math.round(row.fraction * 100) }}<small>%</small></strong><span class="mini-progress"><span :style="{ width: `${row.fraction * 100}%` }"></span></span></template><span v-else class="muted">{{ row.status === 'loading' ? 'Loading…' : 'No data' }}</span></td>
-                <template v-for="(cell, i) in row.cells" :key="selected.headings[i]!.hash">
-                  <td v-if="cell.variants" class="record-end armor-ownership-cell" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-missing': cell.variants.every(v => v.missing) }" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
-                    <button class="cell-button armor-ownership" :style="{ '--class-count': cell.variants.length }" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${cell.variants.some(v => v.complete) ? 'collected for ' + cell.variants.filter(v => v.complete).map(v => v.name).join(', ') : cell.variants.some(v => v.missing) ? 'collection data unavailable' : 'not collected'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">
+                <template v-for="(cell, i) in row.cells" :key="row.headings[i]!.hash">
+                  <td v-if="cell.variants" class="record-end armor-ownership-cell" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-missing': cell.variants.every(v => v.missing) }" :data-record-tooltip="`player:${row.id}:${row.headings[i]!.hash}`" @mouseenter="showTooltip($event, row.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, row.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
+                    <button class="cell-button armor-ownership" :style="{ '--class-count': cell.variants.length }" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${row.headings[i]!.name}: ${cell.variants.some(v => v.complete) ? 'collected for ' + cell.variants.filter(v => v.complete).map(v => v.name).join(', ') : cell.variants.some(v => v.missing) ? 'collection data unavailable' : 'not collected'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, row.headings[i]!, cell)">
                       <span v-for="variant in cell.variants" :key="variant.name" class="class-slot" :data-class="variant.name"><ClassIcon v-if="variant.complete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.missing" class="cell-missing" :aria-label="`${variant.name} data unavailable`">—</span></span>
                       <span v-if="cell.variants.every(v => !v.complete && !v.missing)" class="cell-zero ownership-empty">·</span>
                     </button>
                   </td>
-                  <td v-else-if="cell.complete || !cell.objectives.length" :colspan="objectiveColumns(selected.headings[i]!)" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-progress': cell.fraction > 0 && !cell.complete, 'cell-missing': cell.missing, 'cell-zero': !cell.missing && cell.text === '·', 'cell-unowned': cell.unowned, 'cell-conditioned': !!cell.conditions?.length }" class="record-end" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
-                    <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${selected.headings[i]!.collectibleHashes ? cell.missing ? 'no collection data' : cell.complete ? 'collected' : 'not collected' : selected.headings[i]!.metric ? cell.detail : cell.complete ? cell.unclaimed ? 'complete, unclaimed' : 'complete' : cell.missing ? 'no record' : 'incomplete'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ cell.text === '·' && cell.conditions?.length ? '' : cell.text }}</button><CellConditions :conditions="cell.conditions" />
+                  <td v-else-if="cell.complete || !cell.objectives.length" :colspan="objectiveColumns(row.headings[i]!)" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-progress': cell.fraction > 0 && !cell.complete, 'cell-missing': cell.missing, 'cell-zero': !cell.missing && cell.text === '·', 'cell-unowned': cell.unowned, 'cell-conditioned': !!cell.conditions?.length }" class="record-end" :data-record-tooltip="`player:${row.id}:${row.headings[i]!.hash}`" @mouseenter="showTooltip($event, row.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, row.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
+                    <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${row.headings[i]!.name}: ${row.headings[i]!.collectibleHashes ? cell.missing ? 'no collection data' : cell.complete ? 'collected' : 'not collected' : row.headings[i]!.metric ? cell.detail : cell.complete ? cell.unclaimed ? 'complete, unclaimed' : 'complete' : cell.missing ? 'no record' : 'incomplete'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, row.headings[i]!, cell)">{{ cell.text === '·' && cell.conditions?.length ? '' : cell.text }}</button><CellConditions :conditions="cell.conditions" />
                   </td>
                   <template v-else>
-                    <td v-for="(objective, j) in cell.objectives" :key="objective.hash" :class="{ 'cell-complete': objective.complete, 'cell-progress': objective.fraction > 0 && !objective.complete, 'cell-missing': objective.missing, 'cell-zero': !objective.missing && objective.text === '·', 'cell-unowned': cell.unowned, 'cell-conditioned': !!cell.conditions?.length, 'record-end': j === cell.objectives.length - 1 }" :data-record-tooltip="`player:${row.id}:${selected.headings[i]!.hash}`" @mouseenter="showTooltip($event, selected!.headings[i]!, cell, row.name, objective.hash)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, selected!.headings[i]!, cell, row.name, objective.hash)" @focusout="leaveRecordTooltip">
-                      <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${selected.headings[i]!.name}: ${objective.name}: ${objective.missing ? 'no record' : objective.complete ? 'complete' : `${objective.progress}/${objective.target}`}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, selected!.headings[i]!, cell)">{{ objective.text === '·' && cell.conditions?.length ? '' : objective.text }}</button><CellConditions :conditions="cell.conditions" />
+                    <td v-for="(objective, j) in cell.objectives" :key="objective.hash" :class="{ 'cell-complete': objective.complete, 'cell-progress': objective.fraction > 0 && !objective.complete, 'cell-missing': objective.missing, 'cell-zero': !objective.missing && objective.text === '·', 'cell-unowned': cell.unowned, 'cell-conditioned': !!cell.conditions?.length, 'record-end': j === cell.objectives.length - 1 }" :data-record-tooltip="`player:${row.id}:${row.headings[i]!.hash}`" @mouseenter="showTooltip($event, row.headings[i]!, cell, row.name, objective.hash)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, row.headings[i]!, cell, row.name, objective.hash)" @focusout="leaveRecordTooltip">
+                      <button class="cell-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${row.headings[i]!.name}: ${objective.name}: ${objective.missing ? 'no record' : objective.complete ? 'complete' : `${objective.progress}/${objective.target}`}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, row.headings[i]!, cell)">{{ objective.text === '·' && cell.conditions?.length ? '' : objective.text }}</button><CellConditions :conditions="cell.conditions" />
                     </td>
                   </template>
                 </template>

@@ -1,0 +1,57 @@
+{
+  "record": {
+    "hash": 4184277958,
+    "scope": 1,
+    "displayProperties": {
+      "name": "Never De-Feated",
+      "description": "Complete all encounters in \"Equilibrium\" with three or more feats active."
+    },
+    "objectiveHashes": [],
+    "intervalInfo": {
+      "intervalObjectives": [
+        {
+          "intervalObjectiveHash": 1670545463
+        },
+        {
+          "intervalObjectiveHash": 1670545462
+        },
+        {
+          "intervalObjectiveHash": 1670545461
+        },
+        {
+          "intervalObjectiveHash": 1670545460
+        },
+        {
+          "intervalObjectiveHash": 1670545459
+        }
+      ]
+    }
+  },
+  "objectives": {
+    "1670545459": {
+      "hash": 1670545459,
+      "completionValue": 5,
+      "progressDescription": "{var:713619738} encounters completed with feats active"
+    },
+    "1670545460": {
+      "hash": 1670545460,
+      "completionValue": 4,
+      "progressDescription": "{var:713619738} encounters completed with feats active"
+    },
+    "1670545461": {
+      "hash": 1670545461,
+      "completionValue": 3,
+      "progressDescription": "{var:713619738} encounters completed with feats active"
+    },
+    "1670545462": {
+      "hash": 1670545462,
+      "completionValue": 2,
+      "progressDescription": "{var:713619738} encounters completed with feats active"
+    },
+    "1670545463": {
+      "hash": 1670545463,
+      "completionValue": 1,
+      "progressDescription": "{var:713619738} encounters completed with feats active"
+    }
+  }
+}
