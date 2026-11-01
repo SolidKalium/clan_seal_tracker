@@ -19,7 +19,7 @@ const description = computed(() => {
     <p v-if="player" class="eyebrow">{{ player }}</p>
     <h3>{{ heading.name }}</h3>
     <p v-if="heading.gilding" class="record-scoring">Gilding requirement.</p>
-    <p v-if="heading.skip" class="record-scoring"><svg class="scoring-marker" viewBox="0 0 16 16" aria-hidden="true"><path d="m8 2 6 6-6 6-6-6Z" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>Not counted toward completion.</p>
+    <p v-if="heading.skip" class="record-scoring">Excluded from this table's completion column.</p>
     <p v-if="heading.group?.startsWith('Armor · ')" class="item-type">{{ heading.armorSetName }}</p>
     <p v-if="heading.itemType" class="item-type">{{ heading.itemType }}</p>
     <ul v-if="heading.perks?.length" class="item-perks"><li v-for="(perk, i) in heading.perks" :key="i"><strong>{{ perk.name }}</strong><p v-if="perk.description">{{ perk.description }}</p></li></ul>
@@ -27,11 +27,12 @@ const description = computed(() => {
     <p v-if="cell?.unclaimed" class="claim-status">Completed, but not claimed in game.</p>
     <ul v-if="cell?.conditions?.length" class="record-conditions"><li v-for="condition in cell.conditions" :key="condition.code"><strong>{{ condition.label }}</strong><span>{{ condition.description }}</span></li></ul>
     <template v-if="cell">
-      <table v-if="cell.variants" class="armor-comparison" aria-label="Armor collection by class">
+      <p v-if="heading.metric" class="metric-count">{{ cell.detail }}</p>
+      <table v-else-if="cell.variants" class="armor-comparison" aria-label="Armor collection by class">
         <thead><tr><th scope="col"><span class="sr-only">Collection status</span></th><th v-for="variant in cell.variants" :key="variant.name" scope="col">{{ variant.name }}</th></tr></thead>
         <tbody>
           <tr><th scope="row">{{ heading.label }} Collected</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.missing ? 'No data' : variant.complete ? 'Collected' : 'Not collected'"><ClassIcon v-if="variant.complete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.missing">—</span></td></tr>
-          <tr class="armor-set-status"><th scope="row">Set Complete</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.setComplete ? 'Set complete' : variant.setMissing ? 'No data' : 'Set incomplete'"><ClassIcon v-if="variant.setComplete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.setMissing">—</span></td></tr>
+          <tr class="armor-set-status"><th scope="row">Set Collected</th><td v-for="variant in cell.variants" :key="variant.name" :aria-label="variant.setComplete ? 'Set collected' : variant.setMissing ? 'No data' : 'Set not fully collected'"><ClassIcon v-if="variant.setComplete" :name="variant.name" :icon="variant.icon" /><span v-else-if="variant.setMissing">—</span></td></tr>
         </tbody>
       </table>
       <p v-else-if="heading.collectibleHashes" class="objective-state">{{ cell.missing ? 'No collection data available' : cell.complete ? 'Collected' : 'Acquire' }}</p>
@@ -45,10 +46,10 @@ const description = computed(() => {
         </li>
       </ul>
 
-      <p v-if="!cell.objectives.length && !cell.missing" class="objective-state">{{ cell.complete ? 'Complete' : 'Incomplete' }}</p>
+      <p v-if="!heading.metric && !cell.objectives.length && !cell.missing" class="objective-state">{{ cell.complete ? 'Complete' : 'Incomplete' }}</p>
     </template>
     <p v-else-if="heading.collectibleHashes" class="objective-state">Objective: Acquire</p>
-    <ul v-else class="objective-details">
+    <ul v-else-if="!heading.metric" class="objective-details">
       <li v-for="(objective, stage) in headerObjectives" :key="objective.hash" :class="{ 'objective-active': activeObjectiveHash === String(objective.hash) }">
         <span v-if="!hideObjectiveLabel(objective.progressDescription || objective.displayProperties?.description || 'Progress', headerObjectives.length)" class="objective-name"><span v-if="heading.objectives.length > 1" class="stage-number">{{ stage + 1 }}</span>{{ objective.progressDescription || objective.displayProperties?.description || 'Progress' }}</span><span class="objective-count"><span class="objective-target">Objective: </span>{{ objectiveGoal(heading, objective) }}</span>
       </li>

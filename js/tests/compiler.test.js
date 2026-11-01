@@ -48,3 +48,15 @@ it('includes expansion and seasonal pages through the newer manifest content', (
   expect(catalog.find(p => p.id === 'monument_of_triumph')).toMatchObject({ sealNodeHash: '1210906304', otherNodeHashes: ['4024048810'] });
   expect(catalog.every(p => !Object.hasOwn(p, 'legacy'))).toBe(true);
 });
+
+it('preserves canonical season numbers independently of catalog position', () => {
+  const settings = { secret_key: 'browser-key', group_id: 1 };
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'js/pages.jsonc');
+  const { catalog } = compile(settings, pages);
+  expect(catalog.find(p => p.id === 'season_10').seasonNumber).toBe(10);
+  expect(catalog.find(p => p.id === 'episode_echoes').seasonNumber).toBe(24);
+  expect(catalog.find(p => p.id === 'monument_of_triumph').seasonNumber).toBe(28);
+  for (const seasonNumber of [0, -1, 1.5, '10']) {
+    expect(() => compile(settings, [{ id: 'test', name: 'Test', sealNodeHash: 1, seasonNumber }])).toThrow('season number');
+  }
+});

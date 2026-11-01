@@ -36,7 +36,8 @@ export function compile(settings, pages) {
     if (p.otherNodeHashes !== undefined && !Array.isArray(p.otherNodeHashes)) throw new Error(`Invalid extra nodes for ${p.id}`);
     // Explicit allowlist: never send historical user overrides or private settings.
     if (p.category !== undefined && !['Raid seals', 'Activities', 'Expansions', 'Seasons & Episodes'].includes(p.category)) throw new Error(`Invalid page category ${p.id}`);
-    return { id: p.id, name: p.name, category: p.category ?? 'Raid seals',
+    if (p.seasonNumber !== undefined && (!Number.isInteger(p.seasonNumber) || p.seasonNumber < 1)) throw new Error(`Invalid season number ${p.id}`);
+    return { id: p.id, name: p.name, category: p.category ?? 'Raid seals', seasonNumber: p.seasonNumber,
       sealNodeHash: hash(p.sealNodeHash, p.id), badgeNodeHash: p.badgeNodeHash === undefined ? undefined : hash(p.badgeNodeHash, p.id),
       otherNodeHashes: (p.otherNodeHashes ?? []).map(h => hash(h, p.id)),
       collectibles: rules(p.collectibles, 'collectible'), records: rules(p.records, 'record') };

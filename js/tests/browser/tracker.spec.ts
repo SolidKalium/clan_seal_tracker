@@ -340,7 +340,7 @@ test('badge and full raid navigation keep collection progress and unscored day o
   const armor = page.getByRole('tooltip').getByRole('table', { name: 'Armor collection by class' });
   await expect(armor.getByRole('columnheader')).toHaveText(['Collection status', 'Titan', 'Hunter']);
   await expect(armor.getByRole('row').nth(1)).toHaveText('Titan helmet Collected');
-  await expect(armor.getByRole('row').nth(2)).toHaveText('Set Complete');
+  await expect(armor.getByRole('row').nth(2)).toHaveText('Set Collected');
   for (const row of [armor.getByRole('row').nth(1), armor.getByRole('row').nth(2)]) {
     await expect(row.getByRole('img', { name: 'Titan', exact: true })).toHaveCount(1);
     await expect(row.getByRole('img', { name: 'Hunter', exact: true })).toHaveCount(1);
@@ -368,7 +368,7 @@ test('badge and full raid navigation keep collection progress and unscored day o
   await expect(page.locator('thead')).toContainText('Strand');
   await expect(page.locator('thead')).toContainText('Day one');
   await expect(page.locator('thead .heading-unscored').first()).toBeVisible();
-  await expect(page.locator('thead .heading-unscored').first().getByRole('img', { name: 'Not counted toward completion' })).toBeVisible();
+  await expect(page.locator('thead .unscored-marker')).toHaveCount(0);
   await expect(page.locator('thead')).toContainText('Raid weapon');
   for (const heading of await page.locator('.record-header-row .record-heading').all()) {
     await expect(heading).toHaveCSS('vertical-align', 'middle');
@@ -580,7 +580,7 @@ test('activity seals and triumphs have separate navigation and optional badges',
     await expect(views.getByRole('link', { name: 'Badge', exact: true })).toHaveCount(activity.badge ? 1 : 0);
     await expect(page.locator('thead .heading-gilding').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(0);
-    await views.getByRole('link', { name: 'Triumphs', exact: true }).click();
+    await views.getByRole('link', { name: 'All triumphs', exact: true }).click();
     await expect(page).toHaveURL(new RegExp('#/triumphs/' + activity.id + '$'));
     await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(activity.extra ? 1 : 0);
     await expect(page.getByRole('button', { name: 'Raid weapon', exact: true })).toHaveCount(0);
@@ -674,7 +674,7 @@ test('expansions and episodes expose nested triumphs, independent badges, and ma
   const expansionViews = page.getByRole('navigation', { name: 'Expansion view' });
   await expansionViews.getByRole('link', { name: 'Badge', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('The Final Shape badge');
-  await expansionViews.getByRole('link', { name: 'Triumphs', exact: true }).click();
+  await expansionViews.getByRole('link', { name: 'All triumphs', exact: true }).click();
   await page.getByRole('button', { name: 'Seasons & Episodes', exact: true }).click();
   await page.getByRole('navigation', { name: 'Seasons & Episodes', exact: true }).getByRole('link', { name: 'Episode: Echoes Legacy', exact: true }).click();
   await expect(page).toHaveURL(/#\/triumphs\/episode_echoes$/);
@@ -726,7 +726,7 @@ test('Undertaker disables the duplicate triumphs tab with an accessible explanat
     '2136916333': { hash: 2136916333, children: { records: [{ recordHash: 42 }] } },
   } }));
   await page.goto('#/seal/renegades_invasions'); await ready(page);
-  const tab = page.getByRole('navigation', { name: 'Expansion view' }).getByRole('button', { name: 'Triumphs', exact: true });
+  const tab = page.getByRole('navigation', { name: 'Expansion view' }).getByRole('button', { name: 'All triumphs', exact: true });
   await expect(tab).toHaveAttribute('aria-disabled', 'true');
   await tab.hover();
   await expect(page.getByRole('tooltip')).toHaveText('Has no triumphs outside the seal');
@@ -741,4 +741,190 @@ test('Undertaker disables the duplicate triumphs tab with an accessible explanat
   await tab.focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('tooltip')).toHaveText('Has no triumphs outside the seal');
   await expect(page).toHaveURL(/#\/seal\/renegades_invasions$/);
+});
+
+test('overview uses canonical seasons and removes repeated tile and section text', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto(''); await ready(page);
+  await expect(page.locator('.seal-card[href="#/seal/season_10"] .eyebrow')).toHaveText('SEASON 10');
+  await expect(page.locator('.seal-card[href="#/seal/season_5"] .eyebrow')).toHaveText('SEASON 5');
+  await expect(page.locator('.seal-card[href="#/seal/episode_echoes"] .eyebrow')).toHaveText('SEASON 24');
+  await expect(page.locator('.seal-card[href="#/seal/monument_of_triumph"] .eyebrow')).toHaveText('SEASON 28');
+  for (const label of await page.getByRole('region', { name: 'Activity seals', exact: true }).locator('.card-top .eyebrow').all()) await expect(label).toHaveText('ACTIVITY');
+  for (const label of await page.getByRole('region', { name: 'Expansion seals', exact: true }).locator('.card-top .eyebrow').all()) await expect(label).toHaveText('EXPANSION');
+  await expect(page.locator('.seal-card[href="#/seal/last_wish"] .card-bottom')).toContainText('title holders');
+  await expect(page.locator('.seal-grid').filter({ hasText: /loaded/ })).toHaveCount(0);
+  await expect(page.getByText('A title worth chasing.', { exact: true })).toHaveCount(0);
+});
+
+test('overview seal logos are monochrome cropped watermarks that do not alter tile content', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    [nodeHash]: { ...nodes[nodeHash], displayProperties: { name: 'Last Wish', icon: root + 'icons/test-titan.png' } },
+  } }));
+  await page.goto(''); await ready(page);
+  const tile = page.locator('.seal-card[href="#/seal/last_wish"]');
+  const mark = tile.locator('.seal-watermark');
+  await expect(mark).toHaveAttribute('aria-hidden', 'true');
+  await expect(mark).toHaveCSS('mask-mode', 'luminance');
+  await expect(mark).toHaveCSS('pointer-events', 'none');
+  await expect(tile).toHaveCSS('overflow', 'hidden');
+  const placement = await mark.evaluate(el => {
+    const logo = el.getBoundingClientRect(), tile = el.parentElement!.getBoundingClientRect();
+    return { rightCrop: (logo.right - tile.right) / logo.width, bottomCrop: (logo.bottom - tile.bottom) / logo.height };
+  });
+  expect(placement.rightCrop).toBeCloseTo(.2, 1);
+  expect(placement.bottomCrop).toBeCloseTo(.2, 1);
+  await expect(tile.getByRole('heading', { name: 'Rivensbane' })).toBeVisible();
+  await expect(page.locator('.seal-card[href="#/seal/season_10"] .seal-watermark')).toHaveCount(0);
+});
+
+test('gilding counts show lifetime totals and zero without affecting percentage or completion filters', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '99': { ...records['99'], titleInfo: { titlesByGender: { Male: 'Rivensbane' }, gildingTrackingRecordHash: 90 } },
+    '90': record(90, 'Current gilding requirements', { objectiveHashes: [101] }),
+  } }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const path = new URL(route.request().url()).pathname;
+    const member = members.find(m => path.includes(m.destinyUserInfo.membershipId))!;
+    if (member.destinyUserInfo.displayName === 'Crow') return route.fulfill({ json: envelope({ profile: { privacy: 2 }, profileRecords: { privacy: 2 } }) });
+    const complete = member.destinyUserInfo.displayName === 'Ada';
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {
+      '99': { state: complete ? 1 : 4 },
+      '42': { state: complete ? 1 : 4, objectives: [101, 103].map(objectiveHash => ({ objectiveHash, progress: complete ? 10 : 5, completionValue: 10, complete })) },
+      '43': { state: complete ? 1 : 4, objectives: [{ objectiveHash: 102, progress: complete ? 1 : 0, completionValue: 1, complete }] },
+      '90': { state: 4, completedCount: complete ? 0 : 13, objectives: [{ objectiveHash: 101, progress: 8, completionValue: 10, complete: false }] },
+    } } } }) });
+  });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await expect(page.getByRole('button', { name: 'Times gilded', exact: true })).toHaveCount(1);
+  const count = page.getByRole('button', { name: 'Banshee: Times gilded: 13 gildings', exact: true });
+  await expect(count).toHaveText('13');
+  await expect(count.locator('..')).not.toHaveClass(/cell-complete|cell-progress/);
+  await expect(page.getByRole('button', { name: 'Ada: Times gilded: 0 gildings', exact: true })).toHaveText('0');
+  await expect(page.getByRole('button', { name: 'Crow: Times gilded: Gilding count unavailable.', exact: true })).toHaveText('—');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('25');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('.progress-column')).toContainText('100');
+  await count.hover();
+  await expect(page.getByRole('tooltip')).toContainText('13 gildings');
+  await expect(page.getByRole('tooltip')).toContainText("Excluded from this table's completion column");
+  await expect(page.getByRole('tooltip')).not.toContainText('Incomplete');
+  await expect(page.getByRole('tooltip')).not.toContainText('Objective:');
+  await page.getByLabel('Filter progress', { exact: true }).selectOption('complete');
+  await expect(page.locator('tbody .player-name')).toHaveText(['Ada ✦']);
+});
+
+test('summary tooltips distinguish site completion from seal thresholds and list exclusions without diamonds', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    [nodeHash]: { ...nodes[nodeHash], children: { records: [42, 43, 44].map(recordHash => ({ recordHash })) } },
+    '1525933460': { children: { records: [{ recordHash: 901 }] } },
+    '1086048586': { displayProperties: { name: 'Badge' }, children: { presentationNodes: [{ presentationNodeHash: 4 }] } },
+    '4': { displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male: 'Rivensbane' }, gildingTrackingRecordHash: 90 }, objectiveHashes: [104] }),
+    '43': { ...records['43'], forTitleGilding: true },
+    '44': record(44, 'Other base requirement', { objectiveHashes: [102] }),
+    '90': record(90, 'Gilding', { objectiveHashes: [105] }),
+    '901': record(901, 'First day', { displayProperties: { name: 'First day', description: 'Complete within the first 24 hours.' }, objectiveHashes: [102] }),
+  } }));
+  await page.route('**/objectives.json', route => route.fulfill({ json: { ...objectives,
+    '104': { hash: 104, completionValue: 1 }, '105': { hash: 105, completionValue: 3 },
+  } }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const header = page.getByRole('button', { name: 'Requirements', exact: true });
+  await header.hover();
+  await expect(page.getByRole('tooltip')).toContainText('1 of 2 triumphs required');
+  await expect(page.getByRole('tooltip')).toContainText('complete all 1 gilding triumph');
+  await expect(page.getByRole('tooltip')).not.toContainText('site-defined summary');
+  await expect(page.getByRole('tooltip').locator('.completion-exclusions li')).toHaveText(['Times gilded', 'Day one']);
+  await expect(page.locator('thead .unscored-marker')).toHaveCount(0);
+  await page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.summary-cell').hover();
+  await expect(page.getByRole('tooltip')).toContainText('1 triumph partially complete');
+  await expect(page.getByRole('tooltip')).not.toContainText('not started');
+  await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Full raid', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Completion', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Requirements', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Completion', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('site-defined summary');
+  await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Badge', exact: true }).click();
+  await page.getByRole('button', { name: 'Collected', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).not.toContainText('site-defined summary');
+  await expect(page.getByRole('tooltip')).toContainText('Acquire the full collection for at least one class');
+});
+
+test('progress sorting breaks percentage ties by gildings before name', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male: 'Rivensbane' }, gildingTrackingRecordHash: 90 } }),
+    '90': record(90, 'Gilding'),
+  } }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const member = members.find(m => new URL(route.request().url()).pathname.includes(m.destinyUserInfo.membershipId))!;
+    const name = member.destinyUserInfo.displayName;
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {
+      '99': { state: 4 },
+      '42': { state: 4, objectives: [101, 103].map(objectiveHash => ({ objectiveHash, progress: name === 'Crow' ? 8 : 5, completionValue: 10, complete: false })) },
+      '43': { state: 4, objectives: [{ objectiveHash: 102, progress: 0, completionValue: 1, complete: false }] },
+      '90': { state: 4, completedCount: name === 'Banshee' ? 13 : 0 },
+    } } } }) });
+  });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const names = page.locator('tbody .player-name');
+  await expect(names).toHaveText(['Crow', 'Banshee', 'Ada']);
+  await page.getByLabel('Sort guardians', { exact: true }).selectOption('highest');
+  await expect(names).toHaveText(['Crow', 'Banshee', 'Ada']);
+  await page.getByLabel('Sort guardians', { exact: true }).selectOption('name');
+  await expect(names).toHaveText(['Ada', 'Banshee', 'Crow']);
+});
+
+test('the guardian star is explained as title ownership in the legend and guardian tooltip', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await expect(page.locator('.table-caption')).toContainText('✦ Title earned');
+  await expect(page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('.earned')).toHaveAttribute('aria-label', 'Rivensbane title earned');
+  await page.getByRole('button', { name: 'Guardian details: Ada', exact: true }).hover();
+  await expect(page.getByRole('tooltip').locator('.guardian-title')).toHaveText('✦ Rivensbane title earned');
+  await expect(page.getByRole('tooltip').locator('.clan-rank')).toHaveText('Founder');
+  await page.getByRole('button', { name: 'Guardian details: Banshee', exact: true }).hover();
+  await expect(page.getByRole('tooltip').locator('.guardian-title')).toHaveCount(0);
+});
+
+test('badge ownership markers are gold only for all three classes and ignore the selected class filter', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '1086048586': { displayProperties: { name: 'Badge' }, children: { presentationNodes: [4, 5, 6].map(presentationNodeHash => ({ presentationNodeHash })) } },
+    ...Object.fromEntries(['Titan', 'Hunter', 'Warlock'].map((name, i) => [4 + i, { displayProperties: { name }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 202 + i }] } }])),
+  } }));
+  await page.route('**/collectibles.json', route => route.fulfill({ json: Object.fromEntries([201, 202, 203, 204].map(hash => [hash, { hash, scope: 1, itemHash: hash === 201 ? 301 : 302, displayProperties: { name: hash === 201 ? 'Weapon' : 'Class helmet' } }])) }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const member = members.find(m => new URL(route.request().url()).pathname.includes(m.destinyUserInfo.membershipId))!;
+    const name = member.destinyUserInfo.displayName;
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {} } }, profileCollectibles: { data: { collectibles: Object.fromEntries([201, 202, 203, 204].map(hash => [hash, { state: name === 'Ada' || (name === 'Banshee' ? hash <= 202 : hash !== 202) ? 0 : 1 }])) } } }) });
+  });
+  await page.goto('#/badge/last_wish'); await ready(page);
+  const ada = page.locator('tbody tr').filter({ hasText: 'Ada' });
+  const banshee = page.locator('tbody tr').filter({ hasText: 'Banshee' });
+  await expect(ada.locator('.earned')).toHaveClass(/earned-gold/);
+  await expect(ada.locator('.earned')).toHaveAttribute('aria-label', 'Last Wish badge collected on all 3 classes');
+  await expect(banshee.locator('.earned')).not.toHaveClass(/earned-gold/);
+  await expect(banshee.locator('.earned')).toHaveAttribute('aria-label', 'Last Wish badge collected on Titan');
+  await expect(page.locator('tbody .player-name')).toHaveText(['Ada ✦', 'Crow ✦', 'Banshee ✦']);
+  await page.getByLabel('Sort guardians', { exact: true }).selectOption('highest');
+  await expect(page.locator('tbody .player-name')).toHaveText(['Ada ✦', 'Crow ✦', 'Banshee ✦']);
+  await page.getByLabel('Sort guardians', { exact: true }).selectOption('name');
+  await expect(page.locator('tbody .player-name')).toHaveText(['Ada ✦', 'Banshee ✦', 'Crow ✦']);
+  await expect(page.getByRole('button', { name: 'Collected', exact: true })).toBeVisible();
+  await expect(page.locator('.table-caption')).toContainText('Badge collected');
+  await page.getByLabel('Badge class', { exact: true }).selectOption('2');
+  await expect(banshee.locator('.earned')).toBeVisible();
+  await expect(banshee.locator('.progress-column')).toContainText('50');
+  await page.getByRole('button', { name: 'Guardian details: Ada', exact: true }).hover();
+  await expect(page.getByRole('tooltip').locator('.guardian-badge')).toContainText('Collected on all 3 classes');
+  await page.getByRole('button', { name: 'Guardian details: Banshee', exact: true }).hover();
+  await expect(page.getByRole('tooltip').locator('.guardian-badge')).toContainText('Collected on Titan');
+  await page.getByRole('button', { name: 'Guardian details: Crow', exact: true }).hover();
+  await expect(page.getByRole('tooltip').locator('.guardian-badge')).toContainText('Collected on Hunter and Warlock');
 });

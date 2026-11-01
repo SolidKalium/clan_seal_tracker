@@ -264,6 +264,9 @@ Overscroll border correction: attach the rounded outer border to the table itsel
 
 ## Revisit list
 
+- [ ] Consider distinct subtitles for overview sections when they add useful context.
+- [ ] Consider how to explain ordering and relationships within categories, including expansion releases, mid-year releases, and multiple seals from one expansion; avoid implying that each page is a separate expansion.
+
 Recorded 2026-10-30. Deferred polish and interaction design; these are not requests for immediate implementation.
 
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.
@@ -459,3 +462,27 @@ Each category has an independent, keyboard-accessible toggle. Initial load and n
 ## PHP moved to `php/` — 2026-10-31
 
 The legacy PHP edition, its caches, and its settings moved from the repository root to `php/`. PHP resolves files from an `APP_ROOT` constant rather than the working directory. The browser edition now reads its own ignored `js/settings.json` (API key and clan id only) instead of the PHP settings. The only remaining cross-edition reference is the PHP progress comparison test, which reads `php/index.php`; remove it with the PHP edition.
+
+
+## Lifetime gilding counts — 2026-10-31
+
+Seal and broader triumph views automatically add a Times gilded column when the seal completion record links a gildingTrackingRecordHash. Read completedCount on that tracking record, not its objectives (current gilding requirements) or intervalsRedeemedCount. Show a plain numeric total, including 0; absent/null counts remain unavailable rather than fabricated zeroes. This informational column has no goal, completion state, or contribution to percentages, completion filters, or progress sorting. Badges keep their existing collection-only view.
+
+API reference: https://bungie-net.github.io/multi/schema_Destiny-Components-Records-DestinyRecordComponent.html
+
+
+## Table completion versus game requirements — 2026-10-31
+
+Use Requirements for the seal view and Completion for broader triumph/full-raid and badge views. The percentage remains the site's average of included column progress; do not imply it is Bungie's seal completion rule. Remove excluded-column diamonds from headers, and identify exclusions in each column's tooltip instead. The summary header tooltip lists exclusions and explains base seal and gilding requirements. Read the base count threshold from the completion record objective, so 12-of-17 and similar seals are distinguished from all-required seals. Missing or ambiguous thresholds are not guessed. Additional gilding triumphs are distinguished from a higher threshold on the same seal set.
+
+The guardian's summary cell tooltip shows complete and partially complete triumph counts, separate collection-column counts where applicable, and unavailable records. Do not label the remaining records not started: zero reported progress cannot establish that a player has not begun. Keep rows compact by placing the counts in these tooltips.
+
+## Gilding header laurel — 2026-10-31
+
+Replaced the gold border on gilding headers with a faint gold laurel wreath (crossed stems tied with a ribbon) centred behind the title. The manifest has no gilding background art: gilding triumphs reuse ordinary triumph icons, and the only gold artwork is each seal's own gilded emblem, which is too detailed for a header watermark. The laurel is original artwork in `src/assets/gilding-laurel.svg`, applied as a CSS mask so its colour stays in the stylesheet. The Times gilded column keeps the same treatment.
+
+## Badge ownership markers and All triumphs — 2026-10-31
+
+Badge pages show a guardian star once the full collection is acquired for at least one class. The star turns gold only when all three class collections are complete; absent class data cannot establish completion. Determine ownership independently of the selected class filter, and identify the completed classes in the guardian tooltip and accessible marker label. The badge legend distinguishes acquired badges from all-three-class completion.
+
+Rename Triumphs to All triumphs while retaining the existing route URLs. Keep Full raid for combined raid views. Do not add Full activity: activity collection sources and availability span seasons, years, and legacy sets, so an aggregate collection view needs separate design.

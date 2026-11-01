@@ -18,7 +18,7 @@ export interface Definitions {
   nodes: Record<string, NodeDefinition>; records: Record<string, RecordDefinition>; objectives: Record<string, ObjectiveDefinition>;
 }
 export interface ObjectiveProgress { objectiveHash: number; progress: number; completionValue: number; complete: boolean }
-export interface RecordProgress { state: number; objectives?: ObjectiveProgress[]; intervalObjectives?: ObjectiveProgress[]; intervalsRedeemedCount?: number }
+export interface RecordProgress { completedCount?: number | null; state: number; objectives?: ObjectiveProgress[]; intervalObjectives?: ObjectiveProgress[]; intervalsRedeemedCount?: number }
 export interface UserInfo { membershipType: number; membershipId: string; displayName: string; bungieGlobalDisplayName?: string; bungieGlobalDisplayNameCode?: number; crossSaveOverride?: number }
 export interface Member { joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
 export interface Roster { name: string; members: Member[]; emblem?: import('./clanBanner').ClanEmblemData; emblemChecked?: boolean }
@@ -29,9 +29,9 @@ export interface Profile {
   profileRecords?: { data?: { records: Record<string, RecordProgress> }; privacy?: number };
   characterRecords?: { data?: Record<string, { records: Record<string, RecordProgress> }>; privacy?: number };
 }
-export interface PageConfig { id: string; name: string; category: string; sealNodeHash: string; badgeNodeHash?: string; otherNodeHashes?: string[]; collectibles?: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean } | undefined>; records: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean; order?: number } | undefined> }
-export interface Heading { armorSetKey?: string; armorSetName?: string; badgeRequirement?: boolean; group?: string; source?: string; itemType?: string; perks?: Display[]; collectibleHashes?: string[]; classNames?: string[]; classIcons?: (string | undefined)[]; hash: string; name: string; label: string; description: string; scope: number; gilding: boolean; skip: boolean; order: number; objectives: ObjectiveDefinition[]; intervals: ObjectiveDefinition[] }
-export interface Seal { legacy?: boolean; page: PageConfig; title: string; description: string; icon?: string; completionHash: string; completionScope?: number; headings: Heading[]; unavailable?: string }
+export interface PageConfig { seasonNumber?: number; id: string; name: string; category: string; sealNodeHash: string; badgeNodeHash?: string; otherNodeHashes?: string[]; collectibles?: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean } | undefined>; records: Record<string, { column_name?: string; suppress?: boolean; skip_for_completion?: boolean; order?: number } | undefined> }
+export interface Heading { metric?: 'gildingCount'; armorSetKey?: string; armorSetName?: string; badgeRequirement?: boolean; group?: string; source?: string; itemType?: string; perks?: Display[]; collectibleHashes?: string[]; classNames?: string[]; classIcons?: (string | undefined)[]; hash: string; name: string; label: string; description: string; scope: number; gilding: boolean; skip: boolean; order: number; objectives: ObjectiveDefinition[]; intervals: ObjectiveDefinition[] }
+export interface Seal { requirements?: import('./completion').SealRequirements; legacy?: boolean; page: PageConfig; title: string; description: string; icon?: string; completionHash: string; completionScope?: number; headings: Heading[]; unavailable?: string }
 export type DataStatus = 'fresh' | 'cached' | 'stale' | 'private' | 'unavailable';
 export interface Cached<T> { key: string; value: T; fetchedAt: number; components?: number[]; lastAttemptAt?: number; error?: string; private?: boolean }
 export interface LoadResult<T> { entry?: Cached<T>; status: DataStatus; error?: string }

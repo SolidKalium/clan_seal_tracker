@@ -815,6 +815,7 @@
   },
   {
     "id": "season_5",
+    "seasonNumber": 5,
     "name": "Season of the Forge",
     "category": "Seasons & Episodes",
     "sealNodeHash": "450166688",
@@ -824,6 +825,7 @@
   },
   {
     "id": "season_6",
+    "seasonNumber": 6,
     "name": "Season of the Drifter",
     "category": "Seasons & Episodes",
     "sealNodeHash": "2978379966",
@@ -833,6 +835,7 @@
   },
   {
     "id": "season_7",
+    "seasonNumber": 7,
     "name": "Season of Opulence",
     "category": "Seasons & Episodes",
     "sealNodeHash": "717225803",
@@ -842,6 +845,7 @@
   },
   {
     "id": "season_8",
+    "seasonNumber": 8,
     "name": "Season of the Undying",
     "category": "Seasons & Episodes",
     "sealNodeHash": "955166374",
@@ -851,6 +855,7 @@
   },
   {
     "id": "season_9",
+    "seasonNumber": 9,
     "name": "Season of Dawn",
     "category": "Seasons & Episodes",
     "sealNodeHash": "955166375",
@@ -860,6 +865,7 @@
   },
   {
     "id": "season_10",
+    "seasonNumber": 10,
     "name": "Season of the Worthy",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008461",
@@ -868,6 +874,7 @@
   },
   {
     "id": "season_11",
+    "seasonNumber": 11,
     "name": "Season of Arrivals",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008460",
@@ -877,6 +884,7 @@
   },
   {
     "id": "season_12",
+    "seasonNumber": 12,
     "name": "Season of the Hunt",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008463",
@@ -900,6 +908,7 @@
   },
   {
     "id": "season_13",
+    "seasonNumber": 13,
     "name": "Season of the Chosen",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008462",
@@ -920,6 +929,7 @@
   },
   {
     "id": "season_14",
+    "seasonNumber": 14,
     "name": "Season of the Splicer",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008457",
@@ -941,6 +951,7 @@
   },
   {
     "id": "season_15",
+    "seasonNumber": 15,
     "name": "Season of the Lost",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008456",
@@ -979,6 +990,7 @@
   },
   {
     "id": "season_16",
+    "seasonNumber": 16,
     "name": "Season of the Risen",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008459",
@@ -1010,6 +1022,7 @@
   },
   {
     "id": "season_17",
+    "seasonNumber": 17,
     "name": "Season of the Haunted",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008458",
@@ -1045,6 +1058,7 @@
   },
   {
     "id": "season_18",
+    "seasonNumber": 18,
     "name": "Season of Plunder",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008453",
@@ -1077,6 +1091,7 @@
   },
   {
     "id": "season_19",
+    "seasonNumber": 19,
     "name": "Season of the Seraph",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008452",
@@ -1122,6 +1137,7 @@
   },
   {
     "id": "season_20",
+    "seasonNumber": 20,
     "name": "Season of Defiance",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675700",
@@ -1157,6 +1173,7 @@
   },
   {
     "id": "season_21",
+    "seasonNumber": 21,
     "name": "Season of the Deep",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675701",
@@ -1186,6 +1203,7 @@
   },
   {
     "id": "season_22",
+    "seasonNumber": 22,
     "name": "Season of the Witch",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675702",
@@ -1196,6 +1214,7 @@
   },
   {
     "id": "season_23",
+    "seasonNumber": 23,
     "name": "Season of the Wish",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675703",
@@ -1206,6 +1225,7 @@
   },
   {
     "id": "episode_echoes",
+    "seasonNumber": 24,
     "name": "Episode: Echoes",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675696",
@@ -1216,6 +1236,7 @@
   },
   {
     "id": "episode_revenant",
+    "seasonNumber": 25,
     "name": "Episode: Revenant",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675697",
@@ -1226,6 +1247,7 @@
   },
   {
     "id": "episode_heresy",
+    "seasonNumber": 26,
     "name": "Episode: Heresy",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675698",
@@ -1256,6 +1278,7 @@
   },
   {
     "id": "monument_of_triumph",
+    "seasonNumber": 28,
     "name": "Monument of Triumph",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1210906304",

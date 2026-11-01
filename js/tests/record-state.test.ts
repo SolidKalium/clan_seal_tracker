@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { recordConditions } from '../src/recordState';
-import { recordCell } from '../src/domain';
+import { recordCell, selectRecord } from '../src/domain';
 import type { Heading } from '../src/types';
 const heading: Heading = { hash: '42', name: 'Triumph', label: 'Triumph', description: '', scope: 0, gilding: false, skip: false, order: 1, objectives: [{ hash: 101, completionValue: 10 }], intervals: [] };
 
@@ -31,4 +31,27 @@ it('uses a pip at zero for any goal, retaining counts for hidden progress', () =
     expect(partial.objectives[0]?.text).toBe('2/10');
     expect(partial.fraction).toBe(.2);
   }
+});
+
+it('shows lifetime gildings as a count, without converting it to progress or an objective', () => {
+  const metric: Heading = { ...heading, metric: 'gildingCount', skip: true, objectives: [] };
+  for (const completedCount of [0, 1, 13]) {
+    const cell = recordCell({ state: 1, completedCount, intervalsRedeemedCount: 99,
+      objectives: [{ objectiveHash: 101, progress: 8, completionValue: 10, complete: false }] }, metric);
+    expect(cell).toMatchObject({ text: String(completedCount), fraction: 0, complete: false, missing: false, objectives: [] });
+  }
+  for (const completedCount of [undefined, null, -1]) {
+    expect(recordCell({ state: 1, completedCount }, metric)).toMatchObject({ text: '—', missing: true });
+  }
+  expect(recordCell(undefined, metric)).toMatchObject({ text: '—', missing: true });
+});
+
+it('uses the highest reported character gilding count without adding duplicates or using objective progress', () => {
+  const metric: Heading = { ...heading, scope: 1, metric: 'gildingCount', skip: true, objectives: [] };
+  const profile = { characterRecords: { data: {
+    first: { records: { '42': { state: 1, completedCount: 2 } } },
+    second: { records: { '42': { state: 4, completedCount: 13 } } },
+    third: { records: { '42': { state: 4, completedCount: 13 } } },
+  } } };
+  expect(recordCell(selectRecord(profile, metric), metric).text).toBe('13');
 });

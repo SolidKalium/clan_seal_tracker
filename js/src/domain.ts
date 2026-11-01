@@ -1,3 +1,4 @@
+import { sealRequirements } from './completion';
 import { recordConditions } from './recordState';
 import type { Cell, Definitions, Heading, PageConfig, Profile, RecordProgress, Seal } from './types';
 
@@ -22,7 +23,7 @@ export function presentationTree(defs: Definitions, roots: string[]): Definition
 export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 'seal'): Seal {
   const node = defs.nodes[page.sealNodeHash];
   const completion = node && defs.records[String(node.completionRecordHash)];
-  const base: Seal = { page, legacy: presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
+  const base: Seal = { page, requirements: sealRequirements(node, defs), legacy: presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
   if (!node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
   if (mode === 'badge') return buildBadge(page, defs, base);
   const full = mode === 'raid' || mode === 'triumphs';
@@ -74,6 +75,17 @@ export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 
       if (heading) { heading.label = page.collectibles?.[hash]?.column_name ?? heading.label; heading.skip = !!page.collectibles?.[hash]?.skip_for_completion; base.headings.push(heading); }
     }
   }
+  // Keep gilding requirements together ahead of base/legacy requirements, preserving their internal order.
+  base.headings.sort((a, b) => Number(b.gilding) - Number(a.gilding));
+  const trackingHash = completion?.titleInfo?.gildingTrackingRecordHash;
+  const tracking = defs.records[String(trackingHash)];
+  if (trackingHash && tracking && [0, 1].includes(tracking.scope)) {
+    // This record's objectives describe the current gilding, not the lifetime count.
+    base.headings = base.headings.filter(h => h.hash !== String(trackingHash));
+    base.headings.unshift({ hash: String(trackingHash), metric: 'gildingCount',
+      name: 'Times gilded', label: 'Times gilded', description: 'Number of times this title has been gilded.',
+      group: 'Triumphs', scope: tracking.scope, gilding: false, skip: true, order: 0, objectives: [], intervals: [] });
+  }
   base.headings = groupHeadings(base.headings);
   return base;
 }
@@ -86,9 +98,13 @@ export function recordFraction(record: RecordProgress): number {
   return interval ? Math.min(1, (interval.progress ?? 0) / Math.max(1, interval.completionValue)) : 0;
 }
 
-export function selectRecord(profile: Profile, heading: Pick<Heading, 'hash' | 'scope'>): RecordProgress | undefined {
+export function selectRecord(profile: Profile, heading: Pick<Heading, 'hash' | 'scope' | 'metric'>): RecordProgress | undefined {
   if (heading.scope === 0) return profile.profileRecords?.data?.records[heading.hash];
   const candidates = Object.values(profile.characterRecords?.data ?? {}).map(c => c.records[heading.hash]).filter((r): r is RecordProgress => !!r);
+  if (heading.metric === 'gildingCount') {
+    return candidates.reduce<RecordProgress | undefined>((best, next) =>
+      (next.completedCount ?? -1) > (best?.completedCount ?? -1) ? next : best, undefined);
+  }
   // Select one whole character's record: do not invent completion by merging characters.
   return candidates.reduce<RecordProgress | undefined>((best, next) => {
     if (!best) return next;
@@ -98,6 +114,12 @@ export function selectRecord(profile: Profile, heading: Pick<Heading, 'hash' | '
 }
 
 export function recordCell(record: RecordProgress | undefined, heading: Heading): Cell {
+  if (heading.metric === 'gildingCount') {
+    const count = record?.completedCount;
+    const missing = typeof count !== 'number' || !Number.isInteger(count) || count < 0;
+    return { objectives: [], fraction: 0, complete: false, missing, text: missing ? '—' : String(count),
+      detail: missing ? 'Gilding count unavailable.' : `${count} ${count === 1 ? 'gilding' : 'gildings'}`, unowned: false };
+  }
   const fraction = record ? recordFraction(record) : 0;
   const complete = !!record && fraction >= 1;
   const definitions = heading.objectives.length ? heading.objectives : heading.intervals.slice(-1);
@@ -184,6 +206,17 @@ function collectibleState(profile: Profile, hash: string): number | undefined {
   if (account) return account.state;
   const states = Object.values(profile.characterCollectibles?.data ?? {}).map(c => c.collectibles[hash]?.state).filter((s): s is number => s !== undefined);
   return states.find(s => !(s & 1)) ?? states[0];
+}
+export const formatClasses = (names: string[]) => new Intl.ListFormat('en', { style: 'long', type: 'conjunction' }).format(names);
+export interface BadgeOwnership { completeClasses: string[]; allClasses: boolean }
+export function badgeOwnership(profile: Profile | undefined, headings: Heading[]): BadgeOwnership {
+  const classes = headings.find(h => h.classNames?.length)?.classNames ?? [];
+  const collection = headings.filter(h => h.collectibleHashes?.length);
+  const completeClasses = profile && collection.length ? classes.filter((_, i) => collection.every(h => {
+    const state = collectibleState(profile, h.collectibleHashes![i] ?? h.collectibleHashes![0]!);
+    return state !== undefined && !(state & 1);
+  })) : [];
+  return { completeClasses, allClasses: classes.length === 3 && completeClasses.length === 3 };
 }
 export function bestBadgeClass(profile: Profile | undefined, headings: Heading[]): number {
   if (!profile) return 0;

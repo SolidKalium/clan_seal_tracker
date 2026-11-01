@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { bestBadgeClass, buildSeal, headingCell, objectiveGoal, redundantSource } from '../src/domain';
+import { bestBadgeClass, badgeOwnership, buildSeal, headingCell, objectiveGoal, redundantSource } from '../src/domain';
 import type { Definitions, PageConfig, Profile } from '../src/types';
 const page: PageConfig = { id: 'test', name: 'Test raid', category: 'Raids', sealNodeHash: '1', badgeNodeHash: '2', otherNodeHashes: ['3'], records: { '15': { suppress: true } } };
 const record = (hash: number, description: string) => ({ hash, scope: 0, displayProperties: { name: `Triumph ${hash}`, description }, objectiveHashes: [100] });
@@ -141,5 +141,48 @@ it('prefers the seal node description and falls back when it is blank', () => {
       '1': { ...defs.nodes['1']!, displayProperties: { name: 'Undertaker', description } },
     } };
     expect(buildSeal(page, source).description).toBe(description?.trim() || recordDescription);
+  }
+});
+
+it('adds one unscored lifetime gilding count using the completion record tracking hash', () => {
+  const source: Definitions = { ...defs, records: { ...defs.records,
+    '99': { ...record(99, 'Seal'), titleInfo: { gildingTrackingRecordHash: 90 } },
+    '90': record(90, 'Current gilding requirements'),
+  }, nodes: { ...defs.nodes,
+    '3': { ...defs.nodes['3']!, children: { records: [...defs.nodes['3']!.children.records!, { recordHash: 90 }] } },
+  } };
+  for (const mode of ['seal', 'triumphs'] as const) {
+    const seal = buildSeal(page, source, mode);
+    const metric = seal.headings.filter(h => h.metric);
+    expect(metric).toHaveLength(1);
+    expect(metric[0]).toMatchObject({ hash: '90', label: 'Times gilded', skip: true, gilding: false, objectives: [], intervals: [] });
+    expect(seal.headings.filter(h => !h.skip).map(h => h.hash)).not.toContain('90');
+  }
+  expect(buildSeal(page, source, 'badge').headings.some(h => h.metric)).toBe(false);
+  expect(buildSeal(page, defs).headings.some(h => h.metric)).toBe(false);
+});
+
+it('badge ownership requires a whole class collection and distinguishes all three classes', () => {
+  const shared = { ...buildSeal(page, defs, 'badge').headings[0]!, classNames: ['Titan', 'Hunter', 'Warlock'], collectibleHashes: ['200', '200', '200'] };
+  const headings = [shared, { ...shared, collectibleHashes: ['201', '203', '205'] }, { ...shared, collectibleHashes: ['202', '204', '206'] }];
+  const profile = (owned: number[], absent: number[] = []): Profile => ({ profileCollectibles: { data: { collectibles: Object.fromEntries([200, 201, 202, 203, 204, 205, 206].filter(h => !absent.includes(h)).map(h => [h, { state: owned.includes(h) ? 0 : 1 }])) } } });
+  expect(badgeOwnership(profile([200, 201, 202]), headings)).toEqual({ completeClasses: ['Titan'], allClasses: false });
+  expect(badgeOwnership(profile([200, 201, 202, 203, 204, 205, 206]), headings)).toEqual({ completeClasses: ['Titan', 'Hunter', 'Warlock'], allClasses: true });
+  expect(badgeOwnership(profile([200, 201, 203, 206]), headings)).toEqual({ completeClasses: [], allClasses: false });
+  expect(badgeOwnership(profile([200, 201, 202, 203, 204, 206], [205]), headings)).toEqual({ completeClasses: ['Titan', 'Hunter'], allClasses: false });
+  expect(badgeOwnership(undefined, headings)).toEqual({ completeClasses: [], allClasses: false });
+});
+
+it('places gilding requirements immediately after Times gilded while preserving order within each set', () => {
+  const source: Definitions = { ...defs, records: { ...defs.records,
+    '99': { ...record(99, 'Seal'), titleInfo: { gildingTrackingRecordHash: 90 } },
+    '90': record(90, 'Tracking'),
+    '12': { ...defs.records['12']!, forTitleGilding: true },
+    '14': { ...defs.records['14']!, forTitleGilding: true },
+  } };
+  for (const mode of ['seal', 'triumphs'] as const) {
+    const headings = buildSeal(page, source, mode).headings;
+    expect(headings.slice(0, 3).map(h => h.hash)).toEqual(['90', '12', '14']);
+    expect(headings.filter(h => !h.metric && !h.gilding).slice(0, 2).map(h => h.hash)).toEqual(['11', '13']);
   }
 });
