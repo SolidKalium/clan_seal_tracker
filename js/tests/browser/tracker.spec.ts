@@ -968,3 +968,20 @@ test('legend uses spaced entries and armor tooltips explain the scoring class be
   await expect(helmet.locator('..')).toHaveClass(/cell-complete/);
   await expect(note).toHaveCount(0);
 });
+
+test('table headers expose guardian and content identifiers without repeating shared collectible IDs', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const guardian = page.locator('tbody tr').filter({ hasText: 'Ada' }).locator('th[scope="row"]');
+  await expect(guardian).toHaveAttribute('data-guardian-id', '3_' + members[0]!.destinyUserInfo.membershipId);
+  await expect(guardian).toHaveAttribute('data-membership-id', members[0]!.destinyUserInfo.membershipId);
+  await expect(guardian).toHaveAttribute('data-membership-type', '3');
+  const record = page.getByRole('button', { name: 'First challenge', exact: true }).locator('..');
+  await expect(record).toHaveAttribute('data-record-hash', '42');
+  await expect(page.getByRole('button', { name: 'Stage 1: Encounters', exact: true }).locator('..')).toHaveAttribute('data-objective-hash', '101');
+  await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Badge', exact: true }).click();
+  const weapon = page.getByRole('button', { name: 'Raid weapon', exact: true }).locator('..');
+  await expect(weapon).toHaveAttribute('data-record-tooltip', 'header:collectible:201');
+  await expect(weapon).toHaveAttribute('data-collectible-hashes', '201');
+  await expect(page.getByRole('button', { name: 'Titan helmet', exact: true }).locator('..')).toHaveAttribute('data-collectible-hashes', '202 203');
+});

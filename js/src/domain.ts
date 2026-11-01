@@ -159,7 +159,7 @@ function collectibleHeading(hashes: string[], classes: string[], defs: Definitio
   const group = item?.itemType === 3 || item?.itemType === 20 ? 'Weapons' : variants || item?.itemType === 2 ? 'Armor' : /mod/i.test(itemType) ? 'Armor Mods' : /emblem|shader|shell|sparrow|ship|vehicle|emote|ornament/i.test(itemType) ? 'Cosmetics' : 'Collection';
   const perks = group === 'Armor Mods' ? (item?.perks ?? []).map(p => defs.perks?.[String(p.perkHash)]?.displayProperties).filter((p): p is NonNullable<typeof p> => !!p && !!(p.name || p.description)) : undefined;
   const source = redundantSource(first.sourceString ?? '', focus) ? '' : first.sourceString;
-  return { group, source, itemType: group === 'Armor Mods' ? 'Armor mod' : itemType, perks, hash: 'collectible:' + hashes.join(':'), collectibleHashes: hashes, classNames: classes,
+  return { group, source, itemType: group === 'Armor Mods' ? 'Armor mod' : itemType, perks, hash: 'collectible:' + [...new Set(hashes)].join(':'), collectibleHashes: hashes, classNames: classes,
     name: first.displayProperties.name, label: first.displayProperties.name,
     description: [source, ...hashes.map((h, i) => variants ? `${classes[i]}: ${defs.collectibles![h]!.displayProperties.name}` : '').filter(Boolean)].filter(Boolean).join('\n'),
     scope: first.scope, gilding: false, skip: false, order: 1000,

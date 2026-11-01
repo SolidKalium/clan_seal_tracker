@@ -200,3 +200,12 @@ it('explains a white owned armor cell using the scored class and its actual armo
   delete profile.profileCollectibles!.data!.collectibles['305'];
   expect(headingCell(profile, headings[0]!, index, headings, 'best').scoringClass?.armorFraction).toBeUndefined();
 });
+
+it('deduplicates shared collectible identifiers without losing parallel class mappings', () => {
+  const badge = buildSeal(page, defs, 'badge');
+  const shared = badge.headings.find(h => h.collectibleHashes?.every(hash => hash === '200'))!;
+  expect(shared.hash).toBe('collectible:200');
+  expect(shared.collectibleHashes).toEqual(['200', '200']);
+  const armor = badge.headings.find(h => h.collectibleHashes?.includes('201'))!;
+  expect(armor.hash).toBe('collectible:201:203');
+});
