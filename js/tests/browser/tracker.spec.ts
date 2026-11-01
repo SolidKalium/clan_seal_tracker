@@ -48,7 +48,7 @@ test('clan overview, seal table, filters, sort, details, and persisted preferenc
   await expect(page.locator('.sidebar h2')).toHaveText('Test Clan');
   await expect(page.locator('.sync-strip')).toContainText('3 / 3');
   await page.locator('.seal-card').first().click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Rivensbane');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Rivensbane seal');
   await expect(page.locator('tbody tr')).toHaveCount(3);
   await expect(page.locator('tbody tr').first()).toContainText('Banshee');
   await expect(page.locator('tbody tr').first()).toContainText('25');
@@ -322,7 +322,7 @@ test('badge and full raid navigation keep collection progress and unscored day o
   await page.goto('#/seal/last_wish'); await ready(page);
   const calls = state.calls;
   await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Badge', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Last Wish badge');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Badge badge');
   await expect(page.locator('thead')).toContainText('Raid weapon');
   for (const heading of await page.locator('.record-header-row .record-heading').all()) {
     await expect(heading).toHaveCSS('vertical-align', 'middle');
@@ -534,16 +534,16 @@ test('the browser catalog exposes the three new raids with seal, badge, and full
   } }));
   await page.route('**/records.json', route => route.fulfill({ json: { ...records, ...Object.fromEntries(additions.map((raid, i) => [990 + i, record(990 + i, raid.name, { titleInfo: { titlesByGender: { Male: raid.title } } })])) } }));
   await page.goto(''); await ready(page);
-  await expect(page.getByRole('region', { name: 'Raid seals', exact: true }).locator('.seal-card')).toHaveCount(10);
+  await expect(page.getByRole('region', { name: 'Raid seals', exact: true }).locator('.seal-card')).toHaveCount(12);
   await expect(page.getByRole('region', { name: 'Activity seals', exact: true }).locator('.seal-card')).toHaveCount(6);
   for (const raid of additions) {
     await page.locator('.seal-nav').getByRole('link', { name: raid.name, exact: true }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.title);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.title + ' seal');
     const views = page.getByRole('navigation', { name: 'Raid view' });
     await views.getByRole('link', { name: 'Badge', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.name + ' badge');
     await views.getByRole('link', { name: 'Full raid', exact: true }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.title);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(raid.name);
     await views.getByRole('link', { name: 'Seal', exact: true }).click();
   }
 });
@@ -575,7 +575,7 @@ test('activity seals and triumphs have separate navigation and optional badges',
   await expect(page.getByRole('region', { name: 'Activity seals', exact: true }).locator('.seal-card')).toHaveCount(6);
   for (const activity of activities) {
     await page.getByRole('navigation', { name: 'Activities', exact: true }).getByRole('link', { name: activity.name, exact: true }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(activity.title);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(activity.title + ' seal');
     const views = page.getByRole('navigation', { name: 'Activity view' });
     await expect(views.getByRole('link', { name: 'Badge', exact: true })).toHaveCount(activity.badge ? 1 : 0);
     await expect(page.locator('thead .heading-gilding').first()).toBeVisible();
@@ -635,14 +635,15 @@ test('restricted and hidden triumphs retain progress with a cell indicator and t
   const cell = button.locator('..');
   await expect(cell).toHaveClass(/cell-unowned/);
   await expect(cell.getByRole('img')).toHaveAccessibleName('Content locked; Hidden in game; Obscured in game');
-  await expect(cell.locator('.condition-more')).toHaveText('+');
-  await expect(cell.locator('.cell-hidden-watermark')).toBeVisible();
-  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.cell-hidden-watermark')).toHaveCount(2);
+  await expect(cell.locator('.cell-status-watermark')).toHaveAttribute('data-condition', 'unowned');
+  await expect(cell.locator('.cell-status-watermark')).toBeVisible();
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.cell-status-watermark')).toHaveCount(2);
   await expect(cell.locator('.cell-state')).toHaveCSS('pointer-events', 'none');
-  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.cell-conditions')).toHaveCount(1);
+  await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.cell-conditions')).toHaveCount(0);
   await button.hover();
   const tooltip = page.getByRole('tooltip');
   await expect(tooltip.locator('.record-conditions strong')).toHaveText(['Content locked', 'Hidden in game', 'Obscured in game']);
+  await expect(tooltip.locator('.record-conditions .condition-icon')).toHaveCount(3);
   await expect(tooltip).toContainText('such as required DLC');
   await expect(tooltip.locator('.objective-count').first()).toHaveText(/5\s*\/\s*10/);
   await expect(page.locator('tbody tr').filter({ hasText: 'Banshee' }).locator('.progress-column')).toContainText('75');
@@ -674,16 +675,16 @@ test('expansions and episodes expose nested triumphs, independent badges, and ma
   await expect(page.getByRole('region', { name: 'Seasons & Episodes', exact: true }).locator('.seal-card')).toHaveCount(25);
   await page.getByRole('button', { name: 'Expansions', exact: true }).click();
   await page.getByRole('navigation', { name: 'Expansions', exact: true }).getByRole('link', { name: 'The Final Shape', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Transcendent');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Transcendent seal');
   await expect(page.locator('.legacy-notice')).toHaveCount(0);
   const expansionViews = page.getByRole('navigation', { name: 'Expansion view' });
   await expansionViews.getByRole('link', { name: 'Badge', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('The Final Shape badge');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pale Heart Pathfinder badge');
   await expansionViews.getByRole('link', { name: 'All triumphs', exact: true }).click();
   await page.getByRole('button', { name: 'Seasons & Episodes', exact: true }).click();
   await page.getByRole('navigation', { name: 'Seasons & Episodes', exact: true }).getByRole('link', { name: 'Episode: Echoes Legacy', exact: true }).click();
   await expect(page).toHaveURL(/#\/triumphs\/episode_echoes$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Intrepid');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Episode: Echoes triumphs');
   await expect(page.locator('.legacy-notice')).toContainText('can no longer be earned');
   await expect(page.locator('thead')).toContainText('Nested episode triumph');
   await expect(page.locator('thead')).not.toContainText('Raid weapon');
@@ -692,7 +693,7 @@ test('expansions and episodes expose nested triumphs, independent badges, and ma
   await seasonalViews.getByRole('link', { name: 'Seal', exact: true }).click();
   await expect(page.locator('thead')).not.toContainText('Nested episode triumph');
   await page.getByRole('navigation', { name: 'Seasons & Episodes', exact: true }).getByRole('link', { name: 'Monument of Triumph', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Immortal');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Immortal seal');
   await expect(page.locator('.legacy-notice')).toHaveCount(0);
 });
 
@@ -998,7 +999,7 @@ test('destination and event navigation supports triumph-only and removed histori
   await expect(nessus).not.toContainText('title holders');
   await nessus.click();
   await expect(page).toHaveURL(/#\/triumphs\/nessus$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nessus');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nessus triumphs');
   await expect(page.getByRole('navigation', { name: 'Destination view' }).getByRole('link', { name: 'Seal', exact: true })).toHaveCount(0);
   await expect(page.getByRole('columnheader', { name: 'Completion', exact: true })).toBeVisible();
   await expect(page.locator('.table-legend')).not.toContainText('Title earned');
@@ -1054,21 +1055,22 @@ test('event headings and tab positions stay consistent across seal, yearly, and 
     const tabs = page.getByRole('navigation', { name: 'Event view' });
     await expect(page.locator('.seal-heading .eyebrow')).toHaveText('Events / Festival of the Lost / Seal requirements');
     const sealY = (await tabs.boundingBox())!.y;
+    const sealHeadingHeight = (await page.locator('.seal-heading').boundingBox())!.height;
     const tabBounds = () => tabs.getByRole('link').evaluateAll(links => links.map(link => { const { x, y, width, height } = link.getBoundingClientRect(); return { x, y, width, height }; }));
     const before = await tabBounds();
-    const expectStableTabs = async () => { const after = await tabBounds(); expect(after).toHaveLength(before.length); after.forEach((rect, i) => { for (const key of ['x', 'y', 'width', 'height'] as const) expect(rect[key]).toBeCloseTo(before[i]![key], 2); }); };
+    const expectStableTabs = async () => { const after = await tabBounds(); expect(after).toHaveLength(before.length); after.forEach((rect, i) => { for (const key of ['x', 'width', 'height'] as const) expect(rect[key]).toBeCloseTo(before[i]![key], 2); }); };
     await expect(page.locator('.view-description')).toBeVisible();
     await tabs.getByRole('link', { name: '2022', exact: true }).click();
     await expect(page.locator('.seal-heading .eyebrow')).toHaveText('Events / Festival of the Lost / 2022');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ghost Writer');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Festival of the Lost triumphs');
     await expect(page.locator('.view-description')).toHaveCount(0);
-    expect(Math.abs((await tabs.boundingBox())!.y - sealY)).toBeLessThan(1);
+    expect(Math.abs((await tabs.boundingBox())!.y - sealY - ((await page.locator('.seal-heading').boundingBox())!.height - sealHeadingHeight))).toBeLessThan(1);
     await expectStableTabs();
     await tabs.getByRole('link', { name: '2021', exact: true }).click();
     await expect(page.locator('.seal-heading .eyebrow')).toHaveText('Events / Festival of the Lost / 2021');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ghost Writer');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Festival of the Lost triumphs');
     await expect(page.locator('.view-unavailable')).toContainText('removed from Bungie’s manifest');
-    expect(Math.abs((await tabs.boundingBox())!.y - sealY)).toBeLessThan(1);
+    expect(Math.abs((await tabs.boundingBox())!.y - sealY - ((await page.locator('.seal-heading').boundingBox())!.height - sealHeadingHeight))).toBeLessThan(1);
     await expectStableTabs();
   }
 });
@@ -1113,10 +1115,11 @@ test('hidden and obscured gilding cells keep numbers, pips, and hover borders be
   const guardian = row.locator('.player-column');
   const guardianBounds = (await guardian.boundingBox())!;
   const right = guardianBounds.x + guardianBounds.width;
-  for (const [label, text] of [['Banshee: First challenge: Encounters: 5/10', '5/10'], ['Banshee: Second challenge: Challenge: 0/1', '·']]) {
+  for (const [label, text] of [['Banshee: First challenge: Encounters: 5/10', '5/10'], ['Banshee: Second challenge: Challenge: 0/1', '']]) {
     const button = page.getByRole('button', { name: label, exact: true });
     await page.locator('.table-scroll').evaluate(e => { e.scrollLeft = 0; });
     await expect(button).toHaveText(text!);
+    await expect(button.locator('..').locator('.cell-status-watermark')).toHaveAttribute('data-condition', label!.includes('First challenge') ? 'hidden' : 'obscured');
     const initial = (await button.boundingBox())!;
     await page.locator('.table-scroll').evaluate((e, left) => { e.scrollLeft = left; }, initial.x + initial.width - right - 4);
     const bounds = (await button.boundingBox())!;
@@ -1127,4 +1130,111 @@ test('hidden and obscured gilding cells keep numbers, pips, and hover borders be
       expect(await guardian.evaluate((e, point) => document.elementFromPoint(point.x, point.y)?.closest('th') === e, { x, y: bounds.y + bounds.height / 2 })).toBe(true);
     }
   }
+});
+
+test('summary counts include totals, condense full completion, and keep seal rules on Seal', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const tooltip = page.getByRole('tooltip');
+  const summary = (name: string) => page.locator('tbody tr').filter({ hasText: name }).locator('.summary-cell');
+  await summary('Banshee').hover();
+  await expect(tooltip.locator('.completion-counts')).toHaveText('0 of 2 triumphs complete1 triumph partially complete');
+  await expect(tooltip.locator('.completion-rule')).toContainText('Seal');
+  await summary('Ada').hover();
+  await expect(tooltip.locator('.completion-counts')).toHaveText('All 2 triumphs complete');
+  await expect(tooltip).not.toContainText('partially complete');
+  await summary('Crow').hover();
+  await expect(tooltip.locator('.completion-counts')).toContainText('0 of 2 triumphs complete');
+  await expect(tooltip.locator('.completion-counts')).toContainText('2 triumphs with no public record');
+  await page.goto('#/triumphs/last_wish');
+  await summary('Banshee').hover();
+  await expect(tooltip.locator('.completion-rule')).toHaveCount(0);
+  await expect(tooltip).not.toContainText('earning the seal');
+  await page.getByRole('navigation', { name: 'Raid view' }).getByRole('link', { name: 'Badge', exact: true }).click();
+  await summary('Banshee').hover();
+  await expect(tooltip.locator('.completion-counts')).toHaveText('1 of 2 items collected');
+  await expect(tooltip).not.toContainText('partially collected');
+  await summary('Ada').hover();
+  await expect(tooltip.locator('.completion-counts')).toHaveText('All 2 items collected');
+});
+
+test('historical activity seals and Leviathan content share their parent navigation', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const sealNode = (hash: number) => ({ hash, displayProperties: { name: 'Seal' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } });
+  const recordsNode = (hash: number) => ({ hash, displayProperties: { name: 'Legacy' }, children: { records: [{ recordHash: 43 }] } });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '3776992251': sealNode(3776992251), '581214566': sealNode(581214566), '1276693937': sealNode(1276693937), '1733555826': sealNode(1733555826),
+    '475207334': sealNode(475207334), '2107507397': sealNode(2107507397),
+    '636644708': recordsNode(636644708), '2675905563': recordsNode(2675905563), '1427965125': recordsNode(1427965125), '2558323083': recordsNode(2558323083), '2481808943': recordsNode(2481808943), '297242190': recordsNode(297242190), '1519064131': recordsNode(1519064131),
+    '1881970629': { hash: 1881970629, children: { presentationNodes: [{ presentationNodeHash: 581214566 }, { presentationNodeHash: 1276693937 }, { presentationNodeHash: 2107507397 }] } },
+    '3215903653': { hash: 3215903653, children: { presentationNodes: [636644708, 2675905563, 1427965125, 2558323083, 2481808943, 297242190, 1519064131].map(presentationNodeHash => ({ presentationNodeHash })) } },
+  } }));
+  await page.goto('#/seal/strikes'); await ready(page);
+  const activities = page.getByRole('navigation', { name: 'Activities', exact: true });
+  await expect(activities.getByRole('link')).toHaveCount(6);
+  const activityViews = page.getByRole('navigation', { name: 'Activity view' });
+  await activityViews.getByRole('link', { name: 'Season 12', exact: true }).click();
+  await expect(page).toHaveURL(/#\/seal\/conqueror_12$/);
+  await expect(page.locator('.legacy-notice')).toContainText('Legacy seal');
+  await expect(activities.getByRole('link', { name: 'Strikes', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('button', { name: 'Requirements', exact: true })).toBeVisible();
+  await activityViews.getByRole('link', { name: 'Legacy strikes', exact: true }).click();
+  await expect(page).toHaveURL(/#\/triumphs\/strikes_legacy$/);
+  await expect(page.locator('.legacy-notice')).toContainText('Objective progress is likely missing');
+  await page.goto('#/seal/trials');
+  await activityViews.getByRole('link', { name: 'Season 12', exact: true }).click();
+  await expect(page).toHaveURL(/#\/seal\/flawless_12$/);
+  await page.goto('#/seal/crucible');
+  await activityViews.getByRole('link', { name: 'Unbroken', exact: true }).click();
+  await expect(page).toHaveURL(/#\/seal\/unbroken$/);
+  await page.goto('#/triumphs/leviathan');
+  const raids = page.getByRole('navigation', { name: 'Raids', exact: true });
+  await expect(raids.getByRole('link')).toHaveCount(12);
+  await expect(raids.getByRole('link', { name: 'Crown of Sorrow', exact: true })).toHaveCount(0);
+  const raidViews = page.getByRole('navigation', { name: 'Raid view' });
+  for (const [name, id] of [['Crown of Sorrow', 'crown'], ['Menagerie', 'menagerie'], ['Tribute Hall', 'tribute_hall'], ['Leviathan', 'leviathan']]) {
+    await raidViews.getByRole('link', { name, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp('#/triumphs/' + id + '$'));
+    await expect(raids.getByRole('link', { name: 'Leviathan Legacy', exact: true })).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Leviathan triumphs');
+  }
+});
+
+test('activity headings distinguish seals, named badges, and current triumphs with appropriate owner counts', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '475207334': { hash: 475207334, displayProperties: { name: 'Crucible', description: 'Earn the Glorious title.', icon: root + 'icons/test-hunter.png' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }, { recordHash: 43 }] } },
+    '3973313476': { hash: 3973313476, children: { records: [{ recordHash: 44 }] } },
+    '2107507397': { hash: 2107507397, displayProperties: { name: 'Unbroken' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } },
+    '1881970629': { hash: 1881970629, children: { presentationNodes: [{ presentationNodeHash: 2107507397 }] } },
+    '701100740': { hash: 701100740, displayProperties: { name: 'Crucible Arsenal' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } },
+    '4': { hash: 4, displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }] } },
+    '5': { hash: 5, displayProperties: { name: 'Hunter' }, children: { collectibles: [{ collectibleHash: 201 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male: 'Glorious' } } }), '44': record(44, 'Extra current triumph', { objectiveHashes: [102] }),
+  } }));
+  await page.goto('#/seal/crucible'); await ready(page);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Glorious seal');
+  await expect(page.locator('.heading-kind')).toHaveText('seal');
+  await expect(page.locator('.heading-tally')).toHaveText('1title holders');
+  await expect(page.locator('.heading-seal-icon')).toBeVisible();
+  await expect(page.locator('.view-description')).toHaveText('Earn the Glorious title.');
+  await expect(page.locator('.active-triumphs-notice')).toHaveCount(0);
+  const icon = (await page.locator('.heading-seal-icon').boundingBox())!;
+  const count = (await page.locator('.heading-tally .title-tally').boundingBox())!;
+  expect(Math.abs(icon.height - count.height)).toBeLessThan(10);
+  expect(count.x - icon.x - icon.width).toBeLessThanOrEqual(4);
+  await expect(page.locator('.heading-tally .title-tally')).toHaveCSS('text-align', 'left');
+  const tabs = page.getByRole('navigation', { name: 'Activity view' });
+  await tabs.getByRole('link', { name: 'All triumphs', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Crucible triumphs');
+  await expect(page.locator('.active-triumphs-notice')).toContainText('This view only shows active triumphs');
+  await expect(page.locator('.heading-tally')).toHaveCount(0);
+  await expect(page.locator('.view-description')).toHaveCount(0);
+  await tabs.getByRole('link', { name: 'Badge', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Crucible Arsenal badge');
+  await expect(page.locator('.active-triumphs-notice')).toHaveCount(0);
+  await expect(page.locator('.heading-tally')).toHaveText('1badge owners');
+  await expect(page.locator('.heading-seal-icon')).toHaveCount(0);
 });

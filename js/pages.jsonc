@@ -1606,5 +1606,138 @@
     "category": "Events",
     "otherNodeHashes": ["2330977699"],
     "records": {}
+  },
+  {
+    "id": "conqueror_12",
+    "name": "Conqueror (Season 12)",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "strikes",
+    "tabLabel": "Season 12",
+    "sealNodeHash": "581214566"
+  },
+  {
+    "id": "conqueror_11",
+    "name": "Conqueror (Season 11)",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "strikes",
+    "tabLabel": "Season 11",
+    "sealNodeHash": "3212358005"
+  },
+  {
+    "id": "conqueror_10",
+    "name": "Conqueror (Season 10)",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "strikes",
+    "tabLabel": "Season 10",
+    "sealNodeHash": "1376640684"
+  },
+  {
+    "id": "flawless_12",
+    "name": "Flawless (Season 12)",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "trials",
+    "tabLabel": "Season 12",
+    "sealNodeHash": "1276693937"
+  },
+  {
+    "id": "flawless_11",
+    "name": "Flawless (Season 11)",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "trials",
+    "tabLabel": "Season 11",
+    "sealNodeHash": "3251218484"
+  },
+  {
+    "id": "flawless_10",
+    "name": "Flawless (Season 10)",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "trials",
+    "tabLabel": "Season 10",
+    "sealNodeHash": "2086100423"
+  },
+  {
+    "id": "unbroken",
+    "name": "Unbroken",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "crucible",
+    "tabLabel": "Unbroken",
+    "sealNodeHash": "2107507397"
+  },
+  {
+    "id": "strikes_legacy",
+    "name": "Strikes (Legacy)",
+    "category": "Activities",
+    "records": {},
+    "parentPageId": "strikes",
+    "tabLabel": "Legacy strikes",
+    "otherNodeHashes": [
+      "636644708",
+      "2675905563",
+      "1427965125"
+    ]
+  },
+  {
+    "id": "leviathan",
+    "name": "Leviathan",
+    "category": "Raid seals",
+    "records": {},
+    "otherNodeHashes": [
+      "2558323083"
+    ],
+    "tabLabel": "Leviathan"
+  },
+  {
+    "id": "crown",
+    "name": "Crown of Sorrow",
+    "category": "Raid seals",
+    "records": {},
+    "parentPageId": "leviathan",
+    "tabLabel": "Crown of Sorrow",
+    "otherNodeHashes": [
+      "2481808943"
+    ]
+  },
+  {
+    "id": "menagerie",
+    "name": "Menagerie",
+    "category": "Raid seals",
+    "records": {},
+    "parentPageId": "leviathan",
+    "tabLabel": "Menagerie",
+    "otherNodeHashes": [
+      "297242190"
+    ]
+  },
+  {
+    "id": "tribute_hall",
+    "name": "Tribute Hall",
+    "category": "Raid seals",
+    "records": {},
+    "parentPageId": "leviathan",
+    "tabLabel": "Tribute Hall",
+    "otherNodeHashes": [
+      "1519064131"
+    ]
+  },
+  {
+    "id": "scourge_of_the_past",
+    "name": "Scourge of the Past",
+    "category": "Raid seals",
+    "records": {
+      "2159542632": {},
+      "2925485370": {},
+      "132377266": {},
+      "1180238715": {},
+      "223175561": {},
+      "974101911": {},
+      "1778986403": {}
+    }
   }
 ]

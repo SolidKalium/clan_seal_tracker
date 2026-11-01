@@ -288,6 +288,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Consider optional per-clan styling for the page, based on the clan's colors.
 - [ ] Option to show progress without gilding. Could also allow a "full completion" mode that includes day 1 or any other excluded entries.
 - [ ] Improve gilding requirement column header styling
+- [ ] Show score, rewards, or other details on triumph heading tooltips. Could show preview of armor or weapons.
 
 ## Clan tenure and ranks — 2026-10-30
 
@@ -534,3 +535,27 @@ Checked Hept Harmonies (record 2980025326) against Bungie's live manifest 245114
 ## Conditioned cell stacking — 2026-10-31
 
 Give hidden/obscured/content-locked cells an isolated stacking context. Their positioned button (including progress numbers, zero-progress pips, and hover borders) stays above the watermark within the cell but below the sticky guardian column. A narrow-viewport browser test scrolls hidden partial-progress and obscured zero-progress gilding cells under guardian names while their hover borders remain active, checking both text and border overlap points.
+
+## Completion-summary totals — 2026-10-31
+
+Use “x of y triumphs complete” and “x of y items collected” to show the denominator without inferring that the remaining requirements have not been started. Retain the partial-triumph count unless all triumphs are complete, when the two lines become “All y triumphs complete.” Apply the same all-collected phrasing to items. Collection cells currently score ownership as zero or one for the scoring class, so partial collection cannot occur; omit a zero partial-items line. Keep missing public records explicit. Show seal/gilding requirements only in the Seal summary tooltip, alongside the existing badge-specific collection explanation on Badge; broader-view summaries describe only their table aggregation.
+
+## Historical activity seals and Leviathan — 2026-10-31
+
+Generalize parent-page tabs beyond events, requiring parent and child to share a category. Under Strikes, add Conqueror Seasons 12, 11, and 10, plus Legacy strikes using the PHP roots for Chosen, Hunt, and Tangled Shore. Under Trials, add Flawless Seasons 12, 11, and 10. Under Crucible, add Unbroken. These are actual legacy seal nodes, so their tabs open in Seal mode with their own title and requirements; historical triumph-only tabs use All triumphs. Keep the parent selected in the sidebar and preserve each edition's direct route.
+
+Add one Leviathan entry under Raids with Leviathan, Crown of Sorrow, Menagerie, and Tribute Hall tabs, matching the old PHP grouping. The current Leviathan node already includes normal/Prestige completion triumphs for Leviathan, Eater of Worlds, and Spire of Stars, so do not fabricate separate empty raid pages. Add Scourge of the Past as a standalone triumph-only raid page using its six surviving Blacksmith requirements and the historical Moments of Triumph raid completion record. It has no standalone presentation node; this is the surviving set, not a reconstructed historical manifest. Derive legacy status for explicit-record-only pages from membership in Bungie's legacy triumph/title trees, rather than adding a configured legacy flag.
+
+All thirteen added views resolve against the current cached manifest: three Conqueror versions, three Flawless versions, Unbroken, Legacy strikes, the four Leviathan views, and Scourge. Historical raid pages use triumph tabs rather than inventing seal or combined collection views.
+
+## Status watermarks and view-specific headings — 2026-10-31
+
+Use one centered condition watermark per cell, prioritized Content locked, Hidden in game, then Obscured in game. Remove corner condition icons and plus markers. Reuse the same glyphs before each status heading in record details, where all applicable conditions remain listed. Suppress a zero-progress pip when a condition watermark supplies the cell's visual marker; partial counts and completed checkmarks remain visible. Keep conditioned cells isolated below the pinned guardian column.
+
+Seal views show the awarded title with a smaller muted “seal” suffix, a seal icon alongside the holder count, and the seal description. Badge views use the badge node's own name (falling back to the page name), the same styled “badge” suffix, and a count of guardians with the badge collected for any class, counted once per guardian. Do not add badge artwork or separate all-class ownership totals to the heading. All triumphs uses the parent page's name with a styled “triumphs” suffix, drops the title-holder tally, and omits the seal description. Keep the existing All triumphs tab wording and use legacy tabs/notices to distinguish archived records; do not call this a full activity view.
+
+## Active-view notice and seal tally spacing — 2026-10-31
+
+On the current All triumphs view, show an “Active triumphs” notice when its page has configured legacy editions. Explain that this view shows only active triumphs and legacy records are in separate tabs. Do not show that notice on Seal, Badge, or the archived editions themselves. Change the legacy seal notice's opening label from “Legacy title” to “Legacy seal,” retaining Bungie's Legacy Titles terminology when naming its manifest tree.
+
+Make the seal image comparable to the height of the two-line holder count (64px desktop, 48px mobile), separated by 4px. Remove the tally's fixed minimum width and left-align its contents, so a short number sits close to the seal and larger counts grow naturally.

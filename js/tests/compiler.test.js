@@ -28,9 +28,9 @@ it('validates catalog IDs/hashes and allows only supported page and rule fields'
 it('loads ten raids from the independent browser catalog', () => {
   const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'js/pages.jsonc');
   const result = compile({ secret_key: 'browser-key', group_id: 1 }, pages);
-  expect(result.catalog.filter(p => p.category === 'Raid seals')).toHaveLength(10);
-  expect(result.catalog.filter(p => p.category === 'Activities').map(p => p.id)).toEqual(['crucible', 'iron_banner', 'gambit', 'trials', 'strikes', 'deadeye']);
-  expect(result.catalog.filter(p => p.category === 'Raid seals').slice(-3).map(p => [p.id, p.sealNodeHash, p.badgeNodeHash])).toEqual([
+  expect(result.catalog.filter(p => p.category === 'Raid seals' && p.sealNodeHash)).toHaveLength(10);
+  expect(result.catalog.filter(p => p.category === 'Activities' && !p.parentPageId).map(p => p.id)).toEqual(['crucible', 'iron_banner', 'gambit', 'trials', 'strikes', 'deadeye']);
+  expect(result.catalog.filter(p => p.category === 'Raid seals' && p.sealNodeHash).slice(-3).map(p => [p.id, p.sealNodeHash, p.badgeNodeHash])).toEqual([
     ['crotas_end', '238107129', '48971793'], ['salvations_edge', '334829503', '988425963'], ['the_desert_perpetual', '3954661385', '4253860097'],
   ]);
 });
@@ -71,7 +71,7 @@ it('groups standalone destinations and events without duplicating expansion dest
   expect(catalog.find(p => p.id === 'nessus').sealNodeHash).toBeUndefined();
   expect(catalog.find(p => p.id === 'festival_of_the_lost_2021').unavailableReason).toContain('removed');
   const settings = { secret_key: 'key', group_id: 1 };
-  expect(() => compile(settings, [{ id: 'test', name: 'Test', category: 'Activities', records: {} }])).toThrow('Missing seal');
+  expect(() => compile(settings, [{ id: 'test', name: 'Test', category: 'Expansions', records: {} }])).toThrow('Missing seal');
   expect(compile(settings, [{ id: 'test', name: 'Test', category: 'Events', otherNodeHashes: [123], records: {} }]).catalog[0].otherNodeHashes).toEqual(['123']);
 });
 
@@ -80,5 +80,15 @@ it('keeps historical event editions attached to their event page', () => {
   const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
   expect(catalog.find(p => p.id === 'guardian_games_2022_medals')).toMatchObject({ parentPageId: 'guardian_games', tabLabel: '2022 medals' });
   expect(catalog.find(p => p.id === 'festival_of_the_lost_2022').otherNodeHashes).toEqual(['2330977699']);
-  expect(() => compile({ secret_key: 'key', group_id: 1 }, [{ id: 'orphan', name: 'Orphan', category: 'Events', parentPageId: 'missing', tabLabel: '2021' }])).toThrow('Invalid event tab');
+  expect(() => compile({ secret_key: 'key', group_id: 1 }, [{ id: 'orphan', name: 'Orphan', category: 'Events', parentPageId: 'missing', tabLabel: '2021' }])).toThrow('Invalid page tab');
+});
+
+it('groups historical activity seals and Leviathan content under their parent pages', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  expect(catalog.filter(p => p.parentPageId === 'strikes').map(p => p.id)).toEqual(['conqueror_12', 'conqueror_11', 'conqueror_10', 'strikes_legacy']);
+  expect(catalog.filter(p => p.parentPageId === 'trials')).toHaveLength(3);
+  expect(catalog.find(p => p.id === 'unbroken')).toMatchObject({ parentPageId: 'crucible', sealNodeHash: '2107507397' });
+  expect(catalog.filter(p => p.parentPageId === 'leviathan').map(p => p.id)).toEqual(['crown', 'menagerie', 'tribute_hall']);
+  expect(catalog.find(p => p.id === 'scourge_of_the_past').records).toHaveProperty('2925485370');
 });

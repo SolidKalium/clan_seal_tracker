@@ -15,12 +15,12 @@ const requirementText = (count: RequirementCount) => count.required === undefine
     <p v-if="player" class="eyebrow">{{ player }}</p>
     <h3>{{ label }}</h3>
     <template v-if="counts">
-      <p v-if="counts.triumphs.total" class="completion-counts">{{ triumphs(counts.triumphs.complete) }} complete<br>{{ triumphs(counts.triumphs.partial) }} partially complete<span v-if="counts.triumphs.missing"><br>{{ triumphs(counts.triumphs.missing) }} with no public record</span></p>
-      <p v-if="counts.collections.total" class="completion-counts">{{ collectionColumns(counts.collections.complete) }} collected<br>{{ collectionColumns(counts.collections.partial) }} partially collected<span v-if="counts.collections.missing"><br>{{ collectionColumns(counts.collections.missing) }} with no public record</span></p>
+      <p v-if="counts.triumphs.total" class="completion-counts"><template v-if="counts.triumphs.complete === counts.triumphs.total">All {{ triumphs(counts.triumphs.total) }} complete</template><template v-else>{{ counts.triumphs.complete }} of {{ triumphs(counts.triumphs.total) }} complete<br>{{ triumphs(counts.triumphs.partial) }} partially complete</template><span v-if="counts.triumphs.missing"><br>{{ triumphs(counts.triumphs.missing) }} with no public record</span></p>
+      <p v-if="counts.collections.total" class="completion-counts"><template v-if="counts.collections.complete === counts.collections.total">All {{ collectionColumns(counts.collections.total) }} collected</template><template v-else>{{ counts.collections.complete }} of {{ collectionColumns(counts.collections.total) }} collected<span v-if="counts.collections.partial"><br>{{ collectionColumns(counts.collections.partial) }} partially collected</span></template><span v-if="counts.collections.missing"><br>{{ collectionColumns(counts.collections.missing) }} with no public record</span></p>
     </template>
-    <p v-if="broader" class="record-description">This table averages progress across its included columns. This is a site-defined summary<span v-if="seal.page.sealNodeHash">, separate from earning the seal or gilding it</span>.</p>
+    <p v-if="broader" class="record-description">This table averages progress across its included columns. This is a site-defined summary.</p>
     <p v-if="badge" class="completion-rule"><strong>Badge</strong>Acquire the full collection for at least one class.</p>
-    <template v-else-if="seal.requirements">
+    <template v-else-if="!broader && seal.requirements">
       <p class="completion-rule"><strong>Seal</strong>{{ requirementText(seal.requirements.seal) }}</p>
       <p v-if="seal.requirements.gilding" class="completion-rule"><strong>Gilding</strong><template v-if="seal.requirements.gilding.requiresSeal">Earn the seal, then complete all {{ seal.requirements.gilding.total }} gilding {{ seal.requirements.gilding.total === 1 ? 'triumph' : 'triumphs' }}.</template><template v-else>{{ requirementText(seal.requirements.gilding) }}</template></p>
     </template>

@@ -37,9 +37,10 @@ export function compile(settings, pages) {
     // Explicit allowlist: never send historical user overrides or private settings.
     if (p.category !== undefined && !['Raid seals', 'Activities', 'Expansions', 'Seasons & Episodes', 'Destinations', 'Events'].includes(p.category)) throw new Error(`Invalid page category ${p.id}`);
     if (p.seasonNumber !== undefined && (!Number.isInteger(p.seasonNumber) || p.seasonNumber < 1)) throw new Error(`Invalid season number ${p.id}`);
-    if (p.sealNodeHash === undefined && !['Destinations', 'Events'].includes(p.category)) throw new Error(`Missing seal hash ${p.id}`);
+    if (p.sealNodeHash === undefined && !['Destinations', 'Events', 'Activities', 'Raid seals'].includes(p.category)) throw new Error(`Missing seal hash ${p.id}`);
     if (p.unavailableReason !== undefined && (typeof p.unavailableReason !== 'string' || !p.unavailableReason.trim())) throw new Error(`Invalid unavailable reason ${p.id}`);
-    if (p.parentPageId !== undefined && (p.category !== 'Events' || !pages.some(parent => parent.id === p.parentPageId && parent.category === 'Events' && !parent.parentPageId) || typeof p.tabLabel !== 'string' || !p.tabLabel.trim())) throw new Error(`Invalid event tab ${p.id}`);
+    if (p.tabLabel !== undefined && (typeof p.tabLabel !== 'string' || !p.tabLabel.trim())) throw new Error(`Invalid tab label ${p.id}`);
+    if (p.parentPageId !== undefined && (!pages.some(parent => parent.id === p.parentPageId && parent.category === p.category && !parent.parentPageId) || typeof p.tabLabel !== 'string' || !p.tabLabel.trim())) throw new Error(`Invalid page tab ${p.id}`);
     return { parentPageId: p.parentPageId, tabLabel: p.tabLabel, id: p.id, name: p.name, category: p.category ?? 'Raid seals', seasonNumber: p.seasonNumber, unavailableReason: p.unavailableReason,
       sealNodeHash: p.sealNodeHash === undefined ? undefined : hash(p.sealNodeHash, p.id), badgeNodeHash: p.badgeNodeHash === undefined ? undefined : hash(p.badgeNodeHash, p.id),
       otherNodeHashes: (p.otherNodeHashes ?? []).map(h => hash(h, p.id)),

@@ -85,6 +85,8 @@ it('builds standalone destination triumphs recursively without fabricating seal 
   const result = buildSeal(page, defs);
   expect(result.headings.map(h => h.hash)).toEqual(['42', '43']);
   expect(result.legacy).toBe(true);
+  expect(buildSeal({ ...page, otherNodeHashes: [], records: { '42': {} } }, defs).legacy).toBe(true);
+  expect(buildSeal({ ...page, otherNodeHashes: [], records: { '43': {} } }, defs).legacy).toBe(false);
   expect(result.requirements).toBeUndefined();
   expect(result.completionHash).toBe('');
   expect(sealAwarded({}, result)).toBeUndefined();

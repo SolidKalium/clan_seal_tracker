@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import ClassIcon from './ClassIcon.vue';
+import ConditionIcon from './ConditionIcon.vue';
 import { objectiveGoal, objectiveUnit } from './domain';
 import type { Cell, Heading } from './types';
 const props = defineProps<{ heading: Heading; cell?: Cell; player?: string; activeObjectiveHash?: string }>();
@@ -27,7 +28,7 @@ const description = computed(() => {
     <p v-if="description && description !== heading.name" class="record-description" :class="{ 'collection-description': heading.collectibleHashes }">{{ description }}</p>
     <p v-if="heading.seals?.length" class="seal-memberships">This triumph is part of the <template v-for="(part, i) in membershipParts" :key="i"><strong v-if="part.type === 'element'" class="seal-membership">{{ heading.seals[Number(part.value)]!.name }}<span v-if="heading.seals[Number(part.value)]!.title !== heading.seals[Number(part.value)]!.name" class="seal-membership-title"> ({{ heading.seals[Number(part.value)]!.title }})</span></strong><template v-else>{{ part.value }}</template></template> {{ heading.seals.length === 1 ? 'seal' : 'seals' }}.</p>
     <p v-if="cell?.unclaimed" class="claim-status">Completed, but not claimed in game.</p>
-    <ul v-if="cell?.conditions?.length" class="record-conditions"><li v-for="condition in cell.conditions" :key="condition.code"><strong>{{ condition.label }}</strong><span>{{ condition.description }}</span></li></ul>
+    <ul v-if="cell?.conditions?.length" class="record-conditions"><li v-for="condition in cell.conditions" :key="condition.code"><strong><ConditionIcon :code="condition.code" />{{ condition.label }}</strong><span>{{ condition.description }}</span></li></ul>
     <p v-if="cell?.scoringClass && !cell.complete && cell.variants?.some(v => v.complete)" class="armor-scoring-note">
       This {{ heading.label.toLowerCase() }} is marked {{ cell.missing ? 'unavailable' : 'uncollected' }} because
       {{ cell.scoringClass.best ? 'the most complete armor set' : 'the selected armor set' }}
