@@ -26,6 +26,12 @@ const description = computed(() => {
     <p v-if="description && description !== heading.name" class="record-description" :class="{ 'collection-description': heading.collectibleHashes }">{{ description }}</p>
     <p v-if="cell?.unclaimed" class="claim-status">Completed, but not claimed in game.</p>
     <ul v-if="cell?.conditions?.length" class="record-conditions"><li v-for="condition in cell.conditions" :key="condition.code"><strong>{{ condition.label }}</strong><span>{{ condition.description }}</span></li></ul>
+    <p v-if="cell?.scoringClass && !cell.complete && cell.variants?.some(v => v.complete)" class="armor-scoring-note">
+      This {{ heading.label.toLowerCase() }} is marked {{ cell.missing ? 'unavailable' : 'uncollected' }} because
+      {{ cell.scoringClass.best ? 'the most complete armor set' : 'the selected armor set' }}
+      (<ClassIcon :name="cell.scoringClass.name" :icon="cell.scoringClass.icon" /> {{ cell.scoringClass.name }}<template v-if="cell.scoringClass.armorFraction !== undefined"> · {{ Math.round(cell.scoringClass.armorFraction * 100) }}%</template>)
+      {{ cell.missing ? 'has no collection record for it' : 'is missing it' }}.
+    </p>
     <template v-if="cell">
       <p v-if="heading.metric" class="metric-count">{{ cell.detail }}</p>
       <table v-else-if="cell.variants" class="armor-comparison" aria-label="Armor collection by class">

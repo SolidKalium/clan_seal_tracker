@@ -928,3 +928,43 @@ test('badge ownership markers are gold only for all three classes and ignore the
   await page.getByRole('button', { name: 'Guardian details: Crow', exact: true }).hover();
   await expect(page.getByRole('tooltip').locator('.guardian-badge')).toContainText('Collected on Hunter and Warlock');
 });
+
+test('legend uses spaced entries and armor tooltips explain the scoring class behind white owned cells', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  const classes = ['Titan', 'Hunter', 'Warlock'];
+  const hashes = classes.flatMap((_, i) => Array.from({ length: 5 }, (_, j) => 202 + i * 10 + j));
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '1086048586': { displayProperties: { name: 'Badge' }, children: { presentationNodes: [4, 5, 6].map(presentationNodeHash => ({ presentationNodeHash })) } },
+    ...Object.fromEntries(classes.map((name, i) => [4 + i, { displayProperties: { name, icon: root + 'icons/test-' + (i === 1 ? 'hunter' : 'titan') + '.png' }, children: { collectibles: hashes.slice(i * 5, (i + 1) * 5).map(collectibleHash => ({ collectibleHash })) } }])),
+  } }));
+  await page.route('**/collectibles.json', route => route.fulfill({ json: Object.fromEntries(hashes.map(hash => [hash, { hash, scope: 1, itemHash: 302, displayProperties: { name: `Test Armor ${hash % 10}` } }])) }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const member = members.find(m => new URL(route.request().url()).pathname.includes(m.destinyUserInfo.membershipId))!;
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {} } }, profileCollectibles: { data: { collectibles: Object.fromEntries(hashes.map(hash => [hash, { state: member.destinyUserInfo.displayName === 'Ada' || hash >= 213 && hash <= 216 || hash === 222 ? 0 : 1 }])) } } }) });
+  });
+  await page.goto('#/badge/last_wish'); await ready(page);
+  await expect(page.locator('.table-legend')).toContainText('No progress');
+  await expect(page.locator('.table-legend')).not.toContainText('No record');
+  await expect(page.locator('.legend-zero')).toHaveCSS('align-items', 'center');
+  await expect(page.locator('.legend-zero')).toHaveCSS('justify-content', 'center');
+  await expect(page.locator('.legend-group-end')).toHaveCSS('margin-right', '8px');
+  await expect(page.locator('.table-legend>span')).toHaveText(['✦ Badge collected', '✦ All 3 classes', '✓ Collected', '● In progress', '· No progress']);
+  const helmet = page.getByRole('button', { name: 'Banshee: Helmet: collected for Warlock', exact: true });
+  await expect(helmet.locator('..')).not.toHaveClass(/cell-complete/);
+  await helmet.hover();
+  const note = page.getByRole('tooltip').locator('.armor-scoring-note');
+  await expect(note).toContainText('This helmet is marked uncollected because the most complete armor set');
+  await expect(note).toContainText('Hunter · 80%');
+  await expect(note).toContainText('is missing it');
+  await expect(note.getByRole('img', { name: 'Hunter', exact: true })).toHaveCount(1);
+  await page.mouse.move(1, 1);
+  await page.getByLabel('Badge class', { exact: true }).selectOption('0');
+  await helmet.hover();
+  await expect(note).toContainText('the selected armor set');
+  await expect(note).toContainText('Titan · 0%');
+  await page.mouse.move(1, 1);
+  await page.getByLabel('Badge class', { exact: true }).selectOption('2');
+  await helmet.hover();
+  await expect(helmet.locator('..')).toHaveClass(/cell-complete/);
+  await expect(note).toHaveCount(0);
+});

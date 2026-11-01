@@ -122,3 +122,8 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 .guardian-title{font-size:12px;color:#5c7f46;margin:0 0 12px}.guardian-title>span{margin-right:4px}
 
 .earned-gold{color:#a27a22}.guardian-badge{font-size:12px;color:#5c7f46;margin:0 0 12px;line-height:1.6}.guardian-badge.earned-gold{color:#a27a22}.badge-earned-classes{color:var(--muted);font-size:11px}
+
+.table-caption>.table-legend{flex-wrap:wrap;column-gap:12px;row-gap:5px}.table-legend>span{white-space:nowrap}.legend-zero{display:inline-block;font-size:20px;line-height:10px;vertical-align:-1px;color:#8b9786}
+.armor-scoring-note{font-size:11px;line-height:1.7;color:#8c7439;margin:0 0 12px}.armor-scoring-note .class-icon{width:16px;height:16px;vertical-align:-3px}
+
+.table-legend>span{display:inline-flex;align-items:center;gap:4px}.table-legend>.legend-group-end{margin-right:8px}.legend-zero{display:inline-flex;align-items:center;justify-content:center;width:8px;height:12px;font-size:0;line-height:1;vertical-align:middle}.legend-zero::before{content:"";width:3px;height:3px;border-radius:50%;background:currentColor}

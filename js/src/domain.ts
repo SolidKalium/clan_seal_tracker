@@ -228,7 +228,7 @@ export function bestBadgeClass(profile: Profile | undefined, headings: Heading[]
   }, 0));
   return scores.indexOf(Math.max(...scores));
 }
-export function headingCell(profile: Profile | undefined, heading: Heading, classIndex = 0, badgeHeadings: Heading[] = [heading]): Cell {
+export function headingCell(profile: Profile | undefined, heading: Heading, classIndex = 0, badgeHeadings: Heading[] = [heading], classSelection: 'best' | 'selected' = 'selected'): Cell {
   if (!heading.collectibleHashes) return recordCell(profile ? selectRecord(profile, heading) : undefined, heading);
   const index = Math.min(classIndex, heading.collectibleHashes.length - 1);
   const state = profile ? collectibleState(profile, heading.collectibleHashes[index]!) : undefined;
@@ -242,7 +242,11 @@ export function headingCell(profile: Profile | undefined, heading: Heading, clas
     return { icon: heading.classIcons?.[i], name: heading.classNames?.[i] ?? `Class ${i + 1}`, complete: state !== undefined && !(state & 1), missing: state === undefined,
       setComplete: setStates.length > 0 && setStates.every(s => s !== undefined && !(s & 1)), setMissing: setStates.some(s => s === undefined) };
   }) : undefined;
-  return { variants, fraction: complete ? 1 : 0, complete, missing, text, detail: name, unowned: false,
+  const armor = badgeHeadings.filter(h => new Set(h.collectibleHashes).size > 1);
+  const armorStates = armor.map(h => profile ? collectibleState(profile, h.collectibleHashes![index]!) : undefined);
+  const scoringClass = variants ? { name: heading.classNames?.[index] ?? `Class ${index + 1}`, icon: heading.classIcons?.[index], best: classSelection === 'best',
+    armorFraction: armorStates.length && armorStates.every(s => s !== undefined) ? armorStates.filter(s => !(s! & 1)).length / armorStates.length : undefined } : undefined;
+  return { variants, scoringClass, fraction: complete ? 1 : 0, complete, missing, text, detail: name, unowned: false,
     objectives: [{ hash: heading.hash, name, progress: complete ? 1 : 0, target: 1, complete, missing, text, fraction: complete ? 1 : 0 }] };
 }
 

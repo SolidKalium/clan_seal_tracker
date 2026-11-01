@@ -486,3 +486,9 @@ Replaced the gold border on gilding headers with a faint gold laurel wreath (cro
 Badge pages show a guardian star once the full collection is acquired for at least one class. The star turns gold only when all three class collections are complete; absent class data cannot establish completion. Determine ownership independently of the selected class filter, and identify the completed classes in the guardian tooltip and accessible marker label. The badge legend distinguishes acquired badges from all-three-class completion.
 
 Rename Triumphs to All triumphs while retaining the existing route URLs. Keep Full raid for combined raid views. Do not add Full activity: activity collection sources and availability span seasons, years, and legacy sets, so an aggregate collection view needs separate design.
+
+## Legend and armor scoring explanation — 2026-10-31
+
+Use spacing rather than small separator dots between legend entries. Replace the missing-record legend entry with the normal zero-progress pip; unavailable records retain their distinct cell/tooltip treatment.
+
+When armor is collected for another class but not the class used for table progress, explain the unhighlighted background in the item tooltip. Show the scoring class icon/name and its armor collection percentage, distinguishing automatic best-class selection from an explicit class selection. Omit the percentage if armor data is incomplete. Ownership icons keep their existing meaning and colors; a muted amber explanation carries the additional context without introducing a warning icon or changing cell colors. Verified against cached BOBRA/Gambit data: the helmet is collected on Warlock while Hunter's 80% armor collection drives progress.

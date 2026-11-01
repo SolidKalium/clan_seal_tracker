@@ -186,3 +186,17 @@ it('places gilding requirements immediately after Times gilded while preserving 
     expect(headings.filter(h => !h.metric && !h.gilding).slice(0, 2).map(h => h.hash)).toEqual(['11', '13']);
   }
 });
+
+it('explains a white owned armor cell using the scored class and its actual armor percentage', () => {
+  const base = buildSeal(page, defs, 'badge').headings[0]!;
+  const headings = Array.from({ length: 5 }, (_, i) => ({ ...base, armorSetKey: 'set', classNames: ['Titan', 'Hunter', 'Warlock'], collectibleHashes: [String(201 + i), String(301 + i), String(401 + i)] }));
+  const profile: Profile = { profileCollectibles: { data: { collectibles: Object.fromEntries(headings.flatMap(h => h.collectibleHashes).map(h => [h, { state: Number(h) > 301 && Number(h) <= 305 || h === '401' ? 0 : 1 }])) } } };
+  const index = bestBadgeClass(profile, headings);
+  expect(index).toBe(1);
+  const cell = headingCell(profile, headings[0]!, index, headings, 'best');
+  expect(cell).toMatchObject({ complete: false, missing: false, scoringClass: { name: 'Hunter', best: true, armorFraction: .8 } });
+  expect(cell.variants?.filter(v => v.complete).map(v => v.name)).toEqual(['Warlock']);
+  expect(headingCell(profile, headings[0]!, 0, headings, 'selected').scoringClass).toMatchObject({ name: 'Titan', best: false, armorFraction: 0 });
+  delete profile.profileCollectibles!.data!.collectibles['305'];
+  expect(headingCell(profile, headings[0]!, index, headings, 'best').scoringClass?.armorFraction).toBeUndefined();
+});
