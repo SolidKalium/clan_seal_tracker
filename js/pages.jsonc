@@ -629,7 +629,7 @@
   {
     "id": "dreaming_city",
     "name": "Dreaming City",
-    "category": "Expansions",
+    "category": "Destinations",
     "sealNodeHash": "560097044",
     "badgeNodeHash": "3642989833",
     "otherNodeHashes": [
@@ -1285,6 +1285,326 @@
     "otherNodeHashes": [
       "4024048810"
     ],
+    "records": {}
+  },
+  {
+    "id": "nessus",
+    "name": "Nessus",
+    "category": "Destinations",
+    "otherNodeHashes": [
+      "1663192739",
+      "4161172201"
+    ],
+    "records": {}
+  },
+  {
+    "id": "edz",
+    "name": "European Dead Zone",
+    "category": "Destinations",
+    "otherNodeHashes": [
+      "748764525",
+      "2074120351"
+    ],
+    "records": {}
+  },
+  {
+    "id": "cosmodrome",
+    "name": "Cosmodrome",
+    "category": "Destinations",
+    "otherNodeHashes": [
+      "3177164055"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lost_sectors",
+    "name": "Lost Sectors",
+    "category": "Destinations",
+    "otherNodeHashes": [
+      "2862419972"
+    ],
+    "records": {
+      "6245488": {},
+      "114953849": {},
+      "326823079": {},
+      "327081021": {},
+      "360449991": {},
+      "411957691": {},
+      "430920723": {},
+      "468949293": {},
+      "520634566": {},
+      "549937976": {},
+      "566963956": {},
+      "631767421": {},
+      "650083959": {},
+      "745577862": {},
+      "767109427": {},
+      "797277988": {},
+      "817142456": {},
+      "826199137": {},
+      "860708386": {},
+      "984829568": {},
+      "987583142": {},
+      "1024748579": {},
+      "1085039026": {},
+      "1203728788": {},
+      "1282520811": {},
+      "1327177738": {},
+      "1364118393": {},
+      "1416307185": {},
+      "1435133189": {},
+      "1478134502": {},
+      "1511640986": {},
+      "1525617457": {},
+      "1565741749": {},
+      "1794685284": {},
+      "1803530104": {},
+      "1826406083": {},
+      "1887599917": {},
+      "1921813179": {},
+      "2027297570": {},
+      "2031458774": {},
+      "2065841479": {},
+      "2113842213": {},
+      "2188781025": {},
+      "2193406386": {},
+      "2203010110": {},
+      "2287130716": {},
+      "2317819527": {},
+      "2326997944": {},
+      "2425653583": {},
+      "2462339247": {},
+      "2561650494": {},
+      "2647820497": {},
+      "2691903949": {},
+      "2763188030": {},
+      "2854743101": {},
+      "2950526365": {},
+      "3069389409": {},
+      "3100330213": {},
+      "3139513784": {},
+      "3227342880": {},
+      "3411040634": {},
+      "3685948858": {},
+      "3779113009": {},
+      "3797565680": {},
+      "3814890698": {},
+      "3838089785": {},
+      "3847481245": {},
+      "3951548177": {},
+      "3965319255": {},
+      "3965949828": {},
+      "3983292393": {},
+      "3992532131": {},
+      "3999944721": {},
+      "4003962220": {},
+      "4040235491": {},
+      "4076413958": {},
+      "4086832833": {},
+      "4110051606": {},
+      "4146006034": {},
+      "4165635946": {},
+      "4188160886": {}
+    }
+  },
+  {
+    "id": "fishing",
+    "name": "Fishing",
+    "category": "Destinations",
+    "otherNodeHashes": [
+      "1002011008"
+    ],
+    "records": {
+      "297212877": {},
+      "552405891": {},
+      "1863016864": {},
+      "1867130383": {},
+      "2408877948": {},
+      "3560023014": {},
+      "3758696003": {}
+    }
+  },
+  {
+    "id": "tangled_shore",
+    "name": "Tangled Shore",
+    "category": "Destinations",
+    "otherNodeHashes": [
+      "1128540555",
+      "1764843934",
+      "4294103237",
+      "1876261587"
+    ],
+    "records": {},
+    "collectibles": {
+      "326386367": {},
+      "1282368190": {},
+      "1282368191": {},
+      "1335453328": {},
+      "1335453329": {},
+      "2712527116": {}
+    }
+  },
+  {
+    "id": "reveler",
+    "name": "Reveler",
+    "category": "Events",
+    "sealNodeHash": "2594486939",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "solstice",
+    "name": "Solstice",
+    "category": "Events",
+    "sealNodeHash": "3598951881",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "festival_of_the_lost",
+    "name": "Festival of the Lost",
+    "category": "Events",
+    "sealNodeHash": "2592822840",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "dawning",
+    "name": "The Dawning",
+    "category": "Events",
+    "sealNodeHash": "3896035657",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "guardian_games",
+    "name": "Guardian Games",
+    "category": "Events",
+    "sealNodeHash": "1317417718",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "guardian_games_2023_medals",
+    "parentPageId": "guardian_games",
+    "tabLabel": "2023 medals",
+    "name": "Guardian Games 2023 Medals",
+    "category": "Events",
+    "otherNodeHashes": [
+      "3674532950"
+    ],
+    "records": {}
+  },
+  {
+    "id": "dawning_2020",
+    "parentPageId": "dawning",
+    "tabLabel": "2020",
+    "name": "Dawning 2020",
+    "category": "Events",
+    "otherNodeHashes": [
+      "12380736",
+      "2293230544"
+    ],
+    "records": {}
+  },
+  {
+    "id": "guardian_games_2021",
+    "parentPageId": "guardian_games",
+    "tabLabel": "2021",
+    "name": "Guardian Games 2021",
+    "category": "Events",
+    "otherNodeHashes": [
+      "1965217294"
+    ],
+    "records": {}
+  },
+  {
+    "id": "solstice_2021",
+    "parentPageId": "solstice",
+    "tabLabel": "2021",
+    "name": "Solstice of Heroes 2021",
+    "category": "Events",
+    "otherNodeHashes": [
+      "760002588"
+    ],
+    "records": {}
+  },
+  {
+    "id": "festival_of_the_lost_2021",
+    "parentPageId": "festival_of_the_lost",
+    "tabLabel": "2021",
+    "name": "Festival of the Lost 2021",
+    "category": "Events",
+    "otherNodeHashes": [
+      "1488084792"
+    ],
+    "records": {},
+    "unavailableReason": "These triumphs were removed from Bungie’s manifest."
+  },
+  {
+    "id": "dawning_2021",
+    "parentPageId": "dawning",
+    "tabLabel": "2021",
+    "name": "Dawning 2021",
+    "category": "Events",
+    "otherNodeHashes": [
+      "4277365833"
+    ],
+    "records": {}
+  },
+  {
+    "id": "guardian_games_2022",
+    "parentPageId": "guardian_games",
+    "tabLabel": "2022",
+    "name": "Guardian Games 2022",
+    "category": "Events",
+    "otherNodeHashes": [
+      "1734254471"
+    ],
+    "records": {}
+  },
+  {
+    "id": "guardian_games_2022_medals",
+    "parentPageId": "guardian_games",
+    "tabLabel": "2022 medals",
+    "name": "Guardian Games 2022 Medals",
+    "category": "Events",
+    "otherNodeHashes": [
+      "3856185547"
+    ],
+    "records": {}
+  },
+  {
+    "id": "heavy_metal",
+    "name": "Heavy Metal",
+    "category": "Events",
+    "sealNodeHash": "2470605514",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "arms_week",
+    "name": "Arms Week",
+    "category": "Events",
+    "sealNodeHash": "3417748255",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "call_to_arms",
+    "name": "Call to Arms",
+    "category": "Events",
+    "sealNodeHash": "2130405703",
+    "otherNodeHashes": [],
+    "records": {}
+  },
+  {
+    "id": "festival_of_the_lost_2022",
+    "name": "Festival of the Lost 2022",
+    "parentPageId": "festival_of_the_lost",
+    "tabLabel": "2022",
+    "category": "Events",
+    "otherNodeHashes": ["2330977699"],
     "records": {}
   }
 ]

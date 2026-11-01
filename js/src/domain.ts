@@ -1,4 +1,5 @@
 import { sealRequirements } from './completion';
+import { sealMembershipIndex } from './sealMembership';
 import { recordConditions } from './recordState';
 import type { Cell, Definitions, Heading, PageConfig, Profile, RecordProgress, Seal } from './types';
 
@@ -21,14 +22,16 @@ export function presentationTree(defs: Definitions, roots: string[]): Definition
 }
 
 export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 'seal'): Seal {
-  const node = defs.nodes[page.sealNodeHash];
+  const node = defs.nodes[page.sealNodeHash ?? ''];
   const completion = node && defs.records[String(node.completionRecordHash)];
-  const base: Seal = { page, requirements: sealRequirements(node, defs), legacy: presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
-  if (!node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
+  const legacyTriumphs = !page.sealNodeHash ? new Set(presentationTree(defs, ['3215903653']).map(n => String(n.hash))) : undefined;
+  const base: Seal = { page, requirements: sealRequirements(node, defs), legacy: page.sealNodeHash ? presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash) : !!page.otherNodeHashes?.length && page.otherNodeHashes.every(hash => legacyTriumphs!.has(hash)), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
+  if (page.unavailableReason) return { ...base, unavailable: page.unavailableReason };
+  if (page.sealNodeHash && !node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
   if (mode === 'badge') return buildBadge(page, defs, base);
-  const full = mode === 'raid' || mode === 'triumphs';
+  const full = !page.sealNodeHash || mode === 'raid' || mode === 'triumphs';
   let nextOrder = 100;
-  const hashes = new Set(node.children.records.map(r => String(r.recordHash)));
+  const hashes = new Set((node?.children.records ?? []).map(r => String(r.recordHash)));
   const extraNodes = presentationTree(defs, page.otherNodeHashes ?? []);
   // Historical day-one achievements stay visible in either triumph view, never scored.
   for (const extra of extraNodes) for (const r of extra.children.records ?? []) if (isDayOne(defs.records[String(r.recordHash)])) hashes.add(String(r.recordHash));
@@ -52,7 +55,7 @@ export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 
     const dayOne = isDayOne(record);
     const badgeDisplay = defs.nodes[page.badgeNodeHash ?? '']?.displayProperties;
     const badgeRequirement = !!badgeDisplay && record.displayProperties.name === badgeDisplay.name && (description === (badgeDisplay.description ?? '') || /associated badge on the Collections screen/i.test(description));
-    base.headings.push({ badgeRequirement, group: record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? (/Epic raid/i.test(description) ? 'Day one · Epic' : 'Day one') : rule?.column_name ?? record.displayProperties.name,
+    base.headings.push({ seals: sealMembershipIndex(defs).get(id), badgeRequirement, group: record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? (/Epic raid/i.test(description) ? 'Day one · Epic' : 'Day one') : rule?.column_name ?? record.displayProperties.name,
       description: record.displayProperties.description ?? '', scope: record.scope, gilding: !!record.forTitleGilding,
       skip: dayOne || !!rule?.skip_for_completion, order: dayOne ? -100 : elementIndex >= 0 ? 4 + elementIndex / 10 : sameClass ? 4.6 : rule?.order ?? nextOrder++,
       objectives: objectiveHashes.map(h => defs.objectives[String(h)]!), intervals: intervalHashes.map(h => defs.objectives[String(h)]!),
@@ -87,6 +90,7 @@ export function buildSeal(page: PageConfig, defs: Definitions, mode: PageMode = 
       group: 'Triumphs', scope: tracking.scope, gilding: false, skip: true, order: 0, objectives: [], intervals: [] });
   }
   base.headings = groupHeadings(base.headings);
+  if (!base.headings.length) return { ...base, unavailable: 'No triumphs for this page remain available in the current manifest.' };
   return base;
 }
 
@@ -141,7 +145,7 @@ export function recordCell(record: RecordProgress | undefined, heading: Heading)
 }
 
 export function sealAwarded(profile: Profile | undefined, seal: Seal): boolean | undefined {
-  if (!profile) return undefined;
+  if (!profile || !seal.completionHash) return undefined;
   const records = (seal.completionScope ?? 0) === 1
     ? Object.values(profile.characterRecords?.data ?? {}).map(character => character.records[seal.completionHash])
     : [profile.profileRecords?.data?.records[seal.completionHash]];

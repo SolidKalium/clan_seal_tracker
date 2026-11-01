@@ -38,7 +38,7 @@ it('loads ten raids from the independent browser catalog', () => {
 it('includes expansion and seasonal pages through the newer manifest content', () => {
   const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'js/pages.jsonc');
   const { catalog } = compile({ secret_key: 'browser-key', group_id: 1 }, pages);
-  expect(catalog.filter(p => p.category === 'Expansions')).toHaveLength(10);
+  expect(catalog.filter(p => p.category === 'Expansions')).toHaveLength(9);
   expect(catalog.filter(p => p.category === 'Seasons & Episodes')).toHaveLength(25);
   expect(catalog.filter(p => p.id.startsWith('episode_')).map(p => [p.id, p.sealNodeHash])).toEqual([
     ['episode_echoes', '1270675696'], ['episode_revenant', '1270675697'], ['episode_heresy', '1270675698'],
@@ -59,4 +59,26 @@ it('preserves canonical season numbers independently of catalog position', () =>
   for (const seasonNumber of [0, -1, 1.5, '10']) {
     expect(() => compile(settings, [{ id: 'test', name: 'Test', sealNodeHash: 1, seasonNumber }])).toThrow('season number');
   }
+});
+
+it('groups standalone destinations and events without duplicating expansion destinations', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  expect(catalog.filter(p => p.category === 'Destinations')).toHaveLength(7);
+  expect(catalog.filter(p => p.category === 'Events' && !p.parentPageId)).toHaveLength(8);
+  expect(catalog.find(p => p.id === 'dreaming_city').category).toBe('Destinations');
+  expect(catalog.filter(p => p.id === 'dreaming_city')).toHaveLength(1);
+  expect(catalog.find(p => p.id === 'nessus').sealNodeHash).toBeUndefined();
+  expect(catalog.find(p => p.id === 'festival_of_the_lost_2021').unavailableReason).toContain('removed');
+  const settings = { secret_key: 'key', group_id: 1 };
+  expect(() => compile(settings, [{ id: 'test', name: 'Test', category: 'Activities', records: {} }])).toThrow('Missing seal');
+  expect(compile(settings, [{ id: 'test', name: 'Test', category: 'Events', otherNodeHashes: [123], records: {} }]).catalog[0].otherNodeHashes).toEqual(['123']);
+});
+
+it('keeps historical event editions attached to their event page', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  expect(catalog.find(p => p.id === 'guardian_games_2022_medals')).toMatchObject({ parentPageId: 'guardian_games', tabLabel: '2022 medals' });
+  expect(catalog.find(p => p.id === 'festival_of_the_lost_2022').otherNodeHashes).toEqual(['2330977699']);
+  expect(() => compile({ secret_key: 'key', group_id: 1 }, [{ id: 'orphan', name: 'Orphan', category: 'Events', parentPageId: 'missing', tabLabel: '2021' }])).toThrow('Invalid event tab');
 });

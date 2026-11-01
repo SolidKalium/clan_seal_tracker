@@ -18,7 +18,7 @@ const requirementText = (count: RequirementCount) => count.required === undefine
       <p v-if="counts.triumphs.total" class="completion-counts">{{ triumphs(counts.triumphs.complete) }} complete<br>{{ triumphs(counts.triumphs.partial) }} partially complete<span v-if="counts.triumphs.missing"><br>{{ triumphs(counts.triumphs.missing) }} with no public record</span></p>
       <p v-if="counts.collections.total" class="completion-counts">{{ collectionColumns(counts.collections.complete) }} collected<br>{{ collectionColumns(counts.collections.partial) }} partially collected<span v-if="counts.collections.missing"><br>{{ collectionColumns(counts.collections.missing) }} with no public record</span></p>
     </template>
-    <p v-if="broader" class="record-description">This table averages progress across its included columns. This is a site-defined summary, separate from earning the seal or gilding it.</p>
+    <p v-if="broader" class="record-description">This table averages progress across its included columns. This is a site-defined summary<span v-if="seal.page.sealNodeHash">, separate from earning the seal or gilding it</span>.</p>
     <p v-if="badge" class="completion-rule"><strong>Badge</strong>Acquire the full collection for at least one class.</p>
     <template v-else-if="seal.requirements">
       <p class="completion-rule"><strong>Seal</strong>{{ requirementText(seal.requirements.seal) }}</p>

@@ -74,3 +74,20 @@ it('prefers a redeemed character record when complete progress ties an unclaimed
   } } };
   expect(recordCell(selectRecord(profile, { ...heading, scope: 1 }), heading).unclaimed).toBe(false);
 });
+
+it('builds standalone destination triumphs recursively without fabricating seal ownership', () => {
+  const defs = { version: 'v', language: 'en', nodes: {
+    '3215903653': { hash: 3215903653, displayProperties: { name: 'Legacy' }, completionRecordHash: 0, children: { presentationNodes: [{ presentationNodeHash: 10 }] } },
+    '10': { hash: 10, displayProperties: { name: 'Destination' }, completionRecordHash: 0, children: { presentationNodes: [{ presentationNodeHash: 11 }] } },
+    '11': { hash: 11, displayProperties: { name: 'Explore' }, completionRecordHash: 0, children: { records: [{ recordHash: 42 }], presentationNodes: [{ presentationNodeHash: 10 }] } },
+  }, records: { '42': { hash: 42, scope: 0, displayProperties: { name: 'Explore', description: '' } }, '43': { hash: 43, scope: 0, displayProperties: { name: 'Discover', description: '' } } }, objectives: {} };
+  const page = { id: 'test', name: 'Test', category: 'Destinations', otherNodeHashes: ['10'], records: { '43': {} } };
+  const result = buildSeal(page, defs);
+  expect(result.headings.map(h => h.hash)).toEqual(['42', '43']);
+  expect(result.legacy).toBe(true);
+  expect(result.requirements).toBeUndefined();
+  expect(result.completionHash).toBe('');
+  expect(sealAwarded({}, result)).toBeUndefined();
+  expect(buildSeal({ ...page, unavailableReason: 'Removed from the manifest.' }, defs).unavailable).toBe('Removed from the manifest.');
+  expect(buildSeal({ ...page, otherNodeHashes: ['99'], records: {} }, defs).unavailable).toContain('No triumphs');
+});

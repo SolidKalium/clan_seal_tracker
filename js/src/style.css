@@ -50,7 +50,7 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 
 .safari .table-tools .select-control{padding-right:4px}
 
-.page-modes{display:flex;gap:6px;margin:0 0 16px}.page-modes a{padding:7px 15px;border-radius:5px;color:var(--muted);text-decoration:none}.page-modes a[aria-current="page"]{background:#e4ebde;color:#264b36;font-weight:700}
+.page-modes{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.page-modes a{display:inline-grid;place-items:center;padding:7px 15px;border-radius:5px;color:var(--muted);text-decoration:none}.page-modes a[aria-current="page"]{background:#e4ebde;color:#264b36;font-weight:700}
 
 .collection-description{white-space:pre-line}
 
@@ -72,7 +72,7 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 
 .cell-unclaimed{background:#e0eee6}.cell-unclaimed .cell-button{color:#4e7a65}.claim-status{margin:0 0 12px;color:#4e7a65;font-size:12px}
 
-.cell-conditioned{position:relative}.cell-conditions{position:absolute;top:1px;right:1px;display:flex;align-items:flex-start;color:#807553;pointer-events:none;line-height:1}.cell-conditions svg{width:10px;height:10px}.cell-conditions .condition-more{font-size:8px;line-height:8px}.record-conditions{list-style:none;margin:0 0 12px;padding:0;font-size:11px;color:#746c56}.record-conditions li+li{margin-top:7px}.record-conditions strong{display:block;font-weight:600}.record-conditions span{display:block;margin-top:2px;line-height:1.5}
+.cell-conditioned{position:relative;isolation:isolate}.cell-conditions{position:absolute;top:1px;right:1px;display:flex;align-items:flex-start;color:#807553;pointer-events:none;line-height:1}.cell-conditions svg{width:10px;height:10px}.cell-conditions .condition-more{font-size:8px;line-height:8px}.record-conditions{list-style:none;margin:0 0 12px;padding:0;font-size:11px;color:#746c56}.record-conditions li+li{margin-top:7px}.record-conditions strong{display:block;font-weight:600}.record-conditions span{display:block;margin-top:2px;line-height:1.5}
 
 /* Center collection names regardless of their line count. */
 .table-scroll .record-header-row .record-heading{vertical-align:middle}
@@ -83,13 +83,12 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 /* Use matching native scrollbar thickness on both axes. */
 .table-scroll{scrollbar-width:thin}
 
-/* Faint gold laurel behind gilding titles; the title stays above it. */
+/* Keep the laurel behind text within the sticky header’s stacking context. */
 .heading-gilding::after{
-  content:"";position:absolute;left:50%;top:50%;height:90%;max-height:72px;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;
+  content:"";position:absolute;z-index:-1;left:50%;top:50%;height:90%;max-height:72px;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;
   background:#b79a4c;opacity:.26;
   mask:url('./assets/gilding-laurel.svg') center / contain no-repeat;-webkit-mask:url('./assets/gilding-laurel.svg') center / contain no-repeat;
 }
-.heading-gilding .heading-button{position:relative;z-index:1}
 .record-scoring{margin:0 0 12px;font-size:11px;color:#746c56}
 
 .unscored-marker{position:absolute;right:5px;top:5px;width:11px;height:11px;color:#526e62;pointer-events:none}
@@ -113,7 +112,7 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 
 /* Bright seal artwork becomes a single-color watermark; dark fill stays faint. */
 .seal-card{position:relative;overflow:hidden;isolation:isolate}
-.seal-card>.seal-watermark{position:absolute;right:0;bottom:0;height:112.5%;aspect-ratio:1;transform:translate(20%,20%);background:#526b50;opacity:.16;mask-mode:luminance;mask-size:contain;mask-position:center;mask-repeat:no-repeat;-webkit-mask-size:contain;-webkit-mask-position:center;-webkit-mask-repeat:no-repeat;pointer-events:none;z-index:-1}
+.seal-card>.seal-watermark{position:absolute;right:0;bottom:0;height:112.5%;aspect-ratio:1;transform:translate(18%,20%) rotate(-1deg);background:#526b50;opacity:.16;mask-mode:luminance;mask-size:contain;mask-position:center;mask-repeat:no-repeat;-webkit-mask-size:contain;-webkit-mask-position:center;-webkit-mask-repeat:no-repeat;pointer-events:none;z-index:-1}
 
 .summary-heading{font:inherit;font-weight:600;padding:0;color:inherit}
 .summary-cell{cursor:help}.summary-cell:focus-visible{outline:2px solid #9bb976;outline-offset:-2px}
@@ -127,3 +126,9 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 .armor-scoring-note{font-size:11px;line-height:1.7;color:#8c7439;margin:0 0 12px}.armor-scoring-note .class-icon{width:16px;height:16px;vertical-align:-3px}
 
 .table-legend>span{display:inline-flex;align-items:center;gap:4px}.table-legend>.legend-group-end{margin-right:8px}.legend-zero{display:inline-flex;align-items:center;justify-content:center;width:8px;height:12px;font-size:0;line-height:1;vertical-align:middle}.legend-zero::before{content:"";width:3px;height:3px;border-radius:50%;background:currentColor}
+
+.seal-memberships{margin:10px 0;font-size:12px;line-height:1.6}.seal-membership{font-weight:600}.seal-membership-title{color:var(--muted);font-weight:400}
+
+.seal-heading{padding-bottom:16px}.seal-heading h1{margin-bottom:0}.view-description{margin:0 0 16px}.view-unavailable{padding:16px 20px;border:1px solid var(--line);border-radius:8px;background:#edf1e8;color:var(--muted)}.view-unavailable p{margin:0 0 12px;line-height:1.6}.view-unavailable a{font-size:12px}
+
+.page-modes .tab-width,.page-modes .tab-label{grid-area:1 / 1;white-space:nowrap;text-align:center}.page-modes .tab-width{visibility:hidden;font-weight:700;pointer-events:none;user-select:none}

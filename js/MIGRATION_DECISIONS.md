@@ -492,3 +492,45 @@ Rename Triumphs to All triumphs while retaining the existing route URLs. Keep Fu
 Use spacing rather than small separator dots between legend entries. Replace the missing-record legend entry with the normal zero-progress pip; unavailable records retain their distinct cell/tooltip treatment.
 
 When armor is collected for another class but not the class used for table progress, explain the unhighlighted background in the item tooltip. Show the scoring class icon/name and its armor collection percentage, distinguishing automatic best-class selection from an explicit class selection. Omit the percentage if armor data is incomplete. Ownership icons keep their existing meaning and colors; a muted amber explanation carries the additional context without introducing a warning icon or changing cell colors. Verified against cached BOBRA/Gambit data: the helmet is collected on Warlock while Hunter's 80% armor collection drives progress.
+
+## Destinations and events — 2026-10-31
+
+Keep destination/expansion equivalents together: Neomuna stays on Lightfall, for example. Move Dreaming City into Destinations without changing its ID, badge, or overrides. Add standalone Nessus, EDZ, Cosmodrome, Lost Sectors, Fishing, and Tangled Shore pages. Lost Sectors also includes the Pale Heart branch from the current manifest.
+
+Add Events with the PHP catalog's event seals and historical event triumph pages, plus Heavy Metal, Arms Week, and Call to Arms from the current manifest. Pages without a seal open directly to All triumphs and have no title ownership, Seal tab, or invented seal requirements. Their completion value summarizes the displayed columns. Derive legacy status from Bungie's Legacy Triumphs tree for these pages, alongside the existing Legacy Titles detection for seals. Legacy is an archive classification, not a guarantee about every individual reward's availability.
+
+Festival of the Lost 2021's configured node is absent from the current manifest; retain an explicit unavailable page instead of treating an empty table as completion. Revisit if historical definitions become a supported data source. No PHP data or code changed.
+
+Verified all 23 destination/event entries against the cached manifest: 22 resolve, with the removed 2021 event intentionally unavailable. Unit coverage includes recursive standalone triumphs, legacy classification, missing data, config validation, and absent seal ownership; browser coverage exercises the new navigation and historical unavailable state.
+
+## Event editions within event pages — 2026-10-31
+
+Use one overview tile and sidebar entry per event. Historical records and medals are tabs within that event, ordered newest first, alongside its seal/triumphs view. Preserve existing historical route IDs as deep links and keep the parent event selected in navigation. Store `parentPageId` and `tabLabel` in the browser catalog; validate that edition parents are top-level events. Separate Festival of the Lost's 2022 records from the seal's additional records into their own tab. Keep edition navigation visible when a historical edition is unavailable, so visitors can return to other editions. There are now eight top-level event entries, with nine historical edition tabs.
+
+## Unified event tabs and duplicate views — 2026-10-31
+
+Place historical event years and medals in the same navigation row as Seal, Badge, and All triumphs. Historical views retain that complete row, including when records are unavailable. Remove the separate edition navigation level. Omit All triumphs whenever its columns match the seal, without a disabled tab or explanatory tooltip; this supersedes Undertaker's previous disabled-tab behavior. Existing duplicate-view URLs render the seal view. Festival of the Lost currently has the same 13 columns in both views; historical 2022 records remain on their own tab.
+
+## Triumph seal membership — 2026-10-31
+
+Index each triumph's seal membership using the requirement children of all title-awarding manifest nodes, including legacy seals and those without a configured site page. Do not infer membership from arbitrary presentation-tree placement or site completion overrides. Cache the derived index per definitions snapshot in memory; a new snapshot rebuilds it. Header and guardian-cell tooltips list seal names plus their awarded titles, including shared requirements such as Moments of Triumph. Membership stays out of the column header itself, and collectible and lifetime gilding-count headings do not gain this section.
+
+## Consistent page headings and unavailable editions — 2026-10-31
+
+Use Category / Page / View breadcrumbs throughout the tracker. Event editions use the parent event name and their year/medals label, with the event's seal title and title-holder summary shared across editions. Render the same heading and view navigation for configured pages during definition loading or when an edition is unavailable; show the loading/unavailable explanation in a styled notice below the tabs rather than switching to the generic centered error page.
+
+Keep descriptions and legacy notices below view navigation, omit empty descriptions and the generic subtitle, and remove the heading's trailing title margin. Content length or wrapping may naturally increase space, but changing an event tab alone should not change the heading/tab position. Browser coverage compares the seal, available 2022, and unavailable 2021 Festival of the Lost tab positions at desktop and mobile widths.
+
+## Seal membership sentences and stable tab widths — 2026-10-31
+
+Describe membership as “This triumph is part of the … seal/seals.” Use natural conjunctions for multiple seals, emphasize the seal names, and keep differing awarded titles subdued in parentheses. Each view tab reserves the width of its bold label using an inaccessible hidden copy, with the visible label centered over it. Selection changes the text weight and background within that fixed footprint. Browser checks compare every tab's position and dimensions across event selections at desktop and mobile widths.
+
+## Gilding layering and Hept Harmonies verification — 2026-10-31
+
+Render the gilding laurel at a negative z-index within its sticky header cell, without elevating the heading button. The pinned Guardian header must cover gilding text during horizontal scrolling. A browser check overlaps the two and verifies the Guardian header receives hit testing.
+
+Checked Hept Harmonies (record 2980025326) against Bungie's live manifest 245114.26.10.13.2000-1-bnet.66137: its description says seven attuned weapons, but objectiveHashes contains only five (Gizmo Weft, King Orfeo, The Heron, Micromort, Action Item), each requiring one. It has no interval objectives. Preserve the API data rather than inventing two missing requirements.
+
+## Conditioned cell stacking — 2026-10-31
+
+Give hidden/obscured/content-locked cells an isolated stacking context. Their positioned button (including progress numbers, zero-progress pips, and hover borders) stays above the watermark within the cell but below the sticky guardian column. A narrow-viewport browser test scrolls hidden partial-progress and obscured zero-progress gilding cells under guardian names while their hover borders remain active, checking both text and border overlap points.

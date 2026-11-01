@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import RecordDetails from './RecordDetails.vue';
+import ViewTabs from './ViewTabs.vue';
 import CompletionDetails from './CompletionDetails.vue';
 import { completionCounts } from './completion';
 import type { CompletionCounts } from './completion';
@@ -142,16 +143,26 @@ watch(groupHeader, element => {
     if (playerColumn) headerObserver.observe(playerColumn);
   }
 });
-const routeMode = computed<PageMode>(() => /^#\/(badge|raid|triumphs)\//.exec(hash.value)?.[1] as PageMode || 'seal');
+const routeMode = computed<PageMode>(() => {
+  const mode = /^#\/(badge|raid|triumphs)\//.exec(hash.value)?.[1] as PageMode || 'seal';
+  const id = /^#\/(?:seal|badge|raid|triumphs)\/(.+)$/.exec(hash.value)?.[1];
+  const page = catalog.find(p => p.id === id);
+  if (mode === 'seal' && page && !page.sealNodeHash) return 'triumphs';
+  return mode === 'triumphs' && page && hasDuplicateTriumphs(page) ? 'seal' : mode;
+});
 const routeId = computed(() => /^#\/(?:seal|badge|raid|triumphs)\/(.+)$/.exec(hash.value)?.[1] ?? '');
+const eventPage = computed(() => { const page = catalog.find(p => p.id === routeId.value); return page?.category === 'Events' ? catalog.find(p => p.id === (page.parentPageId ?? page.id)) : undefined; });
+const eventTabs = computed(() => eventPage.value ? [eventPage.value, ...catalog.filter(p => p.parentPageId === eventPage.value!.id).sort((a, b) => (b.tabLabel ?? '').localeCompare(a.tabLabel ?? ''))] : []);
 const isHome = computed(() => !hash.value || hash.value === '#' || hash.value === '#/');
 const seals = computed(() => definitions.value ? catalog.map(page => buildSeal(page, definitions.value!)) : []);
 const catalogGroups = [
   { name: 'Raids', title: 'Raid seals', kind: 'Raid', category: 'Raid seals' },
   { name: 'Activities', title: 'Activity seals', kind: 'Activity', category: 'Activities' },
   { name: 'Expansions', title: 'Expansion seals', kind: 'Expansion', category: 'Expansions' },
+  { name: 'Destinations', title: 'Destinations', kind: 'Destination', category: 'Destinations' },
+  { name: 'Events', title: 'Events', kind: 'Event', category: 'Events' },
   { name: 'Seasons & Episodes', title: 'Seasons & Episodes', kind: 'Release', category: 'Seasons & Episodes' },
-].map((group, index) => ({ ...group, id: `sidebar-section-${index}`, pages: catalog.filter(p => p.category === group.category) }));
+].map((group, index) => ({ ...group, id: `sidebar-section-${index}`, pages: catalog.filter(p => p.category === group.category && !p.parentPageId) }));
 const openSections = ref<string[]>([]);
 watch(() => catalog.find(p => p.id === routeId.value)?.category, category => {
   openSections.value = [category ?? 'Raid seals'];
@@ -163,18 +174,34 @@ function toggleSection(category: string) {
 }
 const sealsById = computed(() => Object.fromEntries(seals.value.map(s => [s.page.id, s])));
 function hasDuplicateTriumphs(page: PageConfig): boolean {
-  if (page.id !== 'renegades_invasions' || !definitions.value) return false;
+  if (!page.sealNodeHash || !definitions.value) return false;
   const seal = buildSeal(page, definitions.value), full = buildSeal(page, definitions.value, 'triumphs');
   return !seal.unavailable && !full.unavailable && seal.headings.length === full.headings.length
     && seal.headings.every(h => full.headings.some(other => other.hash === h.hash));
 }
 function pageMode(page: PageConfig): PageMode {
-  if (routeMode.value === 'seal' || routeMode.value === 'badge' && page.badgeNodeHash) return routeMode.value;
+  if (routeMode.value === 'seal' && page.sealNodeHash || routeMode.value === 'badge' && page.badgeNodeHash) return routeMode.value;
   return hasDuplicateTriumphs(page) ? 'seal' : page.category === 'Raid seals' ? 'raid' : 'triumphs';
 }
 const selected = computed(() => { const page = catalog.find(p => p.id === routeId.value); return page && definitions.value ? buildSeal(page, definitions.value, routeMode.value) : undefined; });
-const duplicateTriumphs = computed(() => !!selected.value && hasDuplicateTriumphs(selected.value.page));
-const pageModes = computed<PageMode[]>(() => selected.value ? ['seal', ...(selected.value.page.badgeNodeHash ? ['badge' as const] : []), selected.value.page.category === 'Raid seals' ? 'raid' : 'triumphs'] : []);
+const currentPage = computed(() => catalog.find(p => p.id === routeId.value));
+const viewPage = computed(() => eventPage.value ?? currentPage.value);
+const headingSeal = computed(() => eventPage.value ? sealsById.value[eventPage.value.id] : selected.value);
+const headingTitle = computed(() => headingSeal.value?.title ?? viewPage.value?.name);
+const breadcrumb = computed(() => {
+  const page = viewPage.value;
+  if (!page) return '';
+  const category = catalogGroups.find(group => group.category === page.category)?.name ?? page.category;
+  const view = currentPage.value?.tabLabel ?? ({ seal: 'Seal requirements', badge: 'Collection badge', raid: 'Full raid', triumphs: 'All triumphs' }[routeMode.value]);
+  return `${category} / ${page.name} / ${view}`;
+});
+const viewLabel = computed(() => ({ 'Raid seals': 'Raid view', Activities: 'Activity view', Expansions: 'Expansion view', Destinations: 'Destination view', Events: 'Event view' }[viewPage.value?.category ?? ''] ?? 'Seasonal view'));
+const viewTabs = computed(() => {
+  const page = viewPage.value;
+  if (!page) return [];
+  const modes: PageMode[] = [...(page.sealNodeHash ? ['seal' as const] : []), ...(page.badgeNodeHash ? ['badge' as const] : []), ...(page.category === 'Raid seals' ? ['raid' as const] : hasDuplicateTriumphs(page) ? [] : ['triumphs' as const])];
+  return [...modes.map(mode => ({ href: `#/${mode}/${page.id}`, label: mode === 'seal' ? 'Seal' : mode === 'badge' ? 'Badge' : mode === 'raid' ? 'Full raid' : 'All triumphs', active: routeId.value === page.id && routeMode.value === mode })), ...eventTabs.value.filter(tab => tab.parentPageId).map(tab => ({ href: `#/triumphs/${tab.id}`, label: tab.tabLabel!, active: routeId.value === tab.id }))];
+});
 const collectionView = computed(() => routeMode.value === 'badge' || !!selected.value?.headings.length && selected.value.headings.every(h => h.collectibleHashes || h.metric));
 const summaryLabel = computed(() => collectionView.value ? 'Collected' : routeMode.value === 'seal' ? 'Requirements' : 'Completion');
 function showSummary(event: Event, player?: string, counts?: CompletionCounts) {
@@ -329,7 +356,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
       <div v-for="group in catalogGroups" :key="group.name" class="sidebar-section">
       <button class="eyebrow section-toggle" :aria-expanded="openSections.includes(group.category)" :aria-controls="group.id" @click="toggleSection(group.category)"><span>{{ group.name }}</span><svg viewBox="0 0 20 20" aria-hidden="true" :class="{ expanded: openSections.includes(group.category) }"><path d="m7 4 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
       <nav v-show="openSections.includes(group.category)" :id="group.id" class="seal-nav" :aria-label="group.name">
-        <a v-for="page in group.pages" :key="page.id" :href="`#/${pageMode(page)}/${page.id}`" :class="{ active: routeId === page.id }" :aria-current="routeId === page.id ? 'page' : undefined"><span>{{ page.name }}<small v-if="sealsById[page.id]?.legacy" class="legacy-label">Legacy</small></span><svg class="nav-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="m7 4 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></a>
+        <a v-for="page in group.pages" :key="page.id" :href="`#/${pageMode(page)}/${page.id}`" :class="{ active: (routeId === page.id || eventPage?.id === page.id) }" :aria-current="(routeId === page.id || eventPage?.id === page.id) ? 'page' : undefined"><span>{{ page.name }}<small v-if="sealsById[page.id]?.legacy" class="legacy-label">Legacy</small></span><svg class="nav-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="m7 4 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></a>
       </nav>
       </div>
       <div class="sidebar-bottom"><span class="small">Stored in this browser</span><button class="text-button" :disabled="busy" @click="clearCache">Clear API cache</button></div>
@@ -337,28 +364,33 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
     </aside>
     <main id="main">
       <div v-if="issues.length || storageWarning" class="notice" role="alert"><p v-for="issue in issues" :key="issue">{{ issue }}</p><p v-if="storageWarning">{{ storageWarning }}</p><p v-if="definitions">Showing the last complete definitions{{ definitionsState === 'stale' ? ' (stale)' : '' }}. {{ rosterState === 'stale' ? 'The clan roster is also stale.' : '' }}</p></div>
+      <template v-if="!isHome && currentPage">
+        <section class="page-heading seal-heading"><div><p class="eyebrow">{{ breadcrumb }}</p><h1>{{ headingTitle }}</h1></div><div v-if="routeMode !== 'badge' && headingSeal?.page.sealNodeHash" class="title-tally"><strong>{{ titleCount(headingSeal) }}</strong><span>title holders</span></div></section>
+        <ViewTabs :label="viewLabel" :tabs="viewTabs" />
+      </template>
       <template v-if="isHome">
         <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, find a fireteam, and make the next run count.</p></section>
-        <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
+        <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => s.page.sealNodeHash && !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
         <section v-for="group in catalogGroups" :key="group.name" class="catalog-section" :aria-label="group.title">
         <div class="section-title"><h2>{{ group.title }}</h2></div>
         <div class="seal-grid">
-          <a v-for="(page, i) in group.pages" :key="page.id" :href="`#/seal/${page.id}`" class="seal-card" :style="{ '--card-hue': `${135 + i * 22}` }">
+          <a v-for="(page, i) in group.pages" :key="page.id" :href="`#/${page.sealNodeHash ? 'seal' : 'triumphs'}/${page.id}`" class="seal-card" :style="{ '--card-hue': `${135 + i * 22}` }">
             <SealWatermark :icon="sealsById[page.id]?.icon" />
             <span class="card-top"><span class="card-icon" aria-hidden="true">◇</span><span class="eyebrow">{{ page.seasonNumber ? `SEASON ${page.seasonNumber}` : group.kind.toUpperCase() + (group.category === 'Raid seals' ? ` ${String(i + 1).padStart(2, '0')}` : '') }}<span v-if="sealsById[page.id]?.legacy"> · LEGACY</span></span></span>
             <h3>{{ sealsById[page.id]?.title ?? page.name }}</h3><p>{{ page.name }}</p>
-            <div class="card-bottom"><span v-if="sealsById[page.id]?.unavailable">Unavailable in current manifest</span><span v-else-if="definitions">{{ titleCount(sealsById[page.id]!) }} title holders</span><span v-else>Loading definitions…</span><span aria-hidden="true">↗</span></div>
+            <div class="card-bottom"><span v-if="sealsById[page.id]?.unavailable">Unavailable in current manifest</span><span v-else-if="definitions && page.sealNodeHash">{{ titleCount(sealsById[page.id]!) }} title holders</span><span v-else-if="definitions">{{ sealsById[page.id]?.headings.length ?? 0 }} triumphs</span><span v-else>Loading definitions…</span><span aria-hidden="true">↗</span></div>
           </a>
         </div>
         </section>
         <p class="footnote">Counts cover loaded profiles, including any retained stale data. Choose a raid, activity, expansion, season, or episode to explore its seal and triumphs, with collection badges where available.</p>
       </template>
       <template v-else-if="selected && !selected.unavailable">
-        <section class="page-heading seal-heading"><div><p class="eyebrow">{{ selected.page.name }} / {{ routeMode === 'badge' ? 'COLLECTION BADGE' : routeMode === 'raid' ? 'FULL RAID' : routeMode === 'triumphs' ? 'ALL TRIUMPHS' : 'SEAL REQUIREMENTS' }}</p><h1>{{ selected.title }}</h1><p class="lede">{{ selected.description || 'Track every requirement, one guardian at a time.' }}</p></div><div v-if="routeMode !== 'badge'" class="title-tally"><strong>{{ titleCount(selected) }}</strong><span>title holders</span></div></section>
-        <p v-if="selected.legacy" class="legacy-notice">Legacy title · Bungie lists this seal under Legacy Titles; it can no longer be earned. Archived progress remains visible, and individual rewards may still be obtainable.</p>
-        <nav class="page-modes" :aria-label="selected.page.category === 'Raid seals' ? 'Raid view' : selected.page.category === 'Activities' ? 'Activity view' : selected.page.category === 'Expansions' ? 'Expansion view' : 'Seasonal view'"><template v-for="mode in pageModes" :key="mode"><button v-if="mode === 'triumphs' && duplicateTriumphs" class="disabled-mode" aria-disabled="true" :aria-describedby="tooltip?.kind === 'note' ? 'record-tooltip' : undefined" @mouseenter="openTooltip($event, { kind: 'note', text: 'Has no triumphs outside the seal' })" @mousemove="openTooltip($event, { kind: 'note', text: 'Has no triumphs outside the seal' })" @mouseleave="closeTooltip" @focus="openTooltip($event, { kind: 'note', text: 'Has no triumphs outside the seal' })" @blur="closeTooltip" @keydown.esc="closeTooltip">All triumphs</button><a v-else :href="`#/${mode}/${selected.page.id}`" :aria-current="routeMode === mode ? 'page' : undefined">{{ mode === 'seal' ? 'Seal' : mode === 'badge' ? 'Badge' : mode === 'triumphs' ? 'All triumphs' : 'Full raid' }}</a></template></nav>
+
+        <p v-if="selected.legacy && selected.page.sealNodeHash" class="legacy-notice">Legacy title · Bungie lists this seal under Legacy Titles; it can no longer be earned. Archived progress remains visible, and individual rewards may still be obtainable.</p>
+        <p v-if="selected.legacy && !selected.page.sealNodeHash" class="legacy-notice">Legacy triumphs · Archived by Bungie. Availability of individual triumphs and rewards can differ.</p>
+        <p v-if="selected.description" class="lede view-description">{{ selected.description }}</p>
         <div class="table-tools"><label class="search"><svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><input v-model="search" aria-label="Search guardians" placeholder="Search guardians…" type="search"></label><label class="select-control"><span class="sr-only">Filter progress</span><select v-model="filter" aria-label="Filter progress"><option value="all">All guardians</option><option value="incomplete">Requirements incomplete</option><option value="complete">Requirements complete</option><option value="unavailable">No public data</option></select></label><label class="select-control"><span class="sr-only">Sort guardians</span><select v-model="sort" aria-label="Sort guardians"><option value="progress">Closest next · completed last</option><option value="highest">Highest progress first</option><option value="name">Guardian name</option><option value="tenure">Clan tenure · longest first</option></select></label><label v-if="routeMode !== 'seal' && badgeClasses.length" class="select-control"><span class="sr-only">Badge class</span><select v-model="badgeClass" aria-label="Badge class"><option value="best">Best class set</option><option v-for="(name, i) in badgeClasses" :key="name" :value="String(i)">{{ name }} set</option></select></label></div>
-        <div class="table-caption"><span>{{ rows.length }} guardians shown</span><span class="table-legend"><span v-if="routeMode !== 'badge'" class="legend-group-end">✦ Title earned</span><template v-else><span>✦ Badge collected</span><span class="earned-gold legend-group-end">✦ All 3 classes</span></template><span>✓ {{ collectionView ? 'Collected' : 'Complete' }}</span><span><span class="legend-progress">●</span> In progress</span><span><span class="legend-zero" aria-hidden="true">·</span> No progress</span></span></div>
+        <div class="table-caption"><span>{{ rows.length }} guardians shown</span><span class="table-legend"><span v-if="routeMode !== 'badge' && selected.page.sealNodeHash" class="legend-group-end">✦ Title earned</span><template v-else-if="routeMode === 'badge'"><span>✦ Badge collected</span><span class="earned-gold legend-group-end">✦ All 3 classes</span></template><span>✓ {{ collectionView ? 'Collected' : 'Complete' }}</span><span><span class="legend-progress">●</span> In progress</span><span><span class="legend-zero" aria-hidden="true">·</span> No progress</span></span></div>
         <div class="table-scroll" tabindex="0" :aria-label="`Scrollable ${routeMode} progress table`" :style="{ '--group-header-height': `${groupHeaderHeight}px`, '--category-header-height': hasColumnGroups ? '32px' : '0px', '--player-column-width': `${playerColumnWidth}px` }" @scroll="closeTooltip">
           <table>
             <thead>
@@ -405,9 +437,9 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
           </table>
         </div>
         <aside v-if="detail" class="detail-panel" aria-live="polite"><button class="detail-close" aria-label="Close record details" @click="detail = undefined">×</button><RecordDetails :heading="detail.heading" :cell="detail.cell" :player="detail.player" /></aside>
-        <p class="footnote"><template v-if="routeMode === 'raid' || routeMode === 'badge'">Collection progress uses one whole class set (the most complete by default). Shared items count for every class. </template><template v-if="routeMode === 'raid' || routeMode === 'triumphs'">The percentage averages the columns included in this table, separately from the in-game seal requirements. </template><template v-if="selected.page.category === 'Activities'"> Gilding requirements are included in this view’s percentage.</template> Day-one triumphs and lifetime gilding counts do not affect the percentage. A missing record is shown separately from an incomplete one. Corner markers explain content locks and visibility conditions on hover. Click a cell for objective details.</p>
+        <p class="footnote"><template v-if="routeMode === 'raid' || routeMode === 'badge'">Collection progress uses one whole class set (the most complete by default). Shared items count for every class. </template><template v-if="routeMode === 'raid' || routeMode === 'triumphs'">The percentage averages the columns included in this table<span v-if="selected.page.sealNodeHash">, separately from the in-game seal requirements</span>. </template><template v-if="selected.page.category === 'Activities'"> Gilding requirements are included in this view’s percentage.</template> Day-one triumphs and lifetime gilding counts do not affect the percentage. A missing record is shown separately from an incomplete one. Corner markers explain content locks and visibility conditions on hover. Click a cell for objective details.</p>
       </template>
-      <section v-else-if="!isHome" class="empty-state"><h1>{{ selected?.unavailable ? selected.page.name : definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions && !busy ? 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section>
+      <template v-else-if="!isHome"><section :class="currentPage ? 'view-unavailable' : 'empty-state'" :role="currentPage ? 'status' : undefined"><h1 v-if="!currentPage">{{ definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions ? busy ? 'Loading definitions…' : 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section></template>
       <Teleport to="body">
         <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><RecordDetails v-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><ul class="sync-legend"><li v-for="status in syncLegend" :key="status.color" :class="[`sync-${status.color}`, { current: syncColor === status.color }]"><span class="status-dot" aria-hidden="true"></span><div><span class="sync-legend-label">{{ status.label }}</span><p>{{ status.description }}</p></div></li></ul></div></div>
       </Teleport>

@@ -122,7 +122,7 @@ test('objective stages, rich tooltips, and full-width controls stay aligned', as
   const cell = page.getByRole('button', { name: 'Banshee: First challenge: Encounters: 5/10' });
   await cell.hover();
   await expect(page.getByRole('tooltip')).toBeVisible();
-  await expect(page.getByRole('tooltip').getByRole('heading')).toHaveText('First challenge');
+  await expect(page.getByRole('tooltip').getByRole('heading', { level: 3 })).toHaveText('First challenge');
   await expect(page.getByRole('tooltip').locator('.objective-count').first()).toHaveText(/5\s*\/\s*10/);
   const heights = await page.locator('.search, .select-control').evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
   expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1);
@@ -218,7 +218,7 @@ test('compact header status and persistent collapsible clan rail', async ({ page
   await page.screenshot({ path: 'test-results/mobile-collapsed-sidebar.png', fullPage: true });
   await page.getByRole('button', { name: 'Expand side menu', exact: true }).click();
   await expect(page.locator('.seal-nav').first()).toBeVisible();
-  // Four compact navigation rows now include expansions and seasons/episodes.
+  // Compact navigation rows include all content categories.
   expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height)).toBeLessThan(280);
 });
 
@@ -580,9 +580,13 @@ test('activity seals and triumphs have separate navigation and optional badges',
     await expect(views.getByRole('link', { name: 'Badge', exact: true })).toHaveCount(activity.badge ? 1 : 0);
     await expect(page.locator('thead .heading-gilding').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(0);
-    await views.getByRole('link', { name: 'All triumphs', exact: true }).click();
-    await expect(page).toHaveURL(new RegExp('#/triumphs/' + activity.id + '$'));
-    await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(activity.extra ? 1 : 0);
+    if (activity.extra) {
+      await views.getByRole('link', { name: 'All triumphs', exact: true }).click();
+      await expect(page).toHaveURL(new RegExp('#/triumphs/' + activity.id + '$'));
+      await expect(page.getByRole('button', { name: 'Extra activity triumph', exact: true })).toHaveCount(1);
+    } else {
+      await expect(views.getByRole('link', { name: 'All triumphs', exact: true })).toHaveCount(0);
+    }
     await expect(page.getByRole('button', { name: 'Raid weapon', exact: true })).toHaveCount(0);
     if (activity.badge) {
       await views.getByRole('link', { name: 'Badge', exact: true }).click();
@@ -650,6 +654,7 @@ test('expansions and episodes expose nested triumphs, independent badges, and ma
   const sealNode = (hash: number, title: string) => ({ hash, displayProperties: { name: title }, completionRecordHash: hash + 1, children: { records: [{ recordHash: 42 }] } });
   await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
     '2724376914': sealNode(2724376914, 'The Final Shape'),
+    '1309523808': { hash: 1309523808, children: { records: [{ recordHash: 44 }] } },
     '1270675696': sealNode(1270675696, 'Episode: Echoes'),
     '1210906304': sealNode(1210906304, 'Monument of Triumph'),
     '1528010893': { displayProperties: { name: 'Pale Heart Pathfinder' }, children: { presentationNodes: [{ presentationNodeHash: 4 }] } },
@@ -665,7 +670,7 @@ test('expansions and episodes expose nested triumphs, independent badges, and ma
     '44': record(44, 'Nested episode triumph', { objectiveHashes: [102] }),
   } }));
   await page.goto(''); await ready(page);
-  await expect(page.getByRole('region', { name: 'Expansion seals', exact: true }).locator('.seal-card')).toHaveCount(10);
+  await expect(page.getByRole('region', { name: 'Expansion seals', exact: true }).locator('.seal-card')).toHaveCount(9);
   await expect(page.getByRole('region', { name: 'Seasons & Episodes', exact: true }).locator('.seal-card')).toHaveCount(25);
   await page.getByRole('button', { name: 'Expansions', exact: true }).click();
   await page.getByRole('navigation', { name: 'Expansions', exact: true }).getByRole('link', { name: 'The Final Shape', exact: true }).click();
@@ -719,28 +724,16 @@ test('sidebar sections default to the current category and can be toggled indepe
   await expect(activities).toHaveAttribute('aria-expanded', 'false');
 });
 
-test('Undertaker disables the duplicate triumphs tab with an accessible explanation', async ({ page }) => {
+test('Undertaker omits All triumphs when it has no additional triumphs', async ({ page }) => {
   await setup(page, { offline: false, calls: 0 });
   await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
     '347825339': { hash: 347825339, displayProperties: { name: 'Undertaker' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } },
     '2136916333': { hash: 2136916333, children: { records: [{ recordHash: 42 }] } },
   } }));
   await page.goto('#/seal/renegades_invasions'); await ready(page);
-  const tab = page.getByRole('navigation', { name: 'Expansion view' }).getByRole('button', { name: 'All triumphs', exact: true });
-  await expect(tab).toHaveAttribute('aria-disabled', 'true');
-  await tab.hover();
-  await expect(page.getByRole('tooltip')).toHaveText('Has no triumphs outside the seal');
-  await expect(page.getByRole('tooltip')).toHaveCSS('padding', '6px 9px');
-  const tabBounds = (await tab.boundingBox())!;
-  const tipBounds = (await page.getByRole('tooltip').boundingBox())!;
-  expect(tipBounds.width).toBeLessThan(300);
-  expect(Math.abs(tipBounds.x - (tabBounds.x + tabBounds.width / 2 + 12))).toBeLessThan(2);
-  expect(Math.abs(tipBounds.y - (tabBounds.y + tabBounds.height / 2 + 8))).toBeLessThan(2);
-  await tab.click({ force: true });
-  await expect(page).toHaveURL(/#\/seal\/renegades_invasions$/);
-  await tab.focus(); await page.keyboard.press('Enter');
-  await expect(page.getByRole('tooltip')).toHaveText('Has no triumphs outside the seal');
-  await expect(page).toHaveURL(/#\/seal\/renegades_invasions$/);
+  await expect(page.getByRole('navigation', { name: 'Expansion view' }).getByText('All triumphs', { exact: true })).toHaveCount(0);
+  await page.goto('#/triumphs/renegades_invasions');
+  await expect(page.getByRole('navigation', { name: 'Expansion view' }).getByRole('link', { name: 'Seal', exact: true })).toHaveAttribute('aria-current', 'page');
 });
 
 test('overview uses canonical seasons and removes repeated tile and section text', async ({ page }) => {
@@ -984,4 +977,154 @@ test('table headers expose guardian and content identifiers without repeating sh
   await expect(weapon).toHaveAttribute('data-record-tooltip', 'header:collectible:201');
   await expect(weapon).toHaveAttribute('data-collectible-hashes', '201');
   await expect(page.getByRole('button', { name: 'Titan helmet', exact: true }).locator('..')).toHaveAttribute('data-collectible-hashes', '202 203');
+});
+
+test('destination and event navigation supports triumph-only and removed historical pages', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '1663192739': { hash: 1663192739, children: { presentationNodes: [{ presentationNodeHash: 10 }] } },
+    '10': { hash: 10, children: { records: [{ recordHash: 42 }] } },
+    '4161172201': { hash: 4161172201, children: { records: [{ recordHash: 43 }] } },
+    '2592822840': { hash: 2592822840, displayProperties: { name: 'Festival of the Lost' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } },
+    '3598951881': { hash: 3598951881, displayProperties: { name: 'Solstice' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } },
+    '3215903653': { hash: 3215903653, children: { presentationNodes: [{ presentationNodeHash: 4277365833 }] } },
+    '4277365833': { hash: 4277365833, children: { records: [{ recordHash: 43 }] } },
+  } }));
+  await page.goto(''); await ready(page);
+  const destinations = page.getByRole('region', { name: 'Destinations', exact: true });
+  await expect(destinations.locator('.seal-card')).toHaveCount(7);
+  await expect(page.getByRole('region', { name: 'Events', exact: true }).locator('.seal-card')).toHaveCount(8);
+  const nessus = destinations.getByRole('link', { name: /Nessus/ });
+  await expect(nessus).not.toContainText('title holders');
+  await nessus.click();
+  await expect(page).toHaveURL(/#\/triumphs\/nessus$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nessus');
+  await expect(page.getByRole('navigation', { name: 'Destination view' }).getByRole('link', { name: 'Seal', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('columnheader', { name: 'Completion', exact: true })).toBeVisible();
+  await expect(page.locator('.table-legend')).not.toContainText('Title earned');
+  await page.goto('#/seal/solstice');
+  await expect(page.getByRole('navigation', { name: 'Event view' }).getByRole('link', { name: 'Seal', exact: true })).toBeVisible();
+  await page.goto('#/triumphs/dawning_2021');
+  await expect(page.getByRole('navigation', { name: 'Event view' }).getByRole('link', { name: '2021', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('navigation', { name: 'Events', exact: true }).getByRole('link')).toHaveCount(8);
+  await expect(page.getByRole('navigation', { name: 'Events', exact: true }).getByRole('link', { name: 'The Dawning', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.legacy-notice')).toContainText('Legacy triumphs');
+  await page.goto('#/triumphs/festival_of_the_lost_2021');
+  await expect(page.locator('.view-unavailable')).toContainText('removed from Bungie’s manifest');
+  await page.getByRole('navigation', { name: 'Event view' }).getByRole('link', { name: 'Seal', exact: true }).click();
+  await expect(page).toHaveURL(/#\/seal\/festival_of_the_lost$/);
+  const eventViews = page.getByRole('navigation', { name: 'Event view' });
+  await expect(eventViews).toHaveCount(1);
+  await expect(eventViews.getByText('All triumphs', { exact: true })).toHaveCount(0);
+  await expect(eventViews.getByRole('link', { name: '2022', exact: true })).toBeVisible();
+  await eventViews.getByRole('link', { name: '2021', exact: true }).click();
+  await expect(page.locator('.view-unavailable')).toContainText('removed from Bungie’s manifest');
+});
+
+test('triumph tooltips list every seal membership without adding header text', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '999': { hash: 999, displayProperties: { name: 'Moments of Triumph 2024' }, completionRecordHash: 1000, children: { records: [{ recordHash: 42 }, { recordHash: 42 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '1000': record(1000, 'Moments title', { titleInfo: { titlesByGender: { Male: 'MMXXIV' } } }),
+  } }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await expect(page.locator('thead')).not.toContainText('Moments of Triumph 2024');
+  await page.getByRole('button', { name: 'First challenge', exact: true }).hover();
+  const memberships = page.getByRole('tooltip').locator('.seal-memberships');
+  await expect(memberships).toHaveText('This triumph is part of the Last Wish (Rivensbane) and Moments of Triumph 2024 (MMXXIV) seals.');
+  await page.getByRole('button', { name: 'Banshee: First challenge: Encounters: 5/10' }).hover();
+  await expect(memberships.locator('strong')).toHaveCount(2);
+  await expect(memberships).toContainText('Moments of Triumph 2024');
+  await page.getByRole('button', { name: 'Second challenge', exact: true }).hover();
+  await expect(memberships).toHaveText('This triumph is part of the Last Wish (Rivensbane) seal.');
+});
+
+test('event headings and tab positions stay consistent across seal, yearly, and unavailable views', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '2592822840': { hash: 2592822840, displayProperties: { name: 'Festival of the Lost', description: 'A description for the seal that should not move its navigation.' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } },
+    '2330977699': { hash: 2330977699, children: { records: [{ recordHash: 43 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male: 'Ghost Writer' } } }) } }));
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto('#/seal/festival_of_the_lost'); await ready(page);
+    const tabs = page.getByRole('navigation', { name: 'Event view' });
+    await expect(page.locator('.seal-heading .eyebrow')).toHaveText('Events / Festival of the Lost / Seal requirements');
+    const sealY = (await tabs.boundingBox())!.y;
+    const tabBounds = () => tabs.getByRole('link').evaluateAll(links => links.map(link => { const { x, y, width, height } = link.getBoundingClientRect(); return { x, y, width, height }; }));
+    const before = await tabBounds();
+    const expectStableTabs = async () => { const after = await tabBounds(); expect(after).toHaveLength(before.length); after.forEach((rect, i) => { for (const key of ['x', 'y', 'width', 'height'] as const) expect(rect[key]).toBeCloseTo(before[i]![key], 2); }); };
+    await expect(page.locator('.view-description')).toBeVisible();
+    await tabs.getByRole('link', { name: '2022', exact: true }).click();
+    await expect(page.locator('.seal-heading .eyebrow')).toHaveText('Events / Festival of the Lost / 2022');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ghost Writer');
+    await expect(page.locator('.view-description')).toHaveCount(0);
+    expect(Math.abs((await tabs.boundingBox())!.y - sealY)).toBeLessThan(1);
+    await expectStableTabs();
+    await tabs.getByRole('link', { name: '2021', exact: true }).click();
+    await expect(page.locator('.seal-heading .eyebrow')).toHaveText('Events / Festival of the Lost / 2021');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ghost Writer');
+    await expect(page.locator('.view-unavailable')).toContainText('removed from Bungie’s manifest');
+    expect(Math.abs((await tabs.boundingBox())!.y - sealY)).toBeLessThan(1);
+    await expectStableTabs();
+  }
+});
+
+test('gilding header text and decoration stay behind the sticky Guardian label', async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 900 });
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, '43': { ...records['43'], forTitleGilding: true } } }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await page.locator('.table-scroll table').evaluate(e => { (e as HTMLElement).style.minWidth = '1800px'; });
+  const guardian = page.locator('thead .player-column');
+  const gilding = page.locator('.heading-gilding');
+  const button = gilding.locator('.heading-button');
+  await expect(button).toHaveCSS('z-index', 'auto');
+  expect(await gilding.evaluate(e => getComputedStyle(e, '::after').zIndex)).toBe('-1');
+  const guardianBounds = (await guardian.boundingBox())!;
+  const buttonBounds = (await button.boundingBox())!;
+  const x = guardianBounds.x + guardianBounds.width / 2;
+  await page.locator('.table-scroll').evaluate((e, scrollLeft) => { e.scrollLeft = scrollLeft; }, buttonBounds.x + buttonBounds.width / 2 - x);
+  const moved = (await button.boundingBox())!;
+  const point = { x: moved.x + moved.width / 2, y: moved.y + moved.height / 2 };
+  expect(point.x).toBeGreaterThan(guardianBounds.x);
+  expect(point.x).toBeLessThan(guardianBounds.x + guardianBounds.width);
+  expect(await guardian.evaluate((e, point) => document.elementFromPoint(point.x, point.y)?.closest('th') === e, point)).toBe(true);
+});
+
+test('hidden and obscured gilding cells keep numbers, pips, and hover borders behind guardian names', async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 900 });
+  await setup(page, { offline: false, calls: 0 });
+  const fillers = Array.from({ length: 8 }, (_, i) => record(2000 + i, `Extra ${i}`, { objectiveHashes: [102] }));
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes, [nodeHash]: { ...nodes[nodeHash], children: { records: [42, 43, ...fillers.map(r => r.hash)].map(recordHash => ({ recordHash })) } } } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, '42': { ...records['42'], forTitleGilding: true }, '43': { ...records['43'], forTitleGilding: true }, ...Object.fromEntries(fillers.map(r => [r.hash, r])) } }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const member = members.find(m => route.request().url().includes(m.destinyUserInfo.membershipId))!;
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {
+      '99': { state: 1 }, '42': { state: 28, objectives: [101, 103].map(objectiveHash => ({ objectiveHash, progress: 5, completionValue: 10, complete: false })) }, '43': { state: 12, objectives: [{ objectiveHash: 102, progress: 0, completionValue: 1, complete: false }] },
+    } } } }) });
+  });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await page.locator('.table-scroll table').evaluate(e => { (e as HTMLElement).style.minWidth = '1800px'; });
+  const row = page.locator('tbody tr').filter({ hasText: 'Banshee' });
+  const guardian = row.locator('.player-column');
+  const guardianBounds = (await guardian.boundingBox())!;
+  const right = guardianBounds.x + guardianBounds.width;
+  for (const [label, text] of [['Banshee: First challenge: Encounters: 5/10', '5/10'], ['Banshee: Second challenge: Challenge: 0/1', '·']]) {
+    const button = page.getByRole('button', { name: label, exact: true });
+    await page.locator('.table-scroll').evaluate(e => { e.scrollLeft = 0; });
+    await expect(button).toHaveText(text!);
+    const initial = (await button.boundingBox())!;
+    await page.locator('.table-scroll').evaluate((e, left) => { e.scrollLeft = left; }, initial.x + initial.width - right - 4);
+    const bounds = (await button.boundingBox())!;
+    await page.mouse.move(bounds.x + bounds.width - 2, bounds.y + bounds.height / 2);
+    await expect(button).not.toHaveCSS('box-shadow', 'none');
+    for (const x of [bounds.x + bounds.width / 2, bounds.x + 1]) {
+      expect(x).toBeLessThan(right);
+      expect(await guardian.evaluate((e, point) => document.elementFromPoint(point.x, point.y)?.closest('th') === e, { x, y: bounds.y + bounds.height / 2 })).toBe(true);
+    }
+  }
 });
