@@ -587,3 +587,7 @@ Keep an unresolved selected-page template separate from its shared-header displa
 ## Strict player scope for variables — 2026-10-31
 
 Player-supplied variables are exclusively for that player's cells, tooltips, accessible labels, and details. Shared headers, page descriptions, overview metadata, and badge names never consult player variables, even if every loaded player has the same value. Unavailable substitutions in those shared contexts remain `?`. This supersedes the earlier agreement-across-players behavior. Character agreement remains only as a fallback inside one player's data. Regression coverage explicitly supplies the same variable value to every player and verifies that shared header tooltips still show `?` while player tooltips show their own value.
+
+## Badge artwork beside ownership counts — 2026-11-01
+
+Show the badge node's image beside the badge-owner count on Badge views, superseding the earlier decision to omit badge artwork there. Share the seal image's responsive size and close spacing, using contain sizing to preserve rectangular badge proportions. Keep the seal-specific downward optical adjustment separate. This change is to the badge-page heading, not overview tile artwork.

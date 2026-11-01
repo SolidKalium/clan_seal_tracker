@@ -1218,7 +1218,7 @@ test('activity headings distinguish seals, named badges, and current triumphs wi
     '3973313476': { hash: 3973313476, children: { records: [{ recordHash: 44 }] } },
     '2107507397': { hash: 2107507397, displayProperties: { name: 'Unbroken' }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }] } },
     '1881970629': { hash: 1881970629, children: { presentationNodes: [{ presentationNodeHash: 2107507397 }] } },
-    '701100740': { hash: 701100740, displayProperties: { name: 'Crucible Arsenal' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } },
+    '701100740': { hash: 701100740, displayProperties: { name: 'Crucible Arsenal', icon: root + 'icons/test-titan.png' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } },
     '4': { hash: 4, displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }] } },
     '5': { hash: 5, displayProperties: { name: 'Hunter' }, children: { collectibles: [{ collectibleHash: 201 }] } },
   } }));
@@ -1248,6 +1248,9 @@ test('activity headings distinguish seals, named badges, and current triumphs wi
   await expect(page.locator('.active-triumphs-notice')).toHaveCount(0);
   await expect(page.locator('.heading-tally')).toHaveText('1badge owners');
   await expect(page.locator('.heading-seal-icon')).toHaveCount(0);
+  await expect(page.locator('.heading-badge-icon')).toBeVisible();
+  await expect(page.locator('.heading-badge-icon')).toHaveAttribute('src', 'https://www.bungie.net' + root + 'icons/test-titan.png');
+  await expect(page.locator('.heading-badge-icon')).toHaveCSS('object-fit', 'contain');
 });
 
 test('dungeons and exotic missions expose seal, collection, full dungeon, and archived mission views', async ({ page }) => {

@@ -133,8 +133,11 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 
 .page-modes .tab-width,.page-modes .tab-label{grid-area:1 / 1;white-space:nowrap;text-align:center}.page-modes .tab-width{visibility:hidden;font-weight:700;pointer-events:none;user-select:none}
 
-.condition-icon{display:inline-block;width:14px;height:14px;vertical-align:-2px;flex:none}.record-conditions strong{display:flex;align-items:center;gap:6px}.cell-status-watermark.condition-icon{width:28px;height:28px}.heading-kind{font-size:.58em;color:var(--muted);letter-spacing:-.02em;font-weight:400}.heading-tally{display:flex;align-items:center;gap:4px;flex-shrink:0}.heading-seal-icon{display:block;width:64px;height:64px;object-fit:contain;transform:translateY(4%)}
+.condition-icon{display:inline-block;width:14px;height:14px;vertical-align:-2px;flex:none}.record-conditions strong{display:flex;align-items:center;gap:6px}.cell-status-watermark.condition-icon{width:28px;height:28px}.heading-kind{font-size:.58em;color:var(--muted);letter-spacing:-.02em;font-weight:400}.heading-tally{display:flex;align-items:center;gap:4px;flex-shrink:0}.heading-owner-icon{display:block;width:64px;height:64px;object-fit:contain}.heading-seal-icon{transform:translateY(4%)}
 
-.seal-heading>div:first-child{min-width:0;flex:1}.seal-heading h1{overflow-wrap:anywhere}@media(max-width:650px){.heading-seal-icon{width:48px;height:48px}}
+.seal-heading>div:first-child{min-width:0;flex:1}.seal-heading h1{overflow-wrap:anywhere}@media(max-width:650px){.heading-owner-icon{width:48px;height:48px}}
 
 .heading-tally .title-tally{min-width:0;text-align:left;gap:0}
+
+/* Let rectangular badge artwork fill the icon height instead of a square box. */
+.heading-owner-icon.heading-badge-icon{width:auto;margin-right:6px}
