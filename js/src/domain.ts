@@ -1,4 +1,6 @@
 import { buildOtherPage, otherCell } from './other';
+import { legacyModGroup } from './modGroups';
+import { mergeExoticWeaponVersions } from './exoticWeapons';
 import { sealRequirements } from './completion';
 import { resolveSealStrings, type StringVariables } from './stringVariables';
 import { sealMembershipIndex } from './sealMembership';
@@ -40,7 +42,7 @@ export function buildSealTemplate(page: PageConfig, defs: Definitions, mode: Pag
   const base: Seal = { page, requirements: sealRequirements(node, defs), legacy: page.sealNodeHash ? presentationTree(defs, ['1881970629']).some(n => String(n.hash) === page.sealNodeHash) : page.otherNodeHashes?.length ? page.otherNodeHashes.every(hash => legacyTriumphs!.has(hash)) : !!legacyRecords && explicitRecords.every(hash => legacyRecords.has(hash)), title: completion?.titleInfo?.titlesByGender ? Object.values(completion.titleInfo.titlesByGender)[0] ?? page.name : page.name, description: rank?.displayProperties.description || node?.displayProperties.description?.trim() || completion?.displayProperties.description || '', icon: node?.displayProperties.icon, completionHash: String(node?.completionRecordHash ?? ''), completionScope: completion?.scope ?? 0, headings: [] };
   if (page.unavailableReason) return { ...base, unavailable: page.unavailableReason };
   if (page.sealNodeHash && !node?.children.records?.length) return { ...base, unavailable: 'This seal is not available in the current manifest.' };
-  if (mode === 'badge') return buildBadge(page, defs, base);
+  if (mode === 'badge' || page.category === 'Other badges') return buildBadge(page, defs, base);
   const full = !page.sealNodeHash || mode === 'raid' || mode === 'triumphs';
   let nextOrder = 100;
   const hashes = new Set((node?.children.records ?? []).map(r => String(r.recordHash)));
@@ -67,11 +69,22 @@ export function buildSealTemplate(page: PageConfig, defs: Definitions, mode: Pag
     const dayOne = isDayOne(record);
     const badgeDisplay = defs.nodes[page.badgeNodeHash ?? '']?.displayProperties;
     const badgeRequirement = !!badgeDisplay && record.displayProperties.name === badgeDisplay.name && (description === (badgeDisplay.description ?? '') || /associated badge on the Collections screen/i.test(description));
-    base.headings.push({ seals: sealMembershipIndex(defs).get(id), badgeRequirement, group: rank ? extraNodes.find(n => n.children.records?.some(r => String(r.recordHash) === id))?.displayProperties.name ?? 'Requirements' : record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? (/Epic raid/i.test(description) ? 'Day one · Epic' : 'Day one') : rule?.column_name ?? record.displayProperties.name,
+    base.headings.push({ seals: sealMembershipIndex(defs).get(id), badgeRequirement, recordType: record.recordTypeName, group: rank || page.groupByNode ? extraNodes.find(n => n.children.records?.some(r => String(r.recordHash) === id))?.displayProperties.name ?? 'Requirements' : record.recordTypeName === 'Weapon Pattern' ? 'Weapon Patterns' : 'Triumphs', hash: id, name: record.displayProperties.name, label: element ? element[0]!.toUpperCase() + element.slice(1).toLowerCase() : sameClass ? 'Class' : dayOne ? (/Epic raid/i.test(description) ? 'Day one · Epic' : 'Day one') : rule?.column_name ?? record.displayProperties.name,
       description: record.displayProperties.description ?? '', scope: record.scope, gilding: !!record.forTitleGilding,
       skip: dayOne || !!rule?.skip_for_completion, order: dayOne ? -100 : elementIndex >= 0 ? 4 + elementIndex / 10 : sameClass ? 4.6 : rule?.order ?? nextOrder++,
+      hiddenObjectiveHashes: record.recordTypeName === 'Exotic Catalysts' ? objectiveHashes.filter(h => /^insert the catalyst[.!:]?$/i.test(defs.objectives[String(h)]!.progressDescription?.trim() ?? '')).map(String) : undefined,
       objectives: objectiveHashes.map(h => defs.objectives[String(h)]!), intervals: intervalHashes.map(h => defs.objectives[String(h)]!),
     });
+  }
+  if (page.id === 'monument_of_triumph' && mode === 'triumphs') {
+    const requirements = new Set((node?.children.records ?? []).map(r => String(r.recordHash)));
+    for (const heading of base.headings) {
+      const category = extraNodes.find(n => n.children.records?.some(r => String(r.recordHash) === heading.hash));
+      const parent = category && extraNodes.find(n => n.children.presentationNodes?.some(c => String(c.presentationNodeHash) === String(category.hash)));
+      heading.group = requirements.has(heading.hash) ? 'Seal requirements' : category
+        ? [parent && parent.hash !== Number(page.otherNodeHashes?.[0]) ? parent.displayProperties.name : '', category.displayProperties.name].filter(Boolean).join(': ')
+        : 'Other triumphs';
+    }
   }
   // Match PHP's positive/default columns first and negative-order extras last.
   const group = (n: number) => n === 0 ? 0 : n > 0 ? 1 : 3;
@@ -87,7 +100,13 @@ export function buildSealTemplate(page: PageConfig, defs: Definitions, mode: Pag
     const included = new Set(base.headings.flatMap(h => h.collectibleHashes ?? []));
     for (const hash of extras) if (!included.has(hash) && !page.collectibles?.[hash]?.suppress) {
       const heading = collectibleHeading([hash], [], defs, page.name);
-      if (heading) { heading.label = page.collectibles?.[hash]?.column_name ?? heading.label; heading.skip = !!page.collectibles?.[hash]?.skip_for_completion; base.headings.push(heading); }
+      if (heading) {
+        if (page.groupByNode) heading.group = extraNodes.find(n => n.children.collectibles?.some(c => String(c.collectibleHash) === hash))?.displayProperties.name ?? heading.group;
+        if (page.id === 'mods' && extraNodes.find(n => String(n.hash) === '2154827630')?.children.collectibles?.some(c => String(c.collectibleHash) === hash)) {
+          const collectible = defs.collectibles?.[hash];
+          heading.group = legacyModGroup(collectible?.sourceString ?? '', defs.items?.[String(collectible?.itemHash)]?.itemTypeDisplayName ?? '');
+        }
+        heading.label = page.collectibles?.[hash]?.column_name ?? heading.label; heading.skip = !!page.collectibles?.[hash]?.skip_for_completion; base.headings.push(heading); }
     }
   }
   // Keep gilding requirements together ahead of base/legacy requirements, preserving their internal order.
@@ -97,11 +116,20 @@ export function buildSealTemplate(page: PageConfig, defs: Definitions, mode: Pag
   if (trackingHash && tracking && [0, 1].includes(tracking.scope)) {
     // This record's objectives describe the current gilding, not the lifetime count.
     base.headings = base.headings.filter(h => h.hash !== String(trackingHash));
-    base.headings.unshift({ hash: String(trackingHash), metric: 'gildingCount',
-      name: 'Times gilded', label: 'Times gilded', description: 'Number of times this title has been gilded.',
-      group: 'Triumphs', scope: tracking.scope, gilding: false, skip: true, order: 0, objectives: [], intervals: [] });
+    base.headings.unshift({ hash: String(trackingHash), metric: page.id === 'monument_of_triumph' ? 'gilded' : 'gildingCount',
+      name: page.id === 'monument_of_triumph' ? 'Gilded' : 'Times gilded', label: page.id === 'monument_of_triumph' ? 'Gilded' : 'Times gilded', description: page.id === 'monument_of_triumph' ? 'Whether the Immortal title has been gilded.' : 'Number of times this title has been gilded.',
+      group: page.id === 'monument_of_triumph' && mode === 'triumphs' ? 'Seal requirements' : 'Triumphs', scope: tracking.scope, gilding: false, skip: true, order: 0, objectives: [], intervals: [] });
   }
-  base.headings = groupHeadings(base.headings);
+  if (page.id === 'mods' || page.id === 'monument_of_triumph' && mode === 'triumphs') {
+    const groups = new Map<string, Heading[]>();
+    for (const heading of base.headings) {
+      const key = heading.group ?? 'Mods';
+      groups.set(key, [...(groups.get(key) ?? []), heading]);
+    }
+    base.headings = [...groups.values()].flat();
+  }
+  if (page.id === 'exotic_weapons') base.headings = mergeExoticWeaponVersions(base.headings, defs);
+  base.headings = page.groupByNode || page.id === 'monument_of_triumph' ? base.headings : groupHeadings(base.headings);
   if (!base.headings.length) return { ...base, unavailable: 'No triumphs for this page remain available in the current manifest.' };
   return base;
 }
@@ -117,6 +145,7 @@ export function recordFraction(record: RecordProgress): number {
 export function selectRecord(profile: Profile, heading: Pick<Heading, 'hash' | 'scope' | 'metric'>): RecordProgress | undefined {
   if (heading.scope === 0) return profile.profileRecords?.data?.records[heading.hash];
   const candidates = Object.values(profile.characterRecords?.data ?? {}).map(c => c.records[heading.hash]).filter((r): r is RecordProgress => !!r);
+  if (heading.metric === 'gilded') return candidates.find(record => (record.completedCount ?? 0) > 0 || recordFraction(record) >= 1) ?? candidates[0];
   if (heading.metric === 'gildingCount') {
     return candidates.reduce<RecordProgress | undefined>((best, next) =>
       (next.completedCount ?? -1) > (best?.completedCount ?? -1) ? next : best, undefined);
@@ -130,6 +159,11 @@ export function selectRecord(profile: Profile, heading: Pick<Heading, 'hash' | '
 }
 
 export function recordCell(record: RecordProgress | undefined, heading: Heading): Cell {
+  if (heading.metric === 'gilded') {
+    const gilded = !!record && ((record.completedCount ?? 0) > 0 || recordFraction(record) >= 1);
+    return { objectives: [], fraction: 0, complete: gilded, missing: !record, text: !record ? '—' : gilded ? '✓' : '·',
+      detail: !record ? 'Gilding status unavailable.' : gilded ? 'Immortal is gilded.' : 'Immortal is not gilded.', unowned: false };
+  }
   if (heading.metric === 'gildingCount') {
     const count = record?.completedCount;
     const missing = typeof count !== 'number' || !Number.isInteger(count) || count < 0;
@@ -175,7 +209,7 @@ function collectibleHeading(hashes: string[], classes: string[], defs: Definitio
   const group = item?.itemType === 3 || item?.itemType === 20 ? 'Weapons' : variants || item?.itemType === 2 ? 'Armor' : /mod/i.test(itemType) ? 'Armor Mods' : /emblem|shader|shell|sparrow|ship|vehicle|emote|ornament/i.test(itemType) ? 'Cosmetics' : 'Collection';
   const perks = group === 'Armor Mods' ? (item?.perks ?? []).map(p => defs.perks?.[String(p.perkHash)]?.displayProperties).filter((p): p is NonNullable<typeof p> => !!p && !!(p.name || p.description)) : undefined;
   const source = redundantSource(first.sourceString ?? '', focus) ? '' : first.sourceString;
-  return { group, source, itemType: group === 'Armor Mods' ? 'Armor mod' : itemType, perks, hash: 'collectible:' + [...new Set(hashes)].join(':'), collectibleHashes: hashes, classNames: classes,
+  return { group, source, itemType: group === 'Armor Mods' && !/weapon|ghost/i.test(itemType) ? 'Armor mod' : itemType, perks, hash: 'collectible:' + [...new Set(hashes)].join(':'), collectibleHashes: hashes, classNames: classes,
     name: first.displayProperties.name, label: first.displayProperties.name,
     description: [source, ...hashes.map((h, i) => variants ? `${classes[i]}: ${defs.collectibles![h]!.displayProperties.name}` : '').filter(Boolean)].filter(Boolean).join('\n'),
     scope: first.scope, gilding: false, skip: false, order: 1000,
@@ -248,6 +282,15 @@ export function headingCell(profile: Profile | undefined, heading: Heading, clas
   const other = otherCell(profile, heading, badgeHeadings);
   if (other) return other;
   if (!heading.collectibleHashes) return recordCell(profile ? selectRecord(profile, heading) : undefined, heading);
+  const patternRecord = profile && heading.pattern ? selectRecord(profile, heading.pattern) : undefined;
+  const patternUnlocked = patternRecord ? recordFraction(patternRecord) >= 1 : undefined;
+  if (heading.alternativeCollectibleHashes) {
+    const states = heading.alternativeCollectibleHashes.map(hash => profile ? collectibleState(profile, hash) : undefined);
+    const complete = states.some(state => state !== undefined && !(state & 1));
+    const missing = !complete && states.some(state => state === undefined);
+    const text = missing ? '—' : complete ? '✓' : '·';
+    return { patternUnlocked, complete, missing, text, fraction: complete ? 1 : 0, detail: heading.name, unowned: false, objectives: [] };
+  }
   const index = Math.min(classIndex, heading.collectibleHashes.length - 1);
   const state = profile ? collectibleState(profile, heading.collectibleHashes[index]!) : undefined;
   const complete = state !== undefined && !(state & 1), missing = state === undefined;
@@ -264,7 +307,7 @@ export function headingCell(profile: Profile | undefined, heading: Heading, clas
   const armorStates = armor.map(h => profile ? collectibleState(profile, h.collectibleHashes![index]!) : undefined);
   const scoringClass = variants ? { name: heading.classNames?.[index] ?? `Class ${index + 1}`, icon: heading.classIcons?.[index], best: classSelection === 'best',
     armorFraction: armorStates.length && armorStates.every(s => s !== undefined) ? armorStates.filter(s => !(s! & 1)).length / armorStates.length : undefined } : undefined;
-  return { variants, scoringClass, fraction: complete ? 1 : 0, complete, missing, text, detail: name, unowned: false,
+  return { patternUnlocked, variants, scoringClass, fraction: complete ? 1 : 0, complete, missing, text, detail: name, unowned: false,
     objectives: [{ hash: heading.hash, name, progress: complete ? 1 : 0, target: 1, complete, missing, text, fraction: complete ? 1 : 0 }] };
 }
 
@@ -280,7 +323,7 @@ export function redundantSource(source: string, focus: string): boolean {
   return !!activity && (text === activity || text === activity + ' raid' || text === 'raid ' + activity);
 }
 export function objectiveUnit(heading: Heading, description: string, count: number): string {
-  if (heading.group === 'Weapon Patterns') return count === 1 ? 'pattern' : 'patterns';
+  if (heading.recordType === 'Weapon Pattern' || heading.group === 'Weapon Patterns') return count === 1 ? 'pattern' : 'patterns';
   const explicit = /\b(kills|chests|encounters|logs|wishes|banners|extractions|completions)\b/i.exec(description)?.[1]?.toLowerCase();
   const unit = explicit ?? (/combatants defeated|enemies defeated|final blows/i.test(description) ? 'kills' : '');
   if (!unit || count !== 1) return unit;

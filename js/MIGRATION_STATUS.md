@@ -3,19 +3,11 @@
 ## TODO list
 
 **Main page:**
-- The original Other section
-  - Catalysts
-  - Patterns
-  - Exotic weapons
-  - Exotic armor
-  - Mods
+- Remaining candidates from the original Other section
   - Potentially: the unimplemented (or maybe partially implemented) milestones page (might or might not require being logged in, at least for some info)
   - Potentially: other medals
   - Seasonal challenges might look different now. Certainly, the old seasons have been removed. Challenges might exist in a "non-season" way now
 - Lifetime (class and New Light), likely missing new entries
-- Moments of Triumph seals (including Monument of Triumphs)
-- Chronicler, Wayfarer, and any other seals that don't fit nicely into a category
-- Badges that don't fit nicely into other categories
 - A test case to verify all triumphs, badges, and seals in the manifest's tree show up somewhere in the main json.
 
 **Members page:**
@@ -25,6 +17,8 @@
 - Check for data not made visible by this site
   - For instance, metrics
 - A seal overview page (would probably show player progress on all seals, which would be more calculations than at present)
+- Clan selection
+- Player login
 
 ## Revisit list
 
@@ -54,6 +48,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Option to show progress without gilding. Could also allow a "full completion" mode that includes day 1 or any other excluded entries.
 - [ ] Improve gilding requirement column header styling
 - [ ] Show score, rewards, or other details on triumph heading tooltips. Could show preview of armor or weapons.
+  - [ ] Do any ghost mods still expire? Can show energy needed either way.
 - [ ] Double check for any signs of season-by-season guardian rank history. Game might only show immediate past season to the player themself. Or it could be a feature only for a logged-in player.
 - [ ] Make pages more searchable or allow finding a page via multiple interaction paths (e.g. from a list of all badges vs the tab for a badge on raid or expansion) (Might be part of a larger reorganization, such as allowing viewing triumphs / medals in the hierarchy the game natively uses as a second view.)
 - [ ] Is a hash (`/#/foo/bar) really the right approach instead of using normal paths?
@@ -64,3 +59,5 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 Recorded 2026-11-01. Observations and uncertainties to retain; no immediate implementation is planned.
 
 - **Character-scoped triumphs show the best whole record.** For each triumph, the site selects the character record with the highest aggregate progress; it does not merge objectives across characters. The user recalls that the game may display this best-record result across all characters, but that recollection is unverified. This can matter for requirements such as collecting feathers x/9 when all feathers must be collected on one character: the summary does not show how the other characters differ. Low priority: consider an indication of differing character records or a per-character breakdown when such differences exist, without implying that progress can be combined. Some separate options: "debug" alert in html or console when this is noticed, possibly for noting in the page json; automatically showing on the cell for the affected player; labelling the column automatically or from the json.
+- Catalysts with "Insert the catalyst" objective typically or always require a count of 2. Why? The measured value might actually be "bool acquire catalyst" + "int insert count" or something like that.
+- Some exotic weapons, have two versions for ownership. See Wish-keeper, Barrow-dyad, Whisper of the Worm, etc. One is the plain exotic weapon and the other is the craftable version. We could consider labeling which is which in the future, if know the situation.

@@ -687,7 +687,7 @@ test('expansions and episodes expose nested triumphs, independent badges, and ma
   } }));
   await page.goto(''); await ready(page);
   await expect(page.getByRole('region', { name: 'Expansion seals', exact: true }).locator('.seal-card')).toHaveCount(9);
-  await expect(page.getByRole('region', { name: 'Seasons & Episodes', exact: true }).locator('.seal-card')).toHaveCount(25);
+  await expect(page.getByRole('region', { name: 'Seasons & Episodes', exact: true }).locator('.seal-card')).toHaveCount(24);
   await page.getByRole('button', { name: 'Expansions', exact: true }).click();
   await page.getByRole('navigation', { name: 'Expansions', exact: true }).getByRole('link', { name: 'The Final Shape', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Transcendent seal');
@@ -707,7 +707,8 @@ test('expansions and episodes expose nested triumphs, independent badges, and ma
   await expect(seasonalViews.getByRole('link', { name: 'Badge', exact: true })).toHaveCount(0);
   await seasonalViews.getByRole('link', { name: 'Seal', exact: true }).click();
   await expect(page.locator('thead')).not.toContainText('Nested episode triumph');
-  await page.getByRole('navigation', { name: 'Seasons & Episodes', exact: true }).getByRole('link', { name: 'Monument of Triumph', exact: true }).click();
+  await page.getByRole('button', { name: 'Other seals', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Other seals', exact: true }).getByRole('link', { name: 'Moments of Triumph', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Immortal seal');
   await expect(page.locator('.legacy-notice')).toHaveCount(0);
 });
@@ -758,7 +759,7 @@ test('overview uses canonical seasons and removes repeated tile and section text
   await expect(page.locator('.seal-card[href="#/seal/season_10"] .eyebrow')).toHaveText('SEASON 10');
   await expect(page.locator('.seal-card[href="#/seal/season_5"] .eyebrow')).toHaveText('SEASON 5');
   await expect(page.locator('.seal-card[href="#/seal/episode_echoes"] .eyebrow')).toHaveText('SEASON 24');
-  await expect(page.locator('.seal-card[href="#/seal/monument_of_triumph"] .eyebrow')).toHaveText('SEASON 28');
+  await expect(page.locator('.seal-card[href="#/seal/monument_of_triumph"] .eyebrow')).toHaveText('SEAL');
   for (const label of await page.getByRole('region', { name: 'Activity seals', exact: true }).locator('.card-top .eyebrow').all()) await expect(label).toHaveText('ACTIVITY');
   for (const label of await page.getByRole('region', { name: 'Expansion seals', exact: true }).locator('.card-top .eyebrow').all()) await expect(label).toHaveText('EXPANSION');
   await expect(page.locator('.seal-card[href="#/seal/last_wish"] .card-bottom')).toContainText('title holders');
@@ -1390,7 +1391,7 @@ test('Other groups individual ranks, commendations, and chronological checklist 
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto(''); await ready(page);
   const section = page.getByRole('region', { name: 'Other', exact: true });
-  await expect(section.locator('.seal-card')).toHaveCount(2);
+  await expect(section.locator('.seal-card')).toHaveCount(7);
   await section.getByRole('link').filter({ hasText: 'Guardian ranks' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Guardian ranks');
   await expect(page.locator('.view-description')).toContainText('does not expose a season-by-season');
@@ -1421,4 +1422,186 @@ test('Other groups individual ranks, commendations, and chronological checklist 
   await page.getByRole('button', { name: 'Refresh data', exact: true }).click(); await ready(page);
   await expect(page.getByRole('button', { name: 'Ada: Chest 1: collected', exact: true })).toHaveText('✓');
   expect(errors).toEqual([]);
+});
+
+test('Other collection pages use native groups, pattern objectives, and collected progress', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const leaf = (hash: number, name: string, children: object) => ({ hash, displayProperties: { name }, children });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '2744330515': leaf(2744330515, 'Exotic Catalysts', { presentationNodes: [{ presentationNodeHash: 17 }] }),
+    '17': leaf(17, 'Kinetic Weapons', { records: [{ recordHash: 42 }] }),
+    '127506319': leaf(127506319, 'Primary Weapon Patterns', { presentationNodes: [{ presentationNodeHash: 18 }] }),
+    '18': leaf(18, 'Auto Rifles', { records: [{ recordHash: 43 }] }),
+    '2214408526': leaf(2214408526, 'Weapons', { presentationNodes: [{ presentationNodeHash: 19 }, { presentationNodeHash: 20 }] }),
+    '19': leaf(19, 'Kinetic', { collectibles: [{ collectibleHash: 201 }] }),
+    '20': leaf(20, 'Energy', { collectibles: [{ collectibleHash: 203 }] }),
+    '1789205056': leaf(1789205056, 'Armor', { presentationNodes: [{ presentationNodeHash: 21 }, { presentationNodeHash: 22 }] }),
+    '21': leaf(21, 'Titan', { collectibles: [{ collectibleHash: 202 }] }),
+    '22': leaf(22, 'Hunter', { collectibles: [{ collectibleHash: 203 }] }),
+    '3509235358': leaf(3509235358, 'Mods', { presentationNodes: [{ presentationNodeHash: 23 }, { presentationNodeHash: 2154827630 }] }),
+    '2154827630': leaf(2154827630, 'Legacy and Raid', { collectibles: [{ collectibleHash: 201 }] }),
+    '23': leaf(23, 'Head', { collectibles: [{ collectibleHash: 202 }] }),
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, '43': { ...records['43'], recordTypeName: 'Weapon Pattern' } } }));
+  await page.goto(''); await ready(page);
+  const section = page.getByRole('region', { name: 'Other', exact: true });
+  await expect(section.locator('.seal-card')).toHaveCount(7);
+  await expect(section.locator('a[href="#/triumphs/exotic_weapons"]')).toContainText('2 items');
+  for (const [id, name, group] of [['catalysts', 'Catalysts', 'Kinetic Weapons'], ['patterns', 'Patterns', 'Auto Rifles'], ['exotic_weapons', 'Exotic weapons', 'Kinetic'], ['exotic_armor', 'Exotic armor', 'Titan'], ['mods', 'Mods', 'Head']]) {
+    await page.goto(`#/triumphs/${id}`);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(name);
+    await expect(page.locator('.category-header-row')).toContainText(group);
+    await expect(page.locator('tbody tr')).toHaveCount(3);
+    await expect(page.locator('thead')).not.toContainText('Requirements');
+    if (id === 'mods') await expect(page.locator('.category-header-row')).toContainText('Last Wish');
+    if (id === 'patterns') {
+      await page.getByRole('button', { name: 'Second challenge', exact: true }).hover();
+      await expect(page.getByRole('tooltip')).toContainText('1 pattern');
+    } else if (id === 'exotic_weapons') {
+      await expect(page.getByRole('columnheader', { name: 'Collected', exact: true })).toBeVisible();
+      await page.getByLabel('Filter progress').selectOption('complete');
+      await expect(page.locator('tbody tr')).toHaveCount(1);
+      await expect(page.locator('tbody tr')).toContainText('Ada');
+      await page.getByLabel('Filter progress').selectOption('all');
+    }
+  }
+  await page.reload(); await ready(page);
+  await expect(page.locator('.category-header-row')).toContainText('Head');
+});
+
+test('catalysts omit insertion columns while retaining full tooltips and original stage numbers', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes, '2744330515': { hash: 2744330515, displayProperties: { name: 'Kinetic Weapons' }, children: { records: [{ recordHash: 42 }, { recordHash: 43 }] } } } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '42': { ...records['42'], recordTypeName: 'Exotic Catalysts' },
+    '43': { ...records['43'], recordTypeName: 'Exotic Catalysts', objectiveHashes: [102, 104, 105] },
+  } }));
+  await page.route('**/objectives.json', route => route.fulfill({ json: { ...objectives,
+    '101': { ...objectives['101'], progressDescription: 'Insert the Catalyst', completionValue: 2 },
+    '102': { ...objectives['102'], progressDescription: 'Insert the Catalyst', completionValue: 2 },
+    '104': { hash: 104, progressDescription: 'Kills', completionValue: 10 },
+    '105': { hash: 105, progressDescription: 'Precision kills', completionValue: 10 },
+  } }));
+  await page.goto('#/triumphs/catalysts'); await ready(page);
+  await expect(page.getByRole('button', { name: 'First challenge', exact: true }).locator('..')).toHaveAttribute('colspan', '1');
+  await expect(page.locator('.objective-header-row th')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Stage 2: Kills', exact: true })).toHaveText('2');
+  await expect(page.getByRole('button', { name: 'Stage 3: Precision kills', exact: true })).toHaveText('3');
+  await expect(page.locator('.objective-header-row')).not.toContainText('Insert');
+  const row = page.locator('tbody tr').filter({ hasText: 'Banshee' });
+  await expect(row.locator(':scope > th, :scope > td')).toHaveCount(5);
+  await expect(page.getByRole('button', { name: 'Banshee: First challenge: Final encounter: 5/10', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'First challenge', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Insert the Catalyst');
+  await expect(page.getByRole('tooltip')).toContainText('Final encounter');
+  await page.getByRole('button', { name: 'Banshee: First challenge: Final encounter: 5/10', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Insert the Catalyst');
+});
+
+test('exotic weapons merge duplicate collection entries and explain crafting availability per guardian', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes, '2214408526': { hash: 2214408526, displayProperties: { name: 'Kinetic' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 204 }] } } } }));
+  await page.route('**/collectibles.json', route => route.fulfill({ json: Object.fromEntries([201, 204].map(hash => [String(hash), { hash, itemHash: 301, scope: 0, displayProperties: { name: 'Raid weapon' } }])) }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, '43': record(43, 'Raid weapon', { recordTypeName: 'Weapon Pattern', objectiveHashes: [102] }) } }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const member = members.find(m => route.request().url().includes(m.destinyUserInfo.membershipId))!;
+    if (member.destinyUserInfo.displayName === 'Crow') return route.fulfill({ json: envelope({ profile: { privacy: 2 }, profileRecords: { privacy: 2 } }) });
+    const crafted = member.destinyUserInfo.displayName === 'Ada';
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: { '43': { state: crafted ? 1 : 4 } } } }, profileCollectibles: { data: { collectibles: { '201': { state: crafted ? 0 : 1 }, '204': { state: crafted ? 1 : 0 } } } } }) });
+  });
+  await page.goto('#/triumphs/exotic_weapons'); await ready(page);
+  await expect(page.locator('.record-heading')).toHaveCount(1);
+  await expect(page.locator('.record-heading')).toHaveAttribute('data-collectible-hashes', '201 204');
+  await expect(page.locator('.record-heading')).toContainText('Pattern available');
+  await expect(page.locator('.armor-ownership-cell')).toHaveCount(0);
+  for (const name of ['Ada', 'Banshee']) await expect(page.getByRole('button', { name: `${name}: Raid weapon: collected`, exact: true })).toHaveText('✓');
+  await page.locator('.record-heading button').hover();
+  await expect(page.getByRole('tooltip')).toContainText('This weapon has a crafting pattern.');
+  await page.getByRole('button', { name: 'Ada: Raid weapon: collected', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Craftable version unlocked — pattern acquired.');
+  await page.getByRole('button', { name: 'Banshee: Raid weapon: collected', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Craftable version not unlocked — pattern not acquired.');
+  await page.getByRole('button', { name: 'Crow: Raid weapon: no collection data', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('pattern status unavailable');
+  await page.getByLabel('Filter progress').selectOption('complete');
+  await expect(page.locator('tbody tr')).toHaveCount(2);
+  await page.reload(); await ready(page);
+  await expect(page.locator('.record-heading')).toHaveCount(1);
+});
+
+test('miscellaneous badges and seals navigate correctly, and Moments editions share one Other seals page', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0, extended: true });
+  const sealNode = (hash: number, name: string) => ({ hash, displayProperties: { name }, completionRecordHash: 99, children: { records: [{ recordHash: 42 }, { recordHash: 43 }] } });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '2904806741': { hash: 2904806741, displayProperties: { name: 'Destinations: Red War' }, children: { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] } },
+    '4': { hash: 4, displayProperties: { name: 'Titan' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 202 }] } },
+    '5': { hash: 5, displayProperties: { name: 'Hunter' }, children: { collectibles: [{ collectibleHash: 201 }, { collectibleHash: 203 }] } },
+    '3680676656': sealNode(3680676656, 'Lore'),
+    '1210906304': sealNode(1210906304, 'Monument of Triumph'),
+    '1194128730': sealNode(1194128730, 'Moments of Triumph: MMXIX'),
+    '4024048810': { hash: 4024048810, displayProperties: { name: 'Monument triumphs' }, children: { records: [{ recordHash: 44 }] } },
+    '1881970629': { hash: 1881970629, displayProperties: { name: 'Legacy Titles' }, children: { presentationNodes: [{ presentationNodeHash: 3680676656 }, { presentationNodeHash: 1194128730 }] } },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records, '99': { ...records['99'], objectiveHashes: [106] }, '44': record(44, 'Additional Monument challenge') } }));
+  await page.route('**/objectives.json', route => route.fulfill({ json: { ...objectives, '106': { hash: 106, completionValue: 1 } } }));
+  await page.goto(''); await ready(page);
+  const badges = page.getByRole('region', { name: 'Other badges', exact: true });
+  await expect(badges.locator('.seal-card')).toHaveCount(7);
+  await expect(page.getByRole('region', { name: 'Other seals', exact: true }).locator('.seal-card')).toHaveCount(5);
+  await expect(page.getByRole('region', { name: 'Other seals', exact: true }).locator('a[href="#/seal/monument_of_triumph"]')).toHaveCount(1);
+  const redWar = badges.locator('a[href="#/badge/destination_red_war_badge"]');
+  await expect(redWar).toContainText('1 badge owners');
+  await redWar.click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Destinations: Red War badge');
+  await expect(page.getByRole('navigation', { name: 'Badge view' }).getByRole('link')).toHaveCount(1);
+  await expect(page.getByRole('columnheader', { name: 'Collected', exact: true })).toBeVisible();
+  await expect(page.locator('.title-tally')).toContainText('badge owners');
+  await page.goto('#/seal/chronicler');
+  await expect(page.locator('.page-heading .eyebrow')).toContainText('Other seals / Chronicler');
+  await expect(page.locator('.legacy-notice')).toContainText('Legacy seal');
+  await page.goto('#/seal/monument_of_triumph');
+  const tabs = page.getByRole('navigation', { name: 'Seal view', exact: true });
+  await expect(tabs.getByRole('link', { name: 'Monument', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(tabs.getByRole('link')).toHaveCount(8);
+  await expect(page.locator('.heading-kind')).toHaveText(' seal');
+  const requirements = page.getByRole('button', { name: 'Requirements', exact: true });
+  await requirements.scrollIntoViewIfNeeded();
+  await page.mouse.move(0, 0);
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await requirements.focus();
+  await expect(page.getByRole('tooltip')).toContainText('1 of 2 triumphs required');
+  await tabs.getByRole('link', { name: '2019', exact: true }).click();
+  await expect(page.locator('.page-heading .eyebrow')).toHaveText('Other seals / Moments of Triumph / 2019');
+  await expect(tabs.getByRole('link', { name: '2019', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('navigation', { name: 'Other seals', exact: true }).getByRole('link', { name: /Moments of Triumph/ })).toHaveAttribute('aria-current', 'page');
+  await page.reload(); await ready(page);
+  await expect(tabs.getByRole('link', { name: '2019', exact: true })).toHaveAttribute('aria-current', 'page');
+});
+
+test('Monument uses normal gilded status marks and shared headers for the underlying categories', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const node = (hash: number, name: string, children: object) => ({ hash, completionRecordHash: 99, displayProperties: { name }, children });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '1210906304': node(1210906304, 'Monument of Triumph', { records: [{ recordHash: 42 }, { recordHash: 44 }] }),
+    '4024048810': node(4024048810, 'Monument of Triumph', { presentationNodes: [{ presentationNodeHash: 3 }] }),
+    '3': node(3, 'Worlds', { presentationNodes: [{ presentationNodeHash: 4 }, { presentationNodeHash: 5 }] }),
+    '4': node(4, 'Vistas', { records: [{ recordHash: 45 }, { recordHash: 46 }] }),
+    '5': node(5, 'Patrol', { records: [{ recordHash: 47 }] }),
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: { ...records,
+    '99': { ...records['99'], titleInfo: { titlesByGender: { Male: 'Immortal' }, gildingTrackingRecordHash: 43 } },
+    '44': record(44, 'Category requirement'), '45': record(45, 'First vista'), '46': record(46, 'Second vista'), '47': record(47, 'A patrol'),
+  } }));
+  await page.goto('#/seal/monument_of_triumph'); await ready(page);
+  await expect(page.getByRole('button', { name: 'Gilded', exact: true })).toBeVisible();
+  await expect(page.locator('thead')).not.toContainText('Times gilded');
+  await expect(page.getByRole('button', { name: 'Ada: Gilded: Immortal is gilded.', exact: true })).toHaveText('✓');
+  await expect(page.getByRole('button', { name: 'Banshee: Gilded: Immortal is not gilded.', exact: true })).toHaveText('·');
+  await expect(page.getByRole('button', { name: 'Crow: Gilded: Gilding status unavailable.', exact: true })).toHaveText('—');
+  await page.getByRole('link', { name: 'Monument triumphs', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Monument of Triumph triumphs');
+  const headers = page.locator('.category-header-row th');
+  await expect(headers.filter({ hasText: 'Worlds: Vistas' })).toHaveAttribute('colspan', '2');
+  await expect(headers.filter({ hasText: 'Worlds: Patrol' })).toHaveAttribute('colspan', '1');
+  await expect(page.getByRole('button', { name: 'Banshee: Gilded: Immortal is not gilded.', exact: true })).toHaveText('·');
 });

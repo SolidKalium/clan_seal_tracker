@@ -21,12 +21,13 @@ const description = computed(() => {
     <p v-if="player" class="eyebrow">{{ player }}</p>
     <h3>{{ heading.name }}</h3>
     <p v-if="heading.gilding" class="record-scoring">Gilding requirement.</p>
-    <p v-if="heading.skip && (!heading.metric || heading.metric === 'gildingCount')" class="record-scoring">Excluded from this table's completion column.</p>
+    <p v-if="heading.skip && (!heading.metric || heading.metric === 'gildingCount' || heading.metric === 'gilded')" class="record-scoring">Excluded from this table's completion column.</p>
     <p v-if="heading.group?.startsWith('Armor · ')" class="item-type">{{ heading.armorSetName }}</p>
     <p v-if="heading.itemType" class="item-type">{{ heading.itemType }}</p>
     <ul v-if="heading.perks?.length" class="item-perks"><li v-for="(perk, i) in heading.perks" :key="i"><strong>{{ perk.name }}</strong><p v-if="perk.description">{{ perk.description }}</p></li></ul>
     <p v-if="description && description !== heading.name" class="record-description" :class="{ 'collection-description': heading.collectibleHashes }">{{ description }}</p>
     <p v-if="heading.seals?.length" class="seal-memberships">This triumph is part of the <template v-for="(part, i) in membershipParts" :key="i"><strong v-if="part.type === 'element'" class="seal-membership">{{ heading.seals[Number(part.value)]!.name }}<span v-if="heading.seals[Number(part.value)]!.title !== heading.seals[Number(part.value)]!.name" class="seal-membership-title"> ({{ heading.seals[Number(part.value)]!.title }})</span></strong><template v-else>{{ part.value }}</template></template> {{ heading.seals.length === 1 ? 'seal' : 'seals' }}.</p>
+    <p v-if="heading.pattern" class="pattern-status">{{ !cell ? 'This weapon has a crafting pattern.' : cell.patternUnlocked === undefined ? 'Craftable version: pattern status unavailable.' : cell.patternUnlocked ? 'Craftable version unlocked — pattern acquired.' : 'Craftable version not unlocked — pattern not acquired.' }}</p>
     <p v-if="cell?.unclaimed" class="claim-status">Completed, but not claimed in game.</p>
     <ul v-if="cell?.conditions?.length" class="record-conditions"><li v-for="condition in cell.conditions" :key="condition.code"><strong><ConditionIcon :code="condition.code" />{{ condition.label }}</strong><span>{{ condition.description }}</span></li></ul>
     <p v-if="cell?.scoringClass && !cell.complete && cell.variants?.some(v => v.complete)" class="armor-scoring-note">
@@ -55,7 +56,7 @@ const description = computed(() => {
         </li>
       </ul>
 
-      <p v-if="!heading.metric && !heading.checklist && !cell.objectives.length && !cell.missing" class="objective-state">{{ cell.complete ? 'Complete' : 'Incomplete' }}</p>
+      <p v-if="!heading.metric && !heading.checklist && !heading.collectibleHashes && !cell.objectives.length && !cell.missing" class="objective-state">{{ cell.complete ? 'Complete' : 'Incomplete' }}</p>
     </template>
     <p v-else-if="heading.collectibleHashes || heading.checklist" class="objective-state">Objective: Acquire</p>
     <ul v-else-if="!heading.metric" class="objective-details">

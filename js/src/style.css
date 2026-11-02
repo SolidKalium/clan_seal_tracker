@@ -171,3 +171,5 @@ tbody tr:hover>td.commendation-section,tbody tr:focus-within>td.commendation-sec
   border-right-color:color-mix(in srgb,var(--commendation-color) 38%,white);
 }
 .commendation-total .cell-button{font-weight:600}
+
+.pattern-label{display:block;margin-top:3px;font-size:9px;font-weight:400;opacity:.75}.pattern-status{font-size:12px;line-height:1.6;margin:0 0 12px;color:#526e62}

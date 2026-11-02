@@ -39,7 +39,7 @@ it('includes expansion and seasonal pages through the newer manifest content', (
   const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'js/pages.jsonc');
   const { catalog } = compile({ secret_key: 'browser-key', group_id: 1 }, pages);
   expect(catalog.filter(p => p.category === 'Expansions')).toHaveLength(9);
-  expect(catalog.filter(p => p.category === 'Seasons & Episodes')).toHaveLength(25);
+  expect(catalog.filter(p => p.category === 'Seasons & Episodes')).toHaveLength(24);
   expect(catalog.filter(p => p.id.startsWith('episode_')).map(p => [p.id, p.sealNodeHash])).toEqual([
     ['episode_echoes', '1270675696'], ['episode_revenant', '1270675697'], ['episode_heresy', '1270675698'],
   ]);
@@ -55,7 +55,7 @@ it('preserves canonical season numbers independently of catalog position', () =>
   const { catalog } = compile(settings, pages);
   expect(catalog.find(p => p.id === 'season_10').seasonNumber).toBe(10);
   expect(catalog.find(p => p.id === 'episode_echoes').seasonNumber).toBe(24);
-  expect(catalog.find(p => p.id === 'monument_of_triumph').seasonNumber).toBe(28);
+  expect(catalog.find(p => p.id === 'monument_of_triumph')).toMatchObject({ category: 'Other seals', tabLabel: 'Monument' });
   for (const seasonNumber of [0, -1, 1.5, '10']) {
     expect(() => compile(settings, [{ id: 'test', name: 'Test', sealNodeHash: 1, seasonNumber }])).toThrow('season number');
   }
@@ -107,11 +107,11 @@ it('includes dungeon seals, newer collections, and exotic mission levels with th
   }
 });
 
-it('groups ranks and chronological checklists into just two Other pages', () => {
+it('groups ranks and chronological checklists alongside the other Other pages', () => {
   const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
   const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
   const other = catalog.filter(p => p.category === 'Other');
-  expect(other.filter(p => !p.parentPageId).map(p => p.id)).toEqual(['guardian_ranks', 'checklists']);
+  expect(other.filter(p => !p.parentPageId).map(p => p.id)).toEqual(['guardian_ranks', 'checklists', 'catalysts', 'patterns', 'exotic_weapons', 'exotic_armor', 'mods']);
   expect(other.filter(p => p.guardianRank).map(p => p.guardianRank)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   expect(other.find(p => p.kind === 'commendations').parentPageId).toBe('guardian_ranks');
   const checklists = other.filter(p => p.checklistHash);
@@ -119,4 +119,24 @@ it('groups ranks and chronological checklists into just two Other pages', () => 
   expect(checklists[0].tabLabel).toBe('Region Chests');
   expect(checklists.findIndex(p => p.tabLabel === 'Lucent Moths')).toBeLessThan(checklists.findIndex(p => p.tabLabel === 'Apogee Repeaters'));
   expect(checklists.at(-1).tabLabel).toBe('Renegades Tapes');
+});
+
+
+it('uses current collection and pattern roots for the five additional Other pages', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const roots = { catalysts: ['2744330515'], patterns: ['127506319', '3289524180', '1464475380'], exotic_weapons: ['2214408526'], exotic_armor: ['1789205056'], mods: ['3509235358'] };
+  for (const [id, otherNodeHashes] of Object.entries(roots)) expect(catalog.find(p => p.id === id)).toMatchObject({ category: 'Other', groupByNode: true, otherNodeHashes });
+  expect(() => compile({ secret_key: 'key', group_id: 1 }, [{ id: 'bad', name: 'Bad', category: 'Other', groupByNode: 'true' }])).toThrow('node grouping');
+});
+
+it('groups all Moments editions under Other seals and puts miscellaneous badges and seals in their own categories', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  expect(catalog.filter(p => p.category === 'Other badges')).toHaveLength(7);
+  expect(catalog.filter(p => p.category === 'Other seals' && !p.parentPageId).map(p => p.id)).toEqual(['monument_of_triumph', 'chronicler', 'wayfarer', 'legend', 'pantheon']);
+  expect(catalog.find(p => p.id === 'pantheon_godslayer')).toMatchObject({ parentPageId: 'pantheon', tabLabel: 'Godslayer' });
+  expect(catalog.filter(p => p.parentPageId === 'monument_of_triumph').map(p => p.tabLabel)).toEqual(['2024', '2023', '2022', '2021', '2020', '2019']);
+  expect(catalog.filter(p => p.sealNodeHash === '1210906304')).toHaveLength(1);
+  expect(catalog.find(p => p.id === 'monument_of_triumph').category).toBe('Other seals');
 });

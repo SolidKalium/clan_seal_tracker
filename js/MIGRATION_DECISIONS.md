@@ -579,3 +579,43 @@ Page overscroll jitter is Safari behavior, not this app's layout or code. Tested
 - `overscroll-behavior-x: none` on the root stops the sideways snapping but also disables swipe-back navigation, so it is not applied.
 
 The audit also found that the sticky sidebar is taller than the window (about 1,100–1,350 px), so its lower sections are unreachable mid-page on long pages. That is a separate layout issue worth fixing on its own, not a jitter cause. Per-edge overscroll colors stay deferred.
+
+## Additional Other collection pages — 2026-11-02
+
+Added Catalysts, Patterns, Exotic weapons, Exotic armor, and Mods as five pages under Other. Each shows its complete current manifest subtree, with native column groups: catalysts/exotic weapons by kinetic–energy–power, patterns by weapon type, exotic armor by class, and mods by equipment/category. These are independent collection items, rather than badge-style parallel class sets; collecting one class's exotic does not count for another class.
+
+Roots come from the current presentation tree instead of copying PHP's leaf lists. This includes newer pattern categories and the replacement Weapons mod node (`1627803277` rather than PHP's old `3839307707`). No old catalyst suppression overrides were carried over. Current manifest entries are shown as supplied, including their visibility/lock conditions. Pattern objectives retain their pattern units even when the visible column group is a weapon type. Mod details preserve perks and distinguish weapon/ghost mods from armor mods.
+
+Migration work and remaining candidates are tracked in `MIGRATION_STATUS.md`; deferred notes remain there.
+
+## Catalyst insertion display — 2026-11-02
+
+For records typed Exotic Catalysts, hide objectives labeled “Insert the Catalyst” from table subcolumns. Keep the original objectives in the model, percentage calculations, and header/player tooltips. One remaining visible objective has no numbered subheader; multiple visible objectives retain their original positions (for example, 2 and 3). Apply this presentation rule wherever the catalyst record appears, including activity pages. The API's insertion target is 2 for the current matching definitions; its internal interpretation remains unverified.
+
+## Exotic weapon collection variants — 2026-11-02
+
+On the Exotic weapons page, collapse collection entries that reference the exact same weapon item hash. Keep all alternative collectible identifiers, count ownership of either version once, and preserve unavailable status when no owned version is known and an alternative's data is missing. Do not merge different item hashes merely because names match, or treat alternatives as badge class slots.
+
+Associate a weapon with a uniquely named Weapon Pattern record for the header's “Pattern available” label and player tooltip. Report whether that pattern unlocks the craftable version; do not infer that unlocking a pattern proves a crafted instance was made or retained. The current manifest has 12 duplicate pairs, reducing 157 collectible columns to 145 weapon columns. No extra profile components or cache migration are required.
+
+## Raid and legacy mod groups — 2026-11-02
+
+Split the Mods page's Legacy and Raid subtree by collectible source: each raid has its own header, with separate Nightmare Hunts and Dreaming City headers. Normalize source quoting and escaped apostrophes. Fall back to the item's raid-specific mod type, then Legacy mods, if the source is incomplete. Keep each group contiguous without changing which items count toward collection progress.
+
+## Miscellaneous seals, badges, and Moments — 2026-11-02
+
+Added Other badges and Other seals as independent sidebar/overview categories. Other badges contains the six Red War/Curse and Warmind/Forsaken destination and exotic badges, plus The Pantheon badge. Other seals contains Chronicler, Wayfarer, Legend, and The Pantheon, with Godsbane and Godslayer sharing tabs. Standalone badges open directly in badge mode, with their normal ownership, class-set, tooltip, and collection summaries.
+
+Moved Monument of Triumph from Seasons & Episodes into Other, retaining its existing page ID/URL. Its page is named Moments of Triumph and has flat tabs for the Monument seal, Monument triumphs, and the available 2024–2019 Moments seals. The seal suffix and title-holder count remain available on Other's seal tabs. Seal requirement tooltips use the API's thresholds, including seals that require fewer than all listed triumphs. Removed the misleading season number from Monument.
+
+Verified every added page against the current manifest. All named seals and all entries in the Badges root now have catalog coverage; the unnamed/redacted seal is excluded. Broader triumph-tree coverage remains a separate migration task.
+
+## Monument gilding status and category headers — 2026-11-02
+
+Immortal uses a Gilded status column rather than a lifetime count: the normal check mark for gilded, no-progress pip for not gilded, and dash for unavailable data. Use completion or a positive completed count on its linked character-scoped tracking record, taking an earned status from any character. Keep it excluded from completion, with a boolean tie-breaker after overall progress; other seals retain Times gilded.
+
+In Monument's expanded triumphs view, retain the seal's category-summary records under Seal requirements and group the underlying triumphs by their native parent/category paths, such as Worlds: Vistas or Teamwork: Raid Challenges. Keep those groups contiguous and use the existing sticky shared-header behavior. The expanded view's heading now names Monument of Triumph rather than the historical Moments umbrella.
+
+## Moments category adjustment — 2026-11-02
+
+Moved the Moments/Monument page and all its historical editions from Other to Other seals. Existing page IDs, URLs, and tabs are unchanged.

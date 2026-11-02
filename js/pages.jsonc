@@ -1278,9 +1278,9 @@
   },
   {
     "id": "monument_of_triumph",
-    "seasonNumber": 28,
-    "name": "Monument of Triumph",
-    "category": "Seasons & Episodes",
+    "name": "Moments of Triumph",
+    "tabLabel": "Monument",
+    "category": "Other seals",
     "sealNodeHash": "1210906304",
     "otherNodeHashes": [
       "4024048810"
@@ -2414,6 +2414,204 @@
     "parentPageId": "checklists",
     "tabLabel": "Renegades Tapes",
     "checklistHash": "853997642",
+    "records": {}
+  },
+  {
+    "id": "catalysts",
+    "name": "Catalysts",
+    "category": "Other",
+    "tabLabel": "All catalysts",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "2744330515"
+    ],
+    "records": {}
+  },
+  {
+    "id": "patterns",
+    "name": "Patterns",
+    "category": "Other",
+    "tabLabel": "All patterns",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "127506319",
+      "3289524180",
+      "1464475380"
+    ],
+    "records": {}
+  },
+  {
+    "id": "exotic_weapons",
+    "name": "Exotic weapons",
+    "category": "Other",
+    "tabLabel": "All exotic weapons",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "2214408526"
+    ],
+    "records": {}
+  },
+  {
+    "id": "exotic_armor",
+    "name": "Exotic armor",
+    "category": "Other",
+    "tabLabel": "All exotic armor",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "1789205056"
+    ],
+    "records": {}
+  },
+  {
+    "id": "mods",
+    "name": "Mods",
+    "category": "Other",
+    "tabLabel": "All mods",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "3509235358"
+    ],
+    "records": {}
+  },
+  {
+    "id": "destination_red_war_badge",
+    "name": "Destinations: Red War",
+    "category": "Other badges",
+    "badgeNodeHash": "2904806741",
+    "records": {}
+  },
+  {
+    "id": "exotics_red_war_badge",
+    "name": "Exotics: Red War",
+    "category": "Other badges",
+    "badgeNodeHash": "3241617029",
+    "records": {}
+  },
+  {
+    "id": "destination_curse_badge",
+    "name": "Destinations: Curse of Osiris and Warmind",
+    "category": "Other badges",
+    "badgeNodeHash": "1331476689",
+    "records": {}
+  },
+  {
+    "id": "exotics_curse_badge",
+    "name": "Exotics: Curse of Osiris and Warmind",
+    "category": "Other badges",
+    "badgeNodeHash": "1419883649",
+    "records": {}
+  },
+  {
+    "id": "destination_forsaken_badge",
+    "name": "Destinations: Forsaken",
+    "category": "Other badges",
+    "badgeNodeHash": "2881240068",
+    "records": {}
+  },
+  {
+    "id": "exotics_forsaken_badge",
+    "name": "Exotics: Forsaken",
+    "category": "Other badges",
+    "badgeNodeHash": "3333531796",
+    "records": {}
+  },
+  {
+    "id": "pantheon_badge",
+    "name": "The Pantheon",
+    "category": "Other badges",
+    "badgeNodeHash": "1697245957",
+    "records": {}
+  },
+  {
+    "id": "chronicler",
+    "name": "Chronicler",
+    "category": "Other seals",
+    "sealNodeHash": "3680676656",
+    "records": {}
+  },
+  {
+    "id": "wayfarer",
+    "name": "Wayfarer",
+    "category": "Other seals",
+    "sealNodeHash": "1106177979",
+    "records": {}
+  },
+  {
+    "id": "legend",
+    "name": "Legend",
+    "category": "Other seals",
+    "sealNodeHash": "1622359234",
+    "records": {}
+  },
+  {
+    "id": "pantheon",
+    "name": "The Pantheon",
+    "category": "Other seals",
+    "sealNodeHash": "548534407",
+    "records": {},
+    "tabLabel": "Godsbane"
+  },
+  {
+    "id": "pantheon_godslayer",
+    "name": "The Pantheon",
+    "category": "Other seals",
+    "sealNodeHash": "3492865493",
+    "records": {},
+    "parentPageId": "pantheon",
+    "tabLabel": "Godslayer"
+  },
+  {
+    "id": "moments_of_triumph_2024",
+    "name": "Moments of Triumph 2024",
+    "category": "Other seals",
+    "parentPageId": "monument_of_triumph",
+    "tabLabel": "2024",
+    "sealNodeHash": "1210906306",
+    "records": {}
+  },
+  {
+    "id": "moments_of_triumph_2023",
+    "name": "Moments of Triumph 2023",
+    "category": "Other seals",
+    "parentPageId": "monument_of_triumph",
+    "tabLabel": "2023",
+    "sealNodeHash": "1210906309",
+    "records": {}
+  },
+  {
+    "id": "moments_of_triumph_2022",
+    "name": "Moments of Triumph 2022",
+    "category": "Other seals",
+    "parentPageId": "monument_of_triumph",
+    "tabLabel": "2022",
+    "sealNodeHash": "1210906308",
+    "records": {}
+  },
+  {
+    "id": "moments_of_triumph_2021",
+    "name": "Moments of Triumph 2021",
+    "category": "Other seals",
+    "parentPageId": "monument_of_triumph",
+    "tabLabel": "2021",
+    "sealNodeHash": "1210906311",
+    "records": {}
+  },
+  {
+    "id": "moments_of_triumph_2020",
+    "name": "Moments of Triumph 2020",
+    "category": "Other seals",
+    "parentPageId": "monument_of_triumph",
+    "tabLabel": "2020",
+    "sealNodeHash": "1210906310",
+    "records": {}
+  },
+  {
+    "id": "moments_of_triumph_2019",
+    "name": "Moments of Triumph 2019",
+    "category": "Other seals",
+    "parentPageId": "monument_of_triumph",
+    "tabLabel": "2019",
+    "sealNodeHash": "1194128730",
     "records": {}
   }
 ]
