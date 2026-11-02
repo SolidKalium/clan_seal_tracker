@@ -273,6 +273,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
   - [ ] Page right-edge overscroll still uses a uniform browser canvas color rather than matching header/content bands. Oversized header/page paint extensions did not fix it and were reverted after a jitter report. Favor stable native scrolling over more paint/compositor workarounds.
   - [ ] Consider making the table rubberband shift the opposite edge into its margin? Might not be possible.
   - [ ] Consider making the scrollbar for the other dimension track with the table rubberbanding overscroll content. Might not be possible.
+- [ ] Retest page overscroll jitter after updating Safari (see "Overscroll jitter investigation — 2026-11-01"). Sideways snapping follows back history in the tab; top snapping happens on any vertically scrollable page. If it persists, file with Apple using a plain 3000 px page with no stylesheet or script, opened in a fresh tab.
 - [ ] Shrink tooltips and review their information density. Keep them useful for quick inspection without obscuring large portions of the table.
   - [ ] Overall compactness can also be considered. For reference, the PHP version for Rivensbane seal and the current 27-member Anomaly clan fits with plenty of vertical margin and a small amount of horizontal margin on a full screen view. Someone might like more breathing room, but likely not at the cost of difficulty of use. So usability features like pinning some players or a compactness toggle could allow a view that is less compact.
   - [ ] Can also have a setting to show counts instead of checkmarks
@@ -602,3 +603,15 @@ Show the badge node's image beside the badge-owner count on Badge views, superse
 - Checklists include all 22 definitions currently exposed by the API. Tabs run oldest to newest, with the multi-era Region Chests and Lost Sectors first, followed by Forsaken through Renegades. Within a release, related checklists stay together. This intentionally moves Neomuna after the older content.
 - Account checklist booleans come from component 104. Character checklists come from component 202 and select the most complete whole character checklist, without combining entries across characters. Missing entries remain unavailable rather than becoming uncollected. Commendations use component 1400.
 - Existing cached profiles and definitions are upgraded automatically to fetch these additional components/tables. Definition snapshots remain atomic; a failed new-table download retains the last usable snapshot.
+
+## Overscroll jitter investigation — 2026-11-01
+
+Page overscroll jitter is Safari behavior, not this app's layout or code. Tested in Safari with console overrides and local test pages; no app code changed.
+
+- Removing the outer-layout suspects did not help, individually or together: the sticky sidebar, the table's own rubber band, sticky table headers and player column, the sidebar backdrop, and the viewport-height chains. Neither did blocking hover handlers, disabling pointer interaction, or removing `theme-color`.
+- Replacing the whole page with a plain tall div still jittered, as did a production build (`vite preview`), so neither the app content nor the Vite dev client is required.
+- The live Book Info Lookup build, served locally, was smooth in a fresh tab. After visiting another page in the same tab it snapped sideways, with identical files. Sideways snapping therefore follows back history in the tab: horizontal overscroll competes with Safari's swipe-back gesture. Hash routing adds a history entry per in-app navigation, so this app usually has back history.
+- In a fresh tab with no history, pages snap only to the top, and only when the page can scroll vertically. A plain 3000 px page with no stylesheet or script snaps in Safari, and so does live jpearson.dev once its results make the page scroll; it stops when the page fits the window again. Collapsing this app's sidebar appeared to fix it only because the page then fit the window. Sticky positioning is not the trigger: tall sticky, short sticky, and tall static sidebar test pages all snapped in Safari. Chrome did not snap on the tall sticky page.
+- `overscroll-behavior-x: none` on the root stops the sideways snapping but also disables swipe-back navigation, so it is not applied.
+
+The audit also found that the sticky sidebar is taller than the window (about 1,100–1,350 px), so its lower sections are unreachable mid-page on long pages. That is a separate layout issue worth fixing on its own, not a jitter cause. Per-edge overscroll colors stay deferred.
