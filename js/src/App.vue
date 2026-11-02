@@ -245,7 +245,7 @@ function otherPageSummary(page: PageConfig): string {
   if (page.id === 'guardian_ranks') return 'Ranks and commendations';
   const seal = sealsById.value[page.id];
   if (!seal) return 'Loading definitions…';
-  const unit = seal.headings.some(h => h.collectibleHashes) ? 'items' : page.id === 'patterns' ? 'patterns' : 'catalysts';
+  const unit = seal.headings.some(h => h.collectibleHashes) ? 'items' : page.id === 'patterns' ? 'patterns' : page.id === 'catalysts' ? 'catalysts' : 'triumphs';
   return `${seal.headings.length} ${unit}`;
 }
 const rows = computed(() => {

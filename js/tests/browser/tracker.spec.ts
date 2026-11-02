@@ -1391,7 +1391,7 @@ test('Other groups individual ranks, commendations, and chronological checklist 
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto(''); await ready(page);
   const section = page.getByRole('region', { name: 'Other', exact: true });
-  await expect(section.locator('.seal-card')).toHaveCount(7);
+  await expect(section.locator('.seal-card')).toHaveCount(8);
   await section.getByRole('link').filter({ hasText: 'Guardian ranks' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Guardian ranks');
   await expect(page.locator('.view-description')).toContainText('does not expose a season-by-season');
@@ -1445,7 +1445,7 @@ test('Other collection pages use native groups, pattern objectives, and collecte
   await page.route('**/records.json', route => route.fulfill({ json: { ...records, '43': { ...records['43'], recordTypeName: 'Weapon Pattern' } } }));
   await page.goto(''); await ready(page);
   const section = page.getByRole('region', { name: 'Other', exact: true });
-  await expect(section.locator('.seal-card')).toHaveCount(7);
+  await expect(section.locator('.seal-card')).toHaveCount(8);
   await expect(section.locator('a[href="#/triumphs/exotic_weapons"]')).toContainText('2 items');
   for (const [id, name, group] of [['catalysts', 'Catalysts', 'Kinetic Weapons'], ['patterns', 'Patterns', 'Auto Rifles'], ['exotic_weapons', 'Exotic weapons', 'Kinetic'], ['exotic_armor', 'Exotic armor', 'Titan'], ['mods', 'Mods', 'Head']]) {
     await page.goto(`#/triumphs/${id}`);
@@ -1604,4 +1604,37 @@ test('Monument uses normal gilded status marks and shared headers for the underl
   await expect(headers.filter({ hasText: 'Worlds: Vistas' })).toHaveAttribute('colspan', '2');
   await expect(headers.filter({ hasText: 'Worlds: Patrol' })).toHaveAttribute('colspan', '1');
   await expect(page.getByRole('button', { name: 'Banshee: Gilded: Immortal is not gilded.', exact: true })).toHaveText('·');
+});
+
+
+test('Lifetime is first in Other and exposes the current section tabs with nested record groups', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const node = (hash: number, name: string, children: object) => ({ hash, displayProperties: { name }, children });
+  await page.route('**/nodes.json', route => route.fulfill({ json: { ...nodes,
+    '2956802394': node(2956802394, 'Lifetime', { presentationNodes: [{ presentationNodeHash: 1995818321 }, { presentationNodeHash: 3436349154 }] }),
+    '1995818321': node(1995818321, 'New Light', { presentationNodes: [{ presentationNodeHash: 10 }] }),
+    '10': node(10, 'Progression', { records: [{ recordHash: 42 }] }),
+    '3436349154': node(3436349154, 'Titan', { records: [{ recordHash: 43 }] }),
+  } }));
+  await page.goto(''); await ready(page);
+  const other = page.getByRole('region', { name: 'Other', exact: true });
+  await expect(other.locator('.seal-card').first()).toHaveAttribute('href', '#/triumphs/lifetime');
+  await expect(other.locator('.seal-card').first()).toContainText('2 triumphs');
+  await other.locator('.seal-card').first().click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Lifetime');
+  const tabs = page.getByRole('navigation', { name: 'View', exact: true });
+  await expect(tabs.getByRole('link')).toHaveCount(8);
+  await expect(tabs.getByRole('link', { name: 'All lifetime', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.category-header-row')).toContainText('Progression');
+  await expect(page.locator('.category-header-row')).toContainText('Titan');
+  await page.getByRole('button', { name: 'Other', exact: true }).click();
+  await page.getByRole('button', { name: 'Other', exact: true }).click();
+  await expect(page.getByRole('navigation', { name: 'Other', exact: true }).getByRole('link').first()).toHaveAttribute('href', '#/triumphs/lifetime');
+  await tabs.getByRole('link', { name: 'Titan', exact: true }).click();
+  await expect(page.locator('.page-heading .eyebrow')).toHaveText('Other / Lifetime / Titan');
+  await expect(page.locator('thead')).not.toContainText('First challenge');
+  await expect(page.locator('thead')).toContainText('Second challenge');
+  await expect(page.getByRole('navigation', { name: 'Other', exact: true }).getByRole('link').first()).toHaveAttribute('aria-current', 'page');
+  await page.reload(); await ready(page);
+  await expect(tabs.getByRole('link', { name: 'Titan', exact: true })).toHaveAttribute('aria-current', 'page');
 });

@@ -2113,6 +2113,101 @@
     }
   },
   {
+    "id": "lifetime",
+    "name": "Lifetime",
+    "category": "Other",
+    "tabLabel": "All lifetime",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "2956802394"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lifetime_new_light",
+    "name": "Lifetime: New Light",
+    "category": "Other",
+    "parentPageId": "lifetime",
+    "tabLabel": "New Light",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "1995818321"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lifetime_titan",
+    "name": "Lifetime: Titan",
+    "category": "Other",
+    "parentPageId": "lifetime",
+    "tabLabel": "Titan",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "3436349154"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lifetime_hunter",
+    "name": "Lifetime: Hunter",
+    "category": "Other",
+    "parentPageId": "lifetime",
+    "tabLabel": "Hunter",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "264195358"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lifetime_warlock",
+    "name": "Lifetime: Warlock",
+    "category": "Other",
+    "parentPageId": "lifetime",
+    "tabLabel": "Warlock",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "1424071291"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lifetime_social",
+    "name": "Lifetime: Social",
+    "category": "Other",
+    "parentPageId": "lifetime",
+    "tabLabel": "Social",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "2509121759"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lifetime_cooperative",
+    "name": "Lifetime: Cooperative",
+    "category": "Other",
+    "parentPageId": "lifetime",
+    "tabLabel": "Cooperative",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "135923183"
+    ],
+    "records": {}
+  },
+  {
+    "id": "lifetime_competitive",
+    "name": "Lifetime: Competitive",
+    "category": "Other",
+    "parentPageId": "lifetime",
+    "tabLabel": "Competitive",
+    "groupByNode": true,
+    "otherNodeHashes": [
+      "428193679"
+    ],
+    "records": {}
+  },
+  {
     "id": "guardian_ranks",
     "name": "Guardian ranks",
     "category": "Other",

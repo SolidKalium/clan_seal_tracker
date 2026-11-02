@@ -7,7 +7,6 @@
   - Potentially: the unimplemented (or maybe partially implemented) milestones page (might or might not require being logged in, at least for some info)
   - Potentially: other medals
   - Seasonal challenges might look different now. Certainly, the old seasons have been removed. Challenges might exist in a "non-season" way now
-- Lifetime (class and New Light), likely missing new entries
 - A test case to verify all triumphs, badges, and seals in the manifest's tree show up somewhere in the main json.
 
 **Members page:**
@@ -19,6 +18,13 @@
 - A seal overview page (would probably show player progress on all seals, which would be more calculations than at present)
 - Clan selection
 - Player login
+
+**Cleanup pass:**
+- Review page high-level structure
+- CSS
+- Tree shake
+- Check resource usage and for any hot points
+  - Page has been freezing up during automated dev work recently, to the point Chrome calls it unresponsive, even twice back to back. That's a potential sign that dependencies are excessive, but it could just be based on the json updating and forcing everything cached to be evicted in case it actually changed; in that case, trying to cache parts of the json to limit dev refreshed might be excessive for the final build, unless it can be easily optimized out for that and is simple to implement.
 
 ## Revisit list
 
@@ -53,6 +59,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Make pages more searchable or allow finding a page via multiple interaction paths (e.g. from a list of all badges vs the tab for a badge on raid or expansion) (Might be part of a larger reorganization, such as allowing viewing triumphs / medals in the hierarchy the game natively uses as a second view.)
 - [ ] Is a hash (`/#/foo/bar) really the right approach instead of using normal paths?
 - [ ] Should seals with lower requirments than 100% of triumphs calculate differently or have a toggle for how that is handled?
+- [ ] Something to "pull forward" all columns that someone is missing. Might need to break the top-level table headers
 
 ## Known quirks
 

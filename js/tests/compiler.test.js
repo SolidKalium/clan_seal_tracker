@@ -111,7 +111,7 @@ it('groups ranks and chronological checklists alongside the other Other pages', 
   const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
   const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
   const other = catalog.filter(p => p.category === 'Other');
-  expect(other.filter(p => !p.parentPageId).map(p => p.id)).toEqual(['guardian_ranks', 'checklists', 'catalysts', 'patterns', 'exotic_weapons', 'exotic_armor', 'mods']);
+  expect(other.filter(p => !p.parentPageId).map(p => p.id)).toEqual(['lifetime', 'guardian_ranks', 'checklists', 'catalysts', 'patterns', 'exotic_weapons', 'exotic_armor', 'mods']);
   expect(other.filter(p => p.guardianRank).map(p => p.guardianRank)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   expect(other.find(p => p.kind === 'commendations').parentPageId).toBe('guardian_ranks');
   const checklists = other.filter(p => p.checklistHash);
@@ -139,4 +139,12 @@ it('groups all Moments editions under Other seals and puts miscellaneous badges 
   expect(catalog.filter(p => p.parentPageId === 'monument_of_triumph').map(p => p.tabLabel)).toEqual(['2024', '2023', '2022', '2021', '2020', '2019']);
   expect(catalog.filter(p => p.sealNodeHash === '1210906304')).toHaveLength(1);
   expect(catalog.find(p => p.id === 'monument_of_triumph').category).toBe('Other seals');
+});
+
+
+it('places Lifetime first in Other with the complete current tree and section tabs', () => {
+  const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
+  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  expect(catalog.find(p => p.category === 'Other' && !p.parentPageId)).toMatchObject({ id: 'lifetime', otherNodeHashes: ['2956802394'], groupByNode: true });
+  expect(catalog.filter(p => p.parentPageId === 'lifetime').map(p => p.tabLabel)).toEqual(['New Light', 'Titan', 'Hunter', 'Warlock', 'Social', 'Cooperative', 'Competitive']);
 });

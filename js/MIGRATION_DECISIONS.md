@@ -619,3 +619,7 @@ In Monument's expanded triumphs view, retain the seal's category-summary records
 ## Moments category adjustment — 2026-11-02
 
 Moved the Moments/Monument page and all its historical editions from Other to Other seals. Existing page IDs, URLs, and tabs are unchanged.
+
+## Lifetime — 2026-11-02
+
+Added Lifetime as the first page in Other. Use the complete current Lifetime presentation root (203 triumphs), with All lifetime, New Light, Titan, Hunter, Warlock, Social, Cooperative, and Competitive tabs. This includes the broader Social/Cooperative/Competitive content rather than only PHP’s New Light and class leaf lists. Column groups follow native record categories; character-scoped triumphs retain the existing best-whole-record policy.
