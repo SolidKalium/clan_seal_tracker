@@ -20,38 +20,42 @@
 
 Deferred polish and interaction design; these are not for immediate implementation.
 
-- [ ] Group and prioritize items in this list
+### Navigation
 - [ ] Consider distinct subtitles for overview sections when they add useful context.
+- [ ] Revisit activity / page-type breadcrumb dropdowns when more page types are added.
 - [ ] Consider how to explain ordering and relationships within categories, including expansion releases, mid-year releases, and multiple seals from one expansion; avoid implying that each page is a separate expansion.
+- [ ] Make pages more searchable (find a page or tab by relevant names)
+  - [ ] Could also support searching for a triumph
+- [ ] Allow finding a page via multiple interaction paths (e.g. from a list of all badges vs the tab for a badge on raid or expansion) (Might be part of a larger reorganization, such as allowing viewing triumphs / medals in the hierarchy the game natively uses as a second view.)
+- [ ] Is a hash (`/#/foo/bar) really the right approach instead of using normal paths?
+
+### Planning Usability
+- [ ] Allow pinning guardians to the top?
+- [ ] Something to "pull forward" all columns that someone is missing. Might need to break the top-level table headers
+- [ ] Support a clan + friends view?
+
+### General GUI
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.
   - [ ] Page right-edge overscroll still uses a uniform browser canvas color rather than matching header/content bands. Oversized header/page paint extensions did not fix it and were reverted after a jitter report. Favor stable native scrolling over more paint/compositor workarounds.
   - [ ] Consider making the table rubberband shift the opposite edge into its margin? Might not be possible.
   - [ ] Consider making the scrollbar for the other dimension track with the table rubberbanding overscroll content. Might not be possible.
-  - [ ] The corners might not behave well, especially on the /#/members table
+  - [ ] The table corners might not behave well: overscroll so the top of the table is "low" and then scroll to see more on the right. The rounded corner lets the top border of the other cells to go past it.
 - [ ] Retest page overscroll jitter after updating Safari (see "Overscroll jitter investigation — 2026-11-01"). Sideways snapping follows back history in the tab; top snapping happens on any vertically scrollable page. If it persists, file with Apple using a plain 3000 px page with no stylesheet or script, opened in a fresh tab.
 - [ ] Shrink tooltips and review their information density. Keep them useful for quick inspection without obscuring large portions of the table.
   - [ ] Overall compactness can also be considered. For reference, the PHP version for Rivensbane seal and the current 27-member Anomaly clan fits with plenty of vertical margin and a small amount of horizontal margin on a full screen view. Someone might like more breathing room, but likely not at the cost of difficulty of use. So usability features like pinning some players or a compactness toggle could allow a view that is less compact.
   - [ ] Can also have a setting to show counts instead of checkmarks
 - [ ] Remove or redesign click-on-cell behavior. The current pinned detail panel is provisional. Possible actions include navigating to a player page or opening a modal with richer triumph/collectible details, such as relevant YouTube guides. Exact action, context, and content sources remain undecided. May depend on tap vs click.
-- [ ] Revisit activity / page-type breadcrumb dropdowns when more page types are added.
 - [ ] Show guardian last login in tooltip?
-- [ ] Show an indicator outside of the tooltip when a guardian's data becomes stale?
-- [ ] Show a clan's emblem when a clan is selected?
-- [ ] Allow pinning guardians to the top?
-- [ ] Move or shrink headers? Main header can be shorter on desktop. Search and sort might or might not be collapsible or otherwise shrink out of the way. Left sidebar should be collapsible. Maybe just show clan logo, with clan name rotated to be vertical. Icons can replace some of the links there, but site navigation needs to be figured out first.
-- [ ] Consider additional text overrides for poor descriptions on seals, collections, etc.
-- [ ] Consider a new favicon?
+- [ ] Move or shrink headers? Main header can be shorter on desktop. Search and sort might or might not be collapsible or otherwise shrink out of the way. Left sidebar could show icons when collapsed, but site navigation needs to be figured out first.
+  - [ ] Icons could be added to the sidebar in general.
 - [ ] Consider optional per-clan styling for the page, based on the clan's colors.
 - [ ] Option to show progress without gilding. Could also allow a "full completion" mode that includes day 1 or any other excluded entries.
-- [ ] Improve gilding requirement column header styling
+- [ ] Should seals with lower requirments than 100% of triumphs calculate differently or have a toggle for how that is handled?
 - [ ] Show score, rewards, or other details on triumph heading tooltips. Could show preview of armor or weapons.
   - [ ] Do any ghost mods still expire? Can show energy needed either way.
+
+### Possible Additional Pages
 - [ ] Double check for any signs of season-by-season guardian rank history. Game might only show immediate past season to the player themself. Or it could be a feature only for a logged-in player.
-- [ ] Make pages more searchable or allow finding a page via multiple interaction paths (e.g. from a list of all badges vs the tab for a badge on raid or expansion) (Might be part of a larger reorganization, such as allowing viewing triumphs / medals in the hierarchy the game natively uses as a second view.)
-- [ ] Is a hash (`/#/foo/bar) really the right approach instead of using normal paths?
-- [ ] Should seals with lower requirments than 100% of triumphs calculate differently or have a toggle for how that is handled?
-- [ ] Something to "pull forward" all columns that someone is missing. Might need to break the top-level table headers
-- [ ] How to handle the members page. It might remain on a "hidden path" or require being logged in as someone in the clan (when that is supported), since it lists entitlements and similar things.
 - [ ] Any data for Event Homes?
 - [ ] Remaining candidates from the original Other section
   - [ ] Potentially: the unimplemented (or maybe partially implemented) milestones page (might or might not require being logged in, at least for some info)
@@ -59,8 +63,14 @@ Deferred polish and interaction design; these are not for immediate implementati
   - [ ] Seasonal challenges might look different now. Certainly, the old seasons have been removed. Challenges might exist in a "non-season" way now
 - [ ] Check for data not made visible by this site
   - [ ] For instance, metrics
+
+### Lower priority
+- [ ] Consider additional text overrides for poor descriptions on seals, collections, etc.
+- [ ] Consider a new favicon?
 - [ ] Review the TODOs and notes in the PHP files for any ideas not carried forward
 - [ ] If viewing lots of clans and players, should we do any automated cleanup of the db?
+- [ ] How to handle the members page. It might remain on a "hidden path" or require being logged in as someone in the clan (when that is supported), since it lists entitlements and similar things.
+
 
 ## Known quirks
 
