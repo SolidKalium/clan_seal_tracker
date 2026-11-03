@@ -168,6 +168,12 @@ test('group dividers, compact rows, guardian names, and pointer-transparent tool
   expect(await page.locator('.table-scroll').evaluate(e => getComputedStyle(e).backgroundColor)).toBe(await page.locator('#app').evaluate(e => getComputedStyle(e).backgroundColor));
   expect(await page.locator('.table-scroll').evaluate(e => getComputedStyle(e).borderTopWidth)).toBe('0px');
   expect(await page.locator('.table-scroll table').evaluate(e => getComputedStyle(e).borderTopWidth)).toBe('1px');
+  await expect(page.getByRole('button', { name: 'Guardian details: Banshee', exact: true })).toHaveCSS('cursor', 'help');
+  await expect(page.locator('.heading-button').first()).toHaveCSS('cursor', 'help');
+  await expect(page.locator('.stage-button').first()).toHaveCSS('cursor', 'help');
+  await expect(page.locator('.summary-cell').first()).toHaveCSS('cursor', 'help');
+  await expect(page.locator('tbody .cell-button').first()).toHaveCSS('cursor', 'pointer');
+  await expect(page.getByRole('button', { name: 'Retry profile: Crow', exact: true })).toHaveCSS('cursor', 'pointer');
   await page.getByRole('button', { name: 'Guardian details: Banshee', exact: true }).hover();
   await expect(page.getByRole('tooltip')).toContainText('Steam Guardian');
   await expect(page.getByRole('tooltip')).toContainText('PSN Guardian');
@@ -233,7 +239,9 @@ test('compact header status and persistent collapsible clan rail', async ({ page
   await expect(page.locator('.seal-nav').first()).toBeVisible();
   // Each category stays compact as new categories are added to the catalog.
   for (const toggle of await page.locator('.section-toggle').all()) expect((await toggle.boundingBox())!.height).toBeLessThanOrEqual(24);
-  expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height)).toBeLessThan(page.viewportSize()!.height / 2);
+  // The new player-list control has its own space; keep the navigation itself compact.
+  const listControlHeight = await page.locator('.player-list-control').evaluate(e => e.getBoundingClientRect().height + parseFloat(getComputedStyle(e).marginTop) + parseFloat(getComputedStyle(e).marginBottom));
+  expect(await page.locator('.sidebar').evaluate(e => e.getBoundingClientRect().height) - listControlHeight).toBeLessThan(page.viewportSize()!.height / 2);
 });
 
 test('status stays anchored during refresh and the collapsed clan name uses the rail', async ({ page }) => {
@@ -520,7 +528,7 @@ test('clan emblem layers persist and scale with the collapsed menu', async ({ pa
   await expect(emblem.locator('.clan-banner-layer')).toHaveCount(3);
   await expect(emblem).toHaveCSS('background-color', 'rgb(10, 20, 30)');
   await expect(emblem.locator('.clan-banner-layer').last()).toHaveCSS('background-color', 'rgb(200, 20, 30)');
-  expect((await emblem.boundingBox())!.width).toBe(62);
+  expect((await emblem.boundingBox())!.width).toBe(44);
   await page.getByRole('button', { name: 'Collapse side menu' }).click();
   expect((await emblem.boundingBox())!.width).toBe(44);
   const calls = state.calls;
@@ -1741,9 +1749,11 @@ test('hidden members route shows tenure, linked platforms, ownership, and CSV ex
   });
   await page.goto('members'); await ready(page);
   await expect(page.getByRole('heading', { name: 'Test Clan members', exact: true })).toBeVisible();
+  await expect(page.locator('.guardian-power .cell-button').first()).toHaveCSS('cursor', 'help');
+  await expect(page.locator('.members-table tbody th a').first()).toHaveCSS('cursor', 'pointer');
   await expect(page.locator('.members-table tbody tr')).toHaveCount(3);
-  await expect(page.locator('.members-table tbody th')).toHaveText(['Crow', 'Ada', 'Banshee']);
-  const ada = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: 'Ada', exact: true }) });
+  await expect(page.locator('.members-table tbody th')).toHaveText(['Crow (Steam)', 'Ada (Steam)', 'Banshee (Steam)']);
+  const ada = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: /^Ada(?:\s|$)/ }) });
   await expect(ada.getByLabel('The Final Shape: owned', { exact: true })).toHaveText('✓');
   await expect(ada.getByLabel('Season of the Worthy (10): owned', { exact: true })).toHaveText('✓');
   await expect(page.getByRole('columnheader', { name: 'Event cards', exact: true })).toHaveCount(0);
@@ -1828,9 +1838,9 @@ test('members Guardians share a tooltip across class subcolumns and retain dupli
     return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {} } }, characters }) });
   });
   await page.goto('#/members'); await ready(page);
-  const ada = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: 'Ada', exact: true }) });
+  const ada = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: /^Ada(?:\s|$)/ }) });
   await expect(ada.locator('.guardian-power')).toHaveText(['2005', '·', '·']);
-  const crow = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: 'Crow', exact: true }) });
+  const crow = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: /^Crow(?:\s|$)/ }) });
   await expect(crow.locator('.guardian-power')).toHaveText(['—', '—', '—']);
   const tip = page.getByRole('tooltip');
   const titan = ada.locator('.guardian-power').nth(0);
@@ -2184,4 +2194,114 @@ test('cross-save duplicate clan memberships collapse into the primary row with a
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.locator('tbody th a').hover();
   await expect(page.getByRole('tooltip')).toContainText('Also a clan member on Xbox');
+});
+
+test('player list selector keeps selected clan, friends, and own clan plus friends distinct and restores public browsing on logout', async ({ page }) => {
+  await setupLogin(page);
+  const friend = { membershipType: 3, membershipId: '4611686018485645598', displayName: 'New Friend', bungieGlobalDisplayName: 'New Friend' };
+  const outsider = { ...friend, membershipId: '4611686018485645599', displayName: 'Outsider', bungieGlobalDisplayName: 'Outsider' };
+  await page.route('https://www.bungie.net/Platform/Social/Friends/', route => route.fulfill({ json: envelope({ friends: [members[0]!.destinyUserInfo, friend].map((user, i) => ({ relationship: 1, lastSeenAsMembershipId: user.membershipId, lastSeenAsBungieMembershipType: 3, bungieGlobalDisplayName: user.displayName, bungieNetUser: { membershipId: String(200 + i) }, onlineStatus: 0 })) }) }));
+  await page.route('https://www.bungie.net/Platform/User/GetMembershipsById/**', route => {
+    expect(route.request().headers().authorization).toBeUndefined();
+    const id = new URL(route.request().url()).pathname.split('/')[4];
+    const user = [members[0]!.destinyUserInfo, friend, outsider].find(user => user.membershipId === id);
+    return route.fulfill({ json: envelope({ destinyMemberships: user ? [user] : [] }) });
+  });
+  for (const user of [friend, outsider]) await page.route(`https://www.bungie.net/Platform/Destiny2/3/Profile/${user.membershipId}/**`, route => {
+    expect(route.request().headers().authorization).toBeUndefined();
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: user } }, profileRecords: { data: { records: { '42': { state: 4 }, '43': { state: 4 } } } } }) });
+  });
+  await page.route('https://www.bungie.net/Platform/GroupV2/777/', route => route.fulfill({ json: envelope({ detail: { groupId: '777', groupType: 1, name: 'Other Clan' } }) }));
+  await page.route('https://www.bungie.net/Platform/GroupV2/777/Members/**', route => route.fulfill({ json: envelope({ results: [{ destinyUserInfo: outsider, isOnline: false, lastOnlineStatusChange: '1' }], hasMore: false }) }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await expect(page.getByLabel('Players to show').locator('option[value="friends"]')).toHaveJSProperty('disabled', true);
+  await completeLogin(page); await ready(page);
+  await page.getByRole('button', { name: 'Choose clan' }).click();
+  await page.getByLabel('Clan name or ID').fill('777'); await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.getByRole('button', { name: /Other Clan/ }).click(); await ready(page);
+  await expect(page.locator('tbody tr')).toHaveCount(1); await expect(page.locator('tbody')).toContainText('Outsider');
+  const floatingLabel = (await page.locator('.player-list-control>span').boundingBox())!;
+  await page.mouse.click(floatingLabel.x + floatingLabel.width / 2, floatingLabel.y + floatingLabel.height / 2);
+  await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await ready(page);
+  await expect(page.getByLabel('Players to show')).toHaveValue('friends');
+  await expect(page.locator('tbody tr')).toHaveCount(2); await expect(page.locator('tbody')).toContainText('New Friend'); await expect(page.locator('tbody')).not.toContainText('Outsider');
+  await expect(page.locator('.sidebar-identity-icons .sidebar-clan-icon')).toHaveCount(0);
+  await expect(page.locator('.sidebar-identity-icons .sidebar-friend-icon')).toHaveCount(0);
+  await expect(page.locator('.identity-friend-icon')).toBeVisible();
+  await expect(page.locator('.sidebar .friend-owner')).toHaveText('Signed-in Crow’s');
+  expect(await page.locator('.sidebar .friend-owner').evaluate(element => getComputedStyle(element).whiteSpace)).toBe('nowrap');
+  await page.getByRole('button', { name: 'Collapse side menu', exact: true }).click();
+  expect(await page.locator('.sidebar-friend-icon').evaluate(element => getComputedStyle(element).transform)).toBe('matrix(0, -1, 1, 0, 0, 0)');
+  const apostrophe = await page.locator('.friend-owner').evaluate(element => {
+    const text = element.firstChild!, length = text.textContent!.length;
+    const range = document.createRange(); range.setStart(text, length - 2); range.setEnd(text, length - 1);
+    return { height: range.getBoundingClientRect().height, fontSize: parseFloat(getComputedStyle(element).fontSize) };
+  });
+  expect(apostrophe.height).toBeLessThan(apostrophe.fontSize * .6);
+  await page.locator('.sidebar-identity-icons').screenshot({ path: 'test-results/friends-identity.png' });
+  await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Expand side menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Guardian details: New Friend', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Bungie friend'); await expect(page.getByRole('tooltip')).not.toContainText('Join date unavailable');
+  await page.reload(); await ready(page); await expect(page.getByLabel('Players to show')).toHaveValue('friends');
+  await page.getByLabel('Players to show').selectOption('combined'); await ready(page);
+  await expect(page.locator('tbody tr')).toHaveCount(4); await expect(page.locator('tbody')).toContainText('Banshee'); await expect(page.locator('tbody')).not.toContainText('Outsider');
+  await expect(page.locator('.sidebar-identity-icons .sidebar-clan-icon')).toBeVisible();
+  await expect(page.locator('.sidebar-identity-icons .sidebar-friend-icon')).toHaveCount(0);
+  await expect(page.locator('.identity-friend-icon')).toBeVisible();
+  expect(await page.locator('.identity-label-plus').evaluate(element => Number(getComputedStyle(element).opacity))).toBeLessThan(1);
+  await page.getByRole('button', { name: 'Collapse side menu', exact: true }).click();
+  expect(await page.locator('.sidebar-clan-icon').evaluate(element => getComputedStyle(element).transform)).toBe('matrix(0, -1, 1, 0, 0, 0)');
+  const friendIconBounds = (await page.locator('.sidebar-friend-icon').boundingBox())!;
+  const clanIconBounds = (await page.locator('.sidebar-clan-icon').boundingBox())!;
+  const clanNameBounds = (await page.locator('.sidebar .clan-name').boundingBox())!;
+  expect(clanIconBounds.y).toBeGreaterThan(friendIconBounds.y + friendIconBounds.height);
+  expect(clanNameBounds.y - clanIconBounds.y - clanIconBounds.height).toBeLessThanOrEqual(12);
+  await page.locator('.sidebar-identity-icons').screenshot({ path: 'test-results/combined-identity.png' });
+  await page.getByRole('button', { name: 'Expand side menu', exact: true }).click();
+  const ada = page.getByRole('button', { name: 'Guardian details: Ada', exact: true });
+  await expect(ada).toHaveCount(1);
+  await expect(ada.locator('..').getByRole('img', { name: 'Clan member', exact: true })).toBeVisible();
+  await expect(ada.locator('..').getByRole('img', { name: 'Bungie friend', exact: true })).toBeVisible();
+  const banshee = page.getByRole('button', { name: 'Guardian details: Banshee', exact: true });
+  await expect(banshee.locator('..').getByRole('img', { name: 'Clan member', exact: true })).toBeVisible();
+  await expect(banshee.locator('..').getByRole('img', { name: 'Bungie friend', exact: true })).toHaveCount(0);
+  const newFriend = page.getByRole('button', { name: 'Guardian details: New Friend', exact: true });
+  await expect(newFriend.locator('..').getByRole('img', { name: 'Bungie friend', exact: true })).toBeVisible();
+  await expect(newFriend.locator('..').getByRole('img', { name: 'Clan member', exact: true })).toHaveCount(0);
+  // A long name and retry control cannot wrap the row or hide completion/affiliation icons.
+  await ada.locator('.player-name').evaluate(element => { element.textContent = 'A very long guardian name that cannot fit in the available column'; });
+  const name = ada.locator('.player-name');
+  expect(await name.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+  expect(await name.evaluate(element => getComputedStyle(element).textOverflow)).toBe('ellipsis');
+  await expect(ada.locator('.earned')).toBeVisible();
+  const rowBounds = (await ada.locator('..').boundingBox())!;
+  const iconsBounds = (await ada.locator('..').locator('.player-affiliations').boundingBox())!;
+  expect(Math.abs(rowBounds.x + rowBounds.width - iconsBounds.x - iconsBounds.width)).toBeLessThan(1);
+  expect(rowBounds.height).toBeLessThanOrEqual(38);
+  await banshee.hover();
+  await expect(page.getByRole('tooltip').locator('.clan-rank')).toHaveText('Clan Admin');
+  await page.getByLabel('Players to show').selectOption('clan'); await ready(page);
+  await expect(page.locator('tbody tr')).toHaveCount(1); await expect(page.locator('tbody')).toContainText('Outsider');
+  await page.getByLabel('Players to show').selectOption('friends'); await ready(page);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await ready(page);
+  await expect(page.getByLabel('Players to show')).toHaveValue('clan'); await expect(page.locator('tbody')).toContainText('Outsider');
+  await expect(page.getByLabel('Players to show').locator('option[value="combined"]')).toHaveJSProperty('disabled', true);
+});
+
+test('player retry and sync icons rotate without a wait cursor or disabled fade', async ({ page }) => {
+  const state = { offline: false, calls: 0, delay: 0 }; await setup(page, state);
+  await page.goto('#/seal/last_wish'); await ready(page);
+  state.delay = 200;
+  const retry = page.getByRole('button', { name: 'Retry profile: Crow', exact: true });
+  await retry.click();
+  await expect(retry).toHaveAttribute('aria-busy', 'true');
+  await expect(retry.locator('.refresh-icon')).toHaveCSS('animation-name', 'refresh-spin');
+  await expect(retry).toHaveCSS('cursor', 'default');
+  await expect(retry).toHaveCSS('opacity', '1');
+  await expect(page.locator('.refresh .refresh-icon')).toHaveCSS('animation-name', 'refresh-spin');
+  await ready(page);
+  await expect(retry).toHaveAttribute('aria-busy', 'false');
+  await expect(retry.locator('.refresh-icon')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.refresh .refresh-icon')).toHaveCSS('animation-name', 'none');
 });

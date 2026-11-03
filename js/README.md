@@ -127,7 +127,7 @@ Choose clan in the sidebar opens public Bungie clan search. Search by name, clan
 
 Roster caches and last-profile-pass summaries are scoped by clan. Profiles and definitions remain reusable across clans. A late response from an earlier clan cannot overwrite the selected clan's rows or status. Clear API cache preserves the selected clan and recents.
 
-Login automatically selects your own clan and prioritizes it over recents. Friend-based clan suggestions are available after login; friend/combined player lists remain deferred. Public browsing does not imply clan membership.
+Login automatically selects your own clan and prioritizes it over recents. Friend-based clan suggestions are available after login; the sidebar also supports friend and combined player lists. Public browsing does not imply clan membership.
 
 ## Focus styling
 
@@ -151,8 +151,16 @@ After login, load the accepted Bungie friend list (`/Social/Friends/`, requiring
 
 The chooser keeps your clan first, with no friend/recent labels for it. Other suggestions show three entries: up to three friends’ names, or two names and a remaining count when there are more than three friends. Group clans by friend count, then online count and clan name. Deduplicate suggestions across selected, friend, recent, and default clans. Read the friend list at most once per five minutes, and reuse public membership-to-clan lookups for fifteen minutes within the login session. At most three lookups run concurrently; partial failures retain other suggestions and offer a retry.
 
-The [Bungie friend schema](https://github.com/Bungie-net/api/blob/master/openapi.json) exposes online/offline-or-unknown presence and the last membership used, **not a last-active timestamp**. Presence is not a claim that someone is currently playing Destiny 2; `onlineTitle` separately identifies the game when available. No timestamps are inferred from these fields. Platform-native friend lists, pending requests, and friend-player tables remain separate work.
+The [Bungie friend schema](https://github.com/Bungie-net/api/blob/master/openapi.json) exposes online/offline-or-unknown presence and the last membership used, **not a last-active timestamp**. Presence is not a claim that someone is currently playing Destiny 2; `onlineTitle` separately identifies the game when available. No timestamps are inferred from these fields. Platform-native friend lists and pending requests remain separate work.
 
 Clan rows retain the roster membership identity even when cross-save supplies another platform’s progress. If those platforms differ, append the joined platform to the guardian name and explain the primary-save source in the guardian tooltip. Also label the joined platform when cross-save is off and public linked-membership data confirms multiple platforms; each row keeps its own save’s progress. Resolve those memberships in the background using the existing 24-hour public cache, with at most three concurrent lookups. Collapse memberships only when Bungie identifies the same account and the same nonzero cross-save override. Prefer the primary-save roster membership, list the additional memberships and their overridden-save status in its guardian tooltip, and count the account once for title/badge ownership. The Members view and CSV follow the same row grouping. Distinct non-overridden saves stay separate.
 
 “Primary save” labels and emphasis require a nonzero crossSaveOverride. A membership platform alone does not designate an account-wide primary save.
+
+## Player-list selector
+
+The sidebar’s Players selector supports **Selected clan**, **My friends**, and **My clan and friends**. The last two require login. Selected clan always refers to the visitor’s saved clan choice; the combined list uses the signed-in player’s own clan even when a different clan is selected for browsing. Choosing a clan returns to Selected clan. The selected list mode is a browser preference; signing out or expiry immediately returns to public clan browsing and clears the social list from memory.
+
+Accepted Bungie friends resolve through public, cached linked-membership lookups to their cross-save primary or last-used independent platform. Profile requests retain the existing self-only authentication rule. A friend already represented by the clan’s same save appears once with clan metadata preserved. Friends without a public Destiny membership remain visible as unavailable, without issuing invalid profile requests. Friend-only account tooltips omit clan ranks/join dates.
+
+Friend list retrieval is separate from clan suggestions, so profiles do not wait for every friend’s clan lookup. Fetch memberships and profiles with bounded concurrency. Online status only counts as known Destiny activity when presence identifies Destiny 2; there is no inferred last-active timestamp. Unknown-activity profiles use the existing five-minute cache rule. Sync summaries are scoped by list and signed-in account; friend relationships and assembled lists are never written into the public roster cache.

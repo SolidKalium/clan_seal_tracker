@@ -15,11 +15,13 @@ export interface FriendSuggestions { friends: BungieFriend[]; clans: FriendClan[
 /** Private social data lives only in this login's memory. Clan lookups are public. */
 export class FriendDirectory {
   private cached?: FriendSuggestions;
+  private list?: { friends: BungieFriend[]; checkedAt: number };
+  private listPending?: Promise<BungieFriend[]>;
   private pending?: Promise<FriendSuggestions>;
   private generation = 0;
   private clans = new Map<string, { value: ClanChoice[]; checkedAt: number }>();
   constructor(private self: Pick<Transport, 'api'>, private publicTransport: Pick<Transport, 'api'>) {}
-  clear() { this.generation++; this.cached = undefined; this.pending = undefined; this.clans.clear(); }
+  clear() { this.generation++; this.cached = undefined; this.list = undefined; this.listPending = undefined; this.pending = undefined; this.clans.clear(); }
   load(force = false): Promise<FriendSuggestions> {
     if (this.pending) return this.pending;
     if (!force && this.cached && Date.now() - this.cached.checkedAt < 5 * 60_000) return Promise.resolve(this.cached);
@@ -28,15 +30,27 @@ export class FriendDirectory {
     this.pending = task;
     return task;
   }
+  get friendCheckedAt() { return this.list?.checkedAt; }
+  friendList(force = false): Promise<BungieFriend[]> {
+    if (this.listPending) return this.listPending;
+    if (!force && this.list && Date.now() - this.list.checkedAt < 5 * 60_000) return Promise.resolve(this.list.friends);
+    const generation = this.generation;
+    const task = this.self.api<{ friends: BungieFriend[] }>('/Social/Friends/').then(response => {
+      if (!Array.isArray(response.friends)) throw new Error('Bungie returned an invalid friend list.');
+      const seen = new Set<string>();
+      const friends = response.friends.filter(friend => {
+        if (friend.relationship !== 1) return false;
+        const id = friend.bungieNetUser?.membershipId ?? `${friend.lastSeenAsBungieMembershipType}:${friend.lastSeenAsMembershipId}`;
+        return !seen.has(id) && !!seen.add(id);
+      });
+      if (generation === this.generation) this.list = { friends, checkedAt: Date.now() };
+      return friends;
+    }).finally(() => { if (this.listPending === task) this.listPending = undefined; });
+    this.listPending = task;
+    return task;
+  }
   private async fetch(force: boolean, generation: number): Promise<FriendSuggestions> {
-    const response = await this.self.api<{ friends: BungieFriend[] }>('/Social/Friends/');
-    if (!Array.isArray(response.friends)) throw new Error('Bungie returned an invalid friend list.');
-    const seen = new Set<string>();
-    const friends = response.friends.filter(friend => {
-      if (friend.relationship !== 1) return false;
-      const id = friend.bungieNetUser?.membershipId ?? `${friend.lastSeenAsBungieMembershipType}:${friend.lastSeenAsMembershipId}`;
-      return !seen.has(id) && !!seen.add(id);
-    });
+    const friends = await this.friendList(force);
     const groups = new Map<string, FriendClan>();
     let failed = 0;
     await eachLimited(friends, async friend => {

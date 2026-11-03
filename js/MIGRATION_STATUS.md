@@ -2,12 +2,6 @@
 
 ## TODO list
 
-**Misc:**
-- Support multiple player lists. Switch in the side bar.
-  - Clan view
-  - Friend list (when logged in. Show player's emblem and name when collapsed.)
-  - Clan + friends (when logged in) (Show clan and player emblems. Show clan name when collapsed.)
-
 **Cleanup pass:**
 - Review page high-level structure
 - CSS
@@ -73,6 +67,7 @@ Deferred polish and interaction design; these are not for immediate implementati
 - [ ] Review the TODOs and notes in the PHP files for any ideas not carried forward
 - [ ] If viewing lots of clans and players, should we do any automated cleanup of the db?
 - [ ] How to handle the members page. It might remain on a "hidden path" or require being logged in as someone in the clan (when that is supported), since it lists entitlements and similar things.
+- [ ] Consider supporting showing platform-specific friends, not just Bungie friends. This appears to require a recent login session from that platform.
 
 
 ## Known quirks

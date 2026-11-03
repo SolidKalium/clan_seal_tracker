@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import FriendIcon from './FriendIcon.vue';
+import PlayerAffiliations from './PlayerAffiliations.vue';
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import { clanMembershipPlatform } from './members';
 import { FriendDirectory, type FriendClan } from './friends';
@@ -27,6 +29,7 @@ import { eachLimited, TrackerRepository } from './repository';
 import { buildSeal, buildSealTemplate, selectRecord, headingCell, bestBadgeClass, badgeOwnership, formatClasses, sealAwarded } from './domain';
 import type { PageMode, BadgeOwnership } from './domain';
 import { profileFresh } from './policy';
+import { combinePlayers, friendMembers, type PlayerList } from './playerLists';
 import { collapseCrossSaveMembers, compareClanTenure } from './clan';
 import type { Cell, Definitions, Heading, LoadResult, PageConfig, PlayerData, Profile, Roster, UserInfo, Seal } from './types';
 
@@ -36,6 +39,7 @@ const transport = new BungieTransport(config.apiKey, diagnostic => store.recordD
 const account = shallowRef<PlayerAccount>();
 const ownClan = shallowRef<ClanChoice>();
 const loginNotice = ref('');
+const playerList = ref<PlayerList>('clan');
 const login = new PlayerLogin(config as { apiKey: string; oauthClientId?: string; oauthRedirectUri?: string }, undefined, message => { if (account.value) void signOut(message); else loginNotice.value = message; });
 const friendDirectory = new FriendDirectory(login, transport);
 const friendClans = shallowRef<FriendClan[]>([]);
@@ -48,12 +52,13 @@ const clanPickerOpen = ref(false);
 const clanDirectory = new ClanDirectory(transport);
 let repository = new TrackerRepository(store, transport, config.clanId, config.language, login);
 let clanGeneration = 0;
-const passPreferenceKey = (id = repository.clanId) => `lastProfilePass:v2:${id}`;
+const passPreferenceKey = (id = repository.clanId) => playerList.value === 'clan' ? `lastProfilePass:v2:${id}` : `lastProfilePass:v3:${playerList.value}:${account.value?.membershipId}:${playerList.value === 'combined' ? ownClan.value?.id ?? 'none' : ''}`;
 const definitions = shallowRef<Definitions>();
 const roster = shallowRef<Roster>();
 const players = shallowRef<Record<string, PlayerData>>({});
 const displayedPlayers = computed(() => collapseCrossSaveMembers(Object.values(players.value)));
 const linkedPlatforms = shallowRef<Record<string, UserInfo[]>>({});
+const retryingPlayer = ref<string>();
 const busy = ref(true), phase = ref('Starting tracker…'), issues = ref<string[]>([]), storageWarning = ref('');
 const rosterState = ref(''), definitionsState = ref('');
 const profileSyncActive = ref(false), profileSyncDone = ref(0), profileSyncTotal = ref(0);
@@ -370,15 +375,47 @@ function acceptRoster(result: LoadResult<Roster>) {
   if (result.entry) { roster.value = result.entry.value; clanCheckedAt.value = result.entry.fetchedAt; rosterHydration = hydrate(result.entry.value); }
   rosterState.value = result.status;
 }
+async function listRoster(repo: TrackerRepository, force: boolean, generation: number): Promise<LoadResult<Roster>> {
+  if (playerList.value === 'clan') return repo.roster(result => { if (generation === clanGeneration) acceptRoster(result); }, force);
+  const mode = playerList.value;
+  const clanRepo = ownClan.value ? new TrackerRepository(store, transport, ownClan.value.id, config.language, login) : undefined;
+  const [clanResult, friendResult] = await Promise.all([
+    mode === 'combined' && clanRepo ? clanRepo.roster(() => {}, force) : Promise.resolve(undefined),
+    (async () => {
+      try {
+        const friends = await friendDirectory.friendList(force);
+        const members = await friendMembers(friends, user => repo.memberships(user), () => generation === clanGeneration);
+        return { members, error: undefined as string | undefined };
+      } catch { return { members: roster.value?.members.filter(member => member.isFriend) ?? [], error: 'Friends could not be refreshed. Check ReadUserData permission and your connection, then retry.' }; }
+    })(),
+  ]);
+  const errors = [clanResult?.error, friendResult.error, mode === 'combined' && !ownClan.value ? 'No clan was found for your account; showing friends.' : undefined].filter(Boolean).join(' ');
+  const clan = clanResult?.entry?.value;
+  const value: Roster = { name: mode === 'friends' ? `${account.value?.name ?? 'My'}’s friends` : clan?.name ?? ownClan.value?.name ?? 'My clan and friends', emblem: clan?.emblem,
+    members: mode === 'combined' ? combinePlayers(clan?.members ?? [], friendResult.members) : friendResult.members };
+  return { entry: { key: 'session-player-list', value, fetchedAt: mode === 'friends' ? friendDirectory.friendCheckedAt ?? Date.now() : clanResult?.entry?.fetchedAt ?? friendDirectory.friendCheckedAt ?? Date.now() }, status: errors ? 'stale' : 'fresh', error: errors || undefined };
+}
+async function changePlayerList(mode: PlayerList) {
+  if (mode !== 'clan' && !account.value || !['clan', 'friends', 'combined'].includes(mode)) return;
+  if (playerList.value === mode) return;
+  const generation = ++clanGeneration;
+  playerList.value = mode; closeTooltip(); detail.value = undefined;
+  roster.value = undefined; players.value = {}; linkedPlatforms.value = {};
+  rosterHydration = Promise.resolve(); lastProfilePass.value = undefined; clanCheckedAt.value = undefined;
+  search.value = ''; filter.value = 'all'; issues.value = []; profileSyncActive.value = false; busy.value = false;
+  await store.setPreference('playerList', mode);
+  if (generation === clanGeneration) await load();
+}
 async function load(force = false) {
   if (busy.value) return;
   const generation = clanGeneration, repo = repository;
   const current = () => generation === clanGeneration;
-  busy.value = true; issues.value = []; profileSyncActive.value = false; profileSyncDone.value = 0; profileSyncTotal.value = 0; phase.value = 'Checking definitions and clan roster…';
+  retryingPlayer.value = undefined;
+  busy.value = true; issues.value = []; profileSyncActive.value = false; profileSyncDone.value = 0; profileSyncTotal.value = 0; phase.value = playerList.value === 'clan' ? 'Checking definitions and clan roster…' : 'Checking definitions and friends…';
   try {
     const [d, r] = await Promise.all([
       repo.definitions(result => { if (current()) acceptDefinitions(result); }, force),
-      repo.roster(result => { if (current()) acceptRoster(result); }, force),
+      listRoster(repo, force, generation),
     ]);
     if (!current()) return;
     acceptDefinitions(d);
@@ -390,10 +427,12 @@ async function load(force = false) {
     issues.value = [d.error, r.error].filter((v): v is string => !!v);
     if (r.entry) {
       void loadClanPlatforms(r.entry.value, generation, repo);
-      // Remember verified names, not just the name in a search result.
-      const selectedClan = { ...clanSelection.value.selected, name: r.entry.value.name, memberCount: r.entry.value.members.length };
-      clanSelection.value = { selected: selectedClan, recent: recentClans(clanSelection.value.recent, selectedClan) };
-      await store.setPreference('clanSelection', clanSelection.value);
+      // Friend and combined lists must not replace the visitor's selected clan.
+      if (playerList.value === 'clan') {
+        const selectedClan = { ...clanSelection.value.selected, name: r.entry.value.name, memberCount: r.entry.value.members.length };
+        clanSelection.value = { selected: selectedClan, recent: recentClans(clanSelection.value.recent, selectedClan) };
+        await store.setPreference('clanSelection', clanSelection.value);
+      }
       if (!current()) return;
       phase.value = 'Checking profiles…';
       profileSyncTotal.value = r.entry.value.members.length; profileSyncDone.value = 0; profileSyncActive.value = true;
@@ -443,7 +482,7 @@ function signIn() {
 async function signOut(message = '') {
   clearTimeout(loginExpiryTimer);
   ++friendsGeneration; friendDirectory.clear(); friendClans.value = []; friendsLoading.value = false; friendsError.value = '';
-  login.end(); account.value = undefined; ownClan.value = undefined; loginNotice.value = message;
+  login.end(); playerList.value = 'clan'; account.value = undefined; ownClan.value = undefined; loginNotice.value = message;
   // Invalidate pending callbacks and remove every private value from the UI immediately.
   ++clanGeneration; closeTooltip(); detail.value = undefined; players.value = {};
   repository = new TrackerRepository(store, transport, clanSelection.value.selected.id, config.language, login);
@@ -454,8 +493,9 @@ function checkLoginExpiry() { if (account.value && (!login.expiresAt || login.ex
 async function selectClan(clan: ClanChoice) {
   clan = { id: clan.id, name: clan.name, memberCount: clan.memberCount };
   clanPickerOpen.value = false;
-  if (clan.id === repository.clanId) return;
+  if (clan.id === repository.clanId) { if (playerList.value !== 'clan') await changePlayerList('clan'); return; }
   const generation = ++clanGeneration;
+  playerList.value = 'clan';
   closeTooltip(); detail.value = undefined;
   clanSelection.value = { selected: clan, recent: recentClans(clanSelection.value.recent, clan) };
   repository = new TrackerRepository(store, transport, clan.id, config.language, login);
@@ -464,6 +504,7 @@ async function selectClan(clan: ClanChoice) {
   issues.value = []; profileSyncActive.value = false; profileSyncDone.value = 0; profileSyncTotal.value = 0;
   search.value = ''; filter.value = 'all';
   busy.value = true; phase.value = 'Loading clan…';
+  await store.setPreference('playerList', 'clan');
   await store.setPreference('clanSelection', clanSelection.value);
   const pass = await store.preference<typeof lastProfilePass.value>(passPreferenceKey(), undefined);
   if (generation !== clanGeneration) return;
@@ -490,11 +531,11 @@ async function retryPlayer(id: string) {
   const player = players.value[id];
   if (!player || busy.value) return;
   const generation = clanGeneration, repo = repository;
-  busy.value = true; phase.value = 'Retrying profile…';
+  retryingPlayer.value = id; busy.value = true; phase.value = 'Retrying profile…';
   try {
     const result = await repo.profile(player.member, cached => { if (generation === clanGeneration) applyProfile(player.member, cached); }, true);
     if (generation === clanGeneration) applyProfile(player.member, result);
-  } finally { if (generation === clanGeneration) { busy.value = false; phase.value = 'Ready'; } }
+  } finally { if (generation === clanGeneration) { retryingPlayer.value = undefined; busy.value = false; phase.value = 'Ready'; } }
 }
 function showDetail(player: string, heading: Heading, cell: Cell) { closeTooltip(); detail.value = { player, heading, cell }; }
 watch([search, filter, sort], () => { if (preferencesReady.value) void store.setPreference('table', { search: search.value, filter: filter.value, sort: sort.value }); });
@@ -521,8 +562,10 @@ onMounted(async () => {
       clanSelection.value = { selected: ownClan.value, recent: recentClans(clanSelection.value.recent, ownClan.value) };
       await store.setPreference('clanSelection', clanSelection.value);
     }
+    const savedList = await store.preference<string>('playerList', 'clan');
+    playerList.value = account.value && ['friends', 'combined'].includes(savedList) ? savedList as PlayerList : 'clan';
     repository = new TrackerRepository(store, transport, clanSelection.value.selected.id, config.language, login);
-    lastProfilePass.value = await store.preference<typeof lastProfilePass.value>(passPreferenceKey(), clanSelection.value.selected.id === config.clanId ? await store.preference('lastProfilePass:v2', undefined) : undefined);
+    lastProfilePass.value = await store.preference<typeof lastProfilePass.value>(passPreferenceKey(), playerList.value === 'clan' && clanSelection.value.selected.id === config.clanId ? await store.preference('lastProfilePass:v2', undefined) : undefined);
     sidebarCollapsed.value = await store.preference('sidebarCollapsed', false) === true;
     search.value = typeof preferences.search === 'string' ? preferences.search : '';
     filter.value = ['all', 'complete', 'incomplete', 'unavailable'].includes(preferences.filter) ? preferences.filter : 'all';
@@ -538,21 +581,30 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
     <div class="header-status">
       <section class="sync-strip" :class="{ 'sync-busy': busy }" role="status" aria-live="polite">
 
-        <div class="status-copy"><div class="status-primary" @mouseenter="openTooltip($event, { kind: 'sync' })" @mouseleave="closeTooltip"><button class="sync-indicator" :class="[`sync-${syncColor}`, { 'is-updating': busy }]" aria-label="Record sync status" :aria-describedby="tooltip?.kind === 'sync' ? 'record-tooltip' : undefined" @focus="openTooltip($event, { kind: 'sync' })" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="status-dot" aria-hidden="true"></span></button><span class="status-heading">{{ busy ? 'Syncing records' : issues.length || failedCount ? 'Sync incomplete' : 'Records synced' }}</span></div><span class="status-counts"><template v-if="busy">{{ phase }}<span v-if="profileSyncActive"> · {{ profileSyncDone }} / {{ profileSyncTotal }} done</span></template><template v-else>{{ resolved }} / {{ roster?.members.length ?? '—' }} profiles<span v-if="staleCount"> · {{ staleCount }} stale / private</span><span v-if="failedCount"> · {{ failedCount }} unavailable</span></template></span></div>
+        <div class="status-copy"><div class="tooltip-only status-primary" @mouseenter="openTooltip($event, { kind: 'sync' })" @mouseleave="closeTooltip"><button class="tooltip-only sync-indicator" :class="[`sync-${syncColor}`, { 'is-updating': busy }]" aria-label="Record sync status" :aria-describedby="tooltip?.kind === 'sync' ? 'record-tooltip' : undefined" @focus="openTooltip($event, { kind: 'sync' })" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="status-dot" aria-hidden="true"></span></button><span class="status-heading">{{ busy ? 'Syncing records' : issues.length || failedCount ? 'Sync incomplete' : 'Records synced' }}</span></div><span class="status-counts"><template v-if="busy">{{ phase }}<span v-if="profileSyncActive"> · {{ profileSyncDone }} / {{ profileSyncTotal }} done</span></template><template v-else>{{ resolved }} / {{ roster?.members.length ?? '—' }} profiles<span v-if="staleCount"> · {{ staleCount }} stale / private</span><span v-if="failedCount"> · {{ failedCount }} unavailable</span></template></span></div>
       </section>
-      <button class="refresh" :disabled="busy" :aria-label="busy ? 'Updating…' : 'Refresh data'" title="Refresh data" @click="load(true)"><span aria-hidden="true">↻</span><span class="refresh-label">{{ busy ? 'Updating…' : 'Refresh data' }}</span></button>
+      <button class="refresh" :class="{ 'is-refreshing': busy }" :aria-busy="busy" :disabled="busy" :aria-label="busy ? 'Updating…' : 'Refresh data'" title="Refresh data" @click="load(true)"><span class="refresh-icon" aria-hidden="true">↻</span><span class="refresh-label">{{ busy ? 'Updating…' : 'Refresh data' }}</span></button>
     </div>
   </header>
   <div class="shell" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
     <aside class="sidebar" aria-label="Clan navigation">
       <button class="sidebar-toggle" :aria-label="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" :aria-expanded="!sidebarCollapsed" aria-controls="clan-menu" :title="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" @click="sidebarCollapsed = !sidebarCollapsed"><svg viewBox="0 0 20 20" aria-hidden="true" :class="{ reversed: sidebarCollapsed }"><path d="m12 4-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
-      <ClanEmblem :emblem="roster?.emblem" :name="roster?.name ?? 'Clan'" />
-      <p v-if="!sidebarCollapsed" class="eyebrow">CLAN</p>
-      <h2 class="clan-name" :data-clan-id="clanSelection.selected.id" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }">{{ roster?.name ?? clanSelection.selected.name }}</h2>
+      <label v-show="!sidebarCollapsed" class="player-list-control control-field"><span>Players</span><select aria-label="Players to show" :value="playerList" :disabled="!preferencesReady" @change="changePlayerList(($event.target as HTMLSelectElement).value as PlayerList)"><option value="clan">Selected clan</option><option value="friends" :disabled="!account">My friends</option><option value="combined" :disabled="!account">My clan and friends</option></select></label>
+      <div class="sidebar-identity-icons" :class="{ 'is-combined': playerList === 'combined' }">
+        <FriendIcon v-if="sidebarCollapsed && playerList !== 'clan'" class="sidebar-friend-icon" aria-label="Friends" />
+        <span v-if="sidebarCollapsed && playerList === 'combined'" class="sidebar-identity-plus" aria-hidden="true">+</span>
+        <div class="sidebar-clan-identity">
+          <ClanEmblem v-if="playerList !== 'friends'" class="sidebar-clan-icon" :emblem="roster?.emblem" :name="roster?.name ?? 'Clan'" />
+          <div class="sidebar-identity-name">
+            <p v-if="!sidebarCollapsed" class="eyebrow identity-eyebrow"><span v-if="playerList !== 'friends'">CLAN</span><span v-if="playerList === 'combined'" class="identity-label-plus">+</span><template v-if="playerList !== 'clan'"><FriendIcon class="identity-friend-icon" aria-hidden="true" /><span>FRIENDS</span></template></p>
+            <h2 class="clan-name" :data-clan-id="playerList === 'clan' ? clanSelection.selected.id : playerList === 'combined' ? ownClan?.id : undefined" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }"><template v-if="playerList === 'friends' && account"><span class="friend-owner">{{ account.name.trimEnd() }}’s</span> <span class="friend-list-label">friends</span></template><template v-else>{{ roster?.name ?? (playerList === 'clan' ? clanSelection.selected.name : playerList === 'combined' ? ownClan?.name ?? 'My clan and friends' : 'My friends') }}</template></h2>
+          </div>
+        </div>
+      </div>
       <div class="sidebar-actions">
       <button class="clan-picker-button" :class="{ 'clan-picker-collapsed': sidebarCollapsed }" aria-label="Choose clan" :disabled="!preferencesReady" @click="clanPickerOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><span v-if="!sidebarCollapsed">Choose clan</span></button>
       <div class="login-controls" :class="{ 'login-collapsed': sidebarCollapsed }">
-        <template v-if="account"><span v-if="!sidebarCollapsed" class="login-name" :data-bungie-membership-id="account.membershipId" :data-membership-id="account.primary?.membershipId" :data-membership-type="account.primary?.membershipType"><span class="login-display-name">{{ account.name }}</span><span v-if="account.nameCode" class="login-name-code">#{{ account.nameCode }}</span></span><button type="button" aria-label="Sign out" @click="signOut()"><span aria-hidden="true">↪</span><span v-if="!sidebarCollapsed">Sign out</span></button></template>
+        <template v-if="account"><span v-if="!sidebarCollapsed" class="login-name" :data-bungie-membership-id="account.membershipId" :data-membership-id="account.primary?.membershipId" :data-membership-type="account.primary?.membershipType"><span class="login-display-name">{{ account.name }}</span><span v-if="account.nameCode" class="login-name-code">#{{ account.nameCode }}</span></span><button v-if="!sidebarCollapsed" type="button" aria-label="Sign out" @click="signOut()"><span aria-hidden="true">↪</span><span v-if="!sidebarCollapsed">Sign out</span></button></template>
         <button v-else type="button" aria-label="Sign in with Bungie" :disabled="!preferencesReady" @click="signIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span v-if="!sidebarCollapsed">Sign in with Bungie</span></button>
       </div>
       </div>
@@ -575,7 +627,7 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
         <section class="page-heading seal-heading"><div><p class="eyebrow">{{ breadcrumb }}</p><h1>{{ headingTitle }}<span v-if="headingKind" class="heading-kind">{{ ' ' + headingKind }}</span></h1></div><div v-if="headingKind === 'seal' || headingKind === 'badge'" class="heading-tally"><img v-if="selected?.icon" class="heading-owner-icon" :class="`heading-${headingKind}-icon`" :src="`https://www.bungie.net${selected.icon}`" alt=""><div class="title-tally"><strong>{{ headingKind === 'badge' ? badgeOwnerCount : selected ? titleCount(selected) : '—' }}</strong><span>{{ headingKind === 'badge' ? 'badge owners' : 'title holders' }}</span></div></div></section>
         <ViewTabs :label="viewLabel" :tabs="viewTabs" />
       </template>
-      <MembersPage v-if="isMembers" :key="clanSelection.selected.id" :players="displayedPlayers" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" :tooltip-id="tooltip?.kind === 'characters' ? 'record-tooltip' : undefined" @show-guardian="showGuardianTooltip" @show-characters="showCharacterTooltip" @close-tooltip="closeTooltip" />
+      <MembersPage v-if="isMembers" :key="clanSelection.selected.id" :players="displayedPlayers" :combined="playerList === 'combined'" :clan-emblem="roster?.emblem" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" :tooltip-id="tooltip?.kind === 'characters' ? 'record-tooltip' : undefined" @show-guardian="showGuardianTooltip" @show-characters="showCharacterTooltip" @close-tooltip="closeTooltip" />
       <template v-else-if="isHome">
         <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, plan you fireteam, and make the next run count.</p></section>
         <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => s.page.sealNodeHash && !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
@@ -604,26 +656,26 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
           <table>
             <thead>
               <tr v-if="hasColumnGroups" class="category-header-row">
-                <th scope="col" class="player-column" :rowspan="headerRows">Guardian</th><th v-if="!metricView" scope="col" class="progress-column" :rowspan="headerRows"><button class="heading-button summary-heading" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event)" @mouseleave="closeTooltip" @focus="showSummary($event)" @blur="closeTooltip" @keydown.esc="closeTooltip">{{ summaryLabel }}</button></th>
+                <th scope="col" class="player-column" :rowspan="headerRows">Guardian</th><th v-if="!metricView" scope="col" class="progress-column" :rowspan="headerRows"><button class="tooltip-only heading-button summary-heading" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event)" @mouseleave="closeTooltip" @focus="showSummary($event)" @blur="closeTooltip" @keydown.esc="closeTooltip">{{ summaryLabel }}</button></th>
                 <th v-for="(group, i) in columnGroups" :key="i" scope="colgroup" :colspan="group.columns" :class="{ 'commendation-section': !!group.color }" :style="group.color ? { '--commendation-color': group.color } : undefined"><span class="category-title">{{ group.name }}</span></th>
               </tr>
               <tr ref="groupHeader" class="record-header-row">
                 <th v-if="!hasColumnGroups" scope="col" class="player-column" :rowspan="headerRows">Guardian</th>
-                <th v-if="!hasColumnGroups && !metricView" scope="col" class="progress-column" :rowspan="headerRows"><button class="heading-button summary-heading" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event)" @mouseleave="closeTooltip" @focus="showSummary($event)" @blur="closeTooltip" @keydown.esc="closeTooltip">{{ summaryLabel }}</button></th>
-                <th v-for="heading in selected.headings" :key="heading.hash" :scope="objectiveColumns(heading) > 1 ? 'colgroup' : 'col'" :colspan="objectiveColumns(heading)" :rowspan="hasStages && objectiveColumns(heading) === 1 ? 2 : 1" class="record-heading" :style="heading.color ? { '--commendation-color': heading.color } : undefined" v-bind="headingIdentifiers(heading)" :class="{ 'commendation-section': !!heading.color, 'commendation-total': heading.metricKey?.startsWith('node:'), 'heading-gilding': heading.gilding || (heading.metric === 'gildingCount' || heading.metric === 'gilded'), 'heading-unscored': heading.skip && !metricView }" :data-record-tooltip="`header:${heading.hash}`" @mouseenter="showTooltip($event, heading)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, heading)" @focusout="leaveRecordTooltip">
-                  <button class="heading-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @keydown.esc="closeTooltip">{{ heading.label }}<span v-if="heading.pattern" class="pattern-label">Pattern available</span></button>
+                <th v-if="!hasColumnGroups && !metricView" scope="col" class="progress-column" :rowspan="headerRows"><button class="tooltip-only heading-button summary-heading" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event)" @mouseleave="closeTooltip" @focus="showSummary($event)" @blur="closeTooltip" @keydown.esc="closeTooltip">{{ summaryLabel }}</button></th>
+                <th v-for="heading in selected.headings" :key="heading.hash" :scope="objectiveColumns(heading) > 1 ? 'colgroup' : 'col'" :colspan="objectiveColumns(heading)" :rowspan="hasStages && objectiveColumns(heading) === 1 ? 2 : 1" class="tooltip-only record-heading" :style="heading.color ? { '--commendation-color': heading.color } : undefined" v-bind="headingIdentifiers(heading)" :class="{ 'commendation-section': !!heading.color, 'commendation-total': heading.metricKey?.startsWith('node:'), 'heading-gilding': heading.gilding || (heading.metric === 'gildingCount' || heading.metric === 'gilded'), 'heading-unscored': heading.skip && !metricView }" :data-record-tooltip="`header:${heading.hash}`" @mouseenter="showTooltip($event, heading)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, heading)" @focusout="leaveRecordTooltip">
+                  <button class="tooltip-only heading-button" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @keydown.esc="closeTooltip">{{ heading.label }}<span v-if="heading.pattern" class="pattern-label">Pattern available</span></button>
                 </th>
               </tr>
               <tr v-if="hasStages" class="objective-header-row">
                 <template v-for="heading in selected.headings" :key="heading.hash">
-                  <th v-for="(objective, stage) in (objectiveColumns(heading) > 1 ? displayObjectives(heading, heading.objectives) : [])" :key="objective.hash" scope="col" class="objective-heading" v-bind="headingIdentifiers(heading)" :data-objective-hash="objective.hash" :class="{ 'record-end': stage === displayObjectives(heading, heading.objectives).length - 1 }" :data-record-tooltip="`header:${heading.hash}`" @mouseenter="showTooltip($event, heading, undefined, undefined, String(objective.hash))" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, heading, undefined, undefined, String(objective.hash))" @focusout="leaveRecordTooltip"><button class="stage-button" :aria-label="`Stage ${heading.objectives.indexOf(objective) + 1}: ${objective.progressDescription || objective.displayProperties?.description || heading.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @keydown.esc="closeTooltip">{{ heading.objectives.indexOf(objective) + 1 }}</button></th>
+                  <th v-for="(objective, stage) in (objectiveColumns(heading) > 1 ? displayObjectives(heading, heading.objectives) : [])" :key="objective.hash" scope="col" class="tooltip-only objective-heading" v-bind="headingIdentifiers(heading)" :data-objective-hash="objective.hash" :class="{ 'record-end': stage === displayObjectives(heading, heading.objectives).length - 1 }" :data-record-tooltip="`header:${heading.hash}`" @mouseenter="showTooltip($event, heading, undefined, undefined, String(objective.hash))" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, heading, undefined, undefined, String(objective.hash))" @focusout="leaveRecordTooltip"><button class="tooltip-only stage-button" :aria-label="`Stage ${heading.objectives.indexOf(objective) + 1}: ${objective.progressDescription || objective.displayProperties?.description || heading.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @keydown.esc="closeTooltip">{{ heading.objectives.indexOf(objective) + 1 }}</button></th>
                 </template>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in rows" :key="row.id" :class="{ 'row-complete': row.complete }">
-                <th scope="row" class="player-column" :data-guardian-id="row.id" :data-membership-id="row.member.destinyUserInfo.membershipId" :data-membership-type="row.member.destinyUserInfo.membershipType"><div class="guardian-row"><button class="guardian-button" :aria-label="`Guardian details: ${row.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showGuardianTooltip($event, row)" @mouseleave="closeTooltip" @focus="showGuardianTooltip($event, row)" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="player-name">{{ row.name }}<small v-if="clanMembershipPlatform(row.member, linkedPlatforms[memberKey(row.member)])" class="joined-platform"> ({{ clanMembershipPlatform(row.member, linkedPlatforms[memberKey(row.member)]) }})</small> <span v-if="row.earned" class="earned" :class="{ 'earned-gold': row.badge?.allClasses }" :aria-label="row.earnedLabel">✦</span><span v-if="['stale', 'private', 'unavailable'].includes(row.status)" class="guardian-warning" :aria-label="statusLabel(row)">●</span></span></button><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :disabled="busy" :aria-label="`Retry profile: ${row.name}`" @click="retryPlayer(row.id)">↻</button></div></th>
-                <td v-if="!metricView" class="progress-column summary-cell" tabindex="0" :aria-label="`${row.name}: ${summaryLabel}`" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event, row.name, row.counts)" @mouseleave="closeTooltip" @focus="showSummary($event, row.name, row.counts)" @blur="closeTooltip" @keydown.esc="closeTooltip"><template v-if="row.hasData"><strong>{{ Math.round(row.fraction * 100) }}<small>%</small></strong><span class="mini-progress"><span :style="{ width: `${row.fraction * 100}%` }"></span></span></template><span v-else class="muted">{{ row.status === 'loading' ? 'Loading…' : 'No data' }}</span></td>
+                <th scope="row" class="player-column" :data-guardian-id="row.id" :data-membership-id="row.member.destinyUserInfo.membershipId" :data-membership-type="row.member.destinyUserInfo.membershipType"><div class="guardian-row"><button class="tooltip-only guardian-button" :aria-label="`Guardian details: ${row.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showGuardianTooltip($event, row)" @mouseleave="closeTooltip" @focus="showGuardianTooltip($event, row)" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="player-name">{{ row.name }}<small v-if="clanMembershipPlatform(row.member, linkedPlatforms[memberKey(row.member)])" class="joined-platform"> ({{ clanMembershipPlatform(row.member, linkedPlatforms[memberKey(row.member)]) }})</small></span><span class="guardian-markers"><span v-if="row.earned" class="earned" :class="{ 'earned-gold': row.badge?.allClasses }" :aria-label="row.earnedLabel">✦</span><span v-if="['stale', 'private', 'unavailable'].includes(row.status)" class="guardian-warning" :aria-label="statusLabel(row)">●</span></span></button><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :class="{ 'is-refreshing': retryingPlayer === row.id }" :aria-busy="retryingPlayer === row.id" :disabled="busy" :aria-label="`Retry profile: ${row.name}`" @click="retryPlayer(row.id)"><span class="refresh-icon" aria-hidden="true">↻</span></button><PlayerAffiliations v-if="playerList === 'combined'" :member="row.member" :emblem="roster?.emblem" :clan-name="roster?.name" /></div></th>
+                <td v-if="!metricView" class="tooltip-only progress-column summary-cell" tabindex="0" :aria-label="`${row.name}: ${summaryLabel}`" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event, row.name, row.counts)" @mouseleave="closeTooltip" @focus="showSummary($event, row.name, row.counts)" @blur="closeTooltip" @keydown.esc="closeTooltip"><template v-if="row.hasData"><strong>{{ Math.round(row.fraction * 100) }}<small>%</small></strong><span class="mini-progress"><span :style="{ width: `${row.fraction * 100}%` }"></span></span></template><span v-else class="muted">{{ row.status === 'loading' ? 'Loading…' : 'No data' }}</span></td>
                 <template v-for="(cell, i) in row.cells" :key="row.headings[i]!.hash">
                   <td v-if="cell.variants" class="record-end armor-ownership-cell" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-missing': cell.variants.every(v => v.missing) }" :data-record-tooltip="`player:${row.id}:${row.headings[i]!.hash}`" @mouseenter="showTooltip($event, row.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, row.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
                     <button class="cell-button armor-ownership" :style="{ '--class-count': cell.variants.length }" :aria-describedby="tooltip ? 'record-tooltip' : undefined" :aria-label="`${row.name}: ${row.headings[i]!.name}: ${cell.variants.some(v => v.complete) ? 'collected for ' + cell.variants.filter(v => v.complete).map(v => v.name).join(', ') : cell.variants.some(v => v.missing) ? 'collection data unavailable' : 'not collected'}`" @keydown.esc="closeTooltip" @click="showDetail(row.name, row.headings[i]!, cell)">
@@ -641,7 +693,7 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
                   </template>
                 </template>
               </tr>
-              <tr v-if="!rows.length"><td :colspan="tableColumns" class="empty-state">{{ !roster ? (busy ? 'Loading clan roster…' : 'Clan roster is unavailable. See the connection notice above.') : busy ? 'Loading guardians…' : 'No guardians match this view.' }}<button v-if="search || filter !== 'all'" class="text-button" @click="search = ''; filter = 'all'">Reset filters</button></td></tr>
+              <tr v-if="!rows.length"><td :colspan="tableColumns" class="empty-state">{{ !roster ? (busy ? 'Loading players…' : 'Player list is unavailable. See the connection notice above.') : busy ? 'Loading guardians…' : 'No guardians match this view.' }}<button v-if="search || filter !== 'all'" class="text-button" @click="search = ''; filter = 'all'">Reset filters</button></td></tr>
             </tbody>
           </table>
         </div></div>
@@ -655,7 +707,7 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
         <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><CharacterDetails v-if="tooltip.kind === 'characters'" :player="tooltip.player" /><RecordDetails v-else-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" :unit="tooltip.seal.page.kind === 'seals' ? 'seal' : undefined" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><div class="sync-history">
           <h4>Latest checks</h4>
           <p>Game definitions: <strong>{{ manifestCheckedAt ? age(manifestCheckedAt) : 'not yet checked' }}</strong></p>
-          <p>Clan roster: <strong>{{ clanCheckedAt ? age(clanCheckedAt) : 'not yet checked' }}</strong><span v-if="roster && clanCheckedAt" class="sync-detail-line">{{ roster.members.filter(member => member.isOnline).length }} members online</span></p>
+          <p>{{ playerList === 'friends' ? 'Friends list' : 'Clan roster' }}: <strong>{{ clanCheckedAt ? age(clanCheckedAt) : 'not yet checked' }}</strong><span v-if="roster && clanCheckedAt" class="sync-detail-line">{{ roster.members.filter(member => member.isOnline).length }} members online</span></p>
           <p v-if="lastProfilePass">Profiles: <strong>{{ age(lastProfilePass.completedAt) }}</strong>
             <span class="sync-detail-line">{{ lastProfilePass.loaded }} {{ lastProfilePass.loaded === 1 ? 'profile' : 'profiles' }} refreshed</span>
             <span class="sync-detail-line">{{ lastProfilePass.reused }} {{ lastProfilePass.reused === 1 ? 'profile' : 'profiles' }} already up to date</span>

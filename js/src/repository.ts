@@ -116,6 +116,7 @@ export class TrackerRepository {
     return (this.self?.primary(user) ? this.self.store : this.store).get<Profile>(`profile:${user.membershipType}_${user.membershipId}`);
   }
   profile(member: Member, onCached: CachedCallback<Profile>, force = false, retryFailures = false): Promise<LoadResult<Profile>> {
+    if (member.profileUnavailable) return Promise.resolve({ status: 'unavailable', error: member.profileUnavailable });
     const user = member.destinyUserInfo;
     const identity = `${user.membershipType}_${user.membershipId}`;
     const ownPrimary = this.self?.primary(user);

@@ -665,3 +665,9 @@ When cross-save is disabled, label the roster platform if public linked membersh
 ### Collapsing overridden clan memberships — 2026-11-03
 
 Combine roster rows sharing a Bungie account ID and the same nonzero cross-save override. Prefer the primary-save membership when present; retain other clan memberships as display-only metadata for guardian tooltips, explicitly noting that those saves are overridden. Apply the grouping to progress tables, Members/CSV, guardian counts and title/badge owner counts. Keep sync/cache entries scoped to their original memberships. Unknown identities, independent saves without cross-save, and inconsistent override values stay separate.
+
+### Player-list selector — 2026-11-03
+
+Add Selected clan, My friends, and My clan and friends to the sidebar. The combined mode always uses the signed-in player’s own clan, without overwriting the separately saved selected clan. Deduplicate friends overlapping the same clan save while retaining clan membership metadata; preserve independent saves. Resolve friend profiles publicly, with authenticated requests still restricted to the signed-in player. Keep list assembly and social metadata in memory, scope pass summaries to list/account, and return to Selected clan immediately on logout or expiry. Store only the mode preference.
+
+Load the friend list independently of friend-clan suggestions to avoid waiting for those lookups. Use cached public membership resolution and bounded concurrency. No public Destiny membership means an unavailable row, not a guessed profile request. Presence without a Destiny 2 flag does not establish current game activity; unknown activity retains the five-minute profile policy.

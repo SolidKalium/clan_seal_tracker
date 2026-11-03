@@ -26,7 +26,7 @@ export interface Definitions {
 export interface ObjectiveProgress { objectiveHash: number; progress: number; completionValue: number; complete: boolean }
 export interface RecordProgress { completedCount?: number | null; state: number; objectives?: ObjectiveProgress[]; intervalObjectives?: ObjectiveProgress[]; intervalsRedeemedCount?: number }
 export interface UserInfo { membershipType: number; membershipId: string; displayName: string; bungieGlobalDisplayName?: string; bungieGlobalDisplayNameCode?: number; crossSaveOverride?: number; LastSeenDisplayNameType?: number }
-export interface Member { bungieNetUserInfo?: UserInfo; joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
+export interface Member { listSource?: 'friend'; isFriend?: boolean; profileUnavailable?: string; bungieNetUserInfo?: UserInfo; joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
 export interface Roster { name: string; members: Member[]; emblem?: import('./clanBanner').ClanEmblemData; emblemChecked?: boolean }
 export interface Character { characterId?: string; classType: number; light?: number; dateLastPlayed?: string; minutesPlayedTotal?: string }
 export interface Profile {
