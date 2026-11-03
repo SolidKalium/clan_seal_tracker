@@ -17,7 +17,6 @@ tbody th.player-column{padding:0 12px}.guardian-row{display:flex;align-items:cen
 
 .guardian-details .primary-platform{background:#edf3e6;margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:4px}.primary-platform .objective-name,.primary-platform .platform-name{font-weight:700;color:#23452f}.primary-platform-label{display:inline-block;margin-left:7px;font-size:8px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:#74866a}
 
-.table-scroll thead tr:first-child th:first-child{border-top-left-radius:5px}.table-scroll thead tr:first-child th:last-child{border-top-right-radius:5px}.table-scroll tbody tr:last-child th:first-child{border-bottom-left-radius:5px}.table-scroll tbody tr:last-child td:last-child{border-bottom-right-radius:5px}
 
 .clan-member-info{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:11px;margin:10px 0 14px}.clan-rank{font-weight:600;color:#536d49}.clan-joined{color:#87917f;font-size:10px}
 
@@ -175,3 +174,14 @@ tbody tr:hover>td.commendation-section,tbody tr:focus-within>td.commendation-sec
 .pattern-label{display:block;margin-top:3px;font-size:9px;font-weight:400;opacity:.75}.pattern-status{font-size:12px;line-height:1.6;margin:0 0 12px;color:#526e62}
 .sync-history{font-size:12px;line-height:1.5}.sync-history p{margin:8px 0}.sync-history strong{font-weight:600}
 .sync-history h4{font-size:11px;color:var(--muted);margin:12px 0 6px}.sync-detail-line{display:block;padding-left:12px}
+
+/* A non-scrolling frame clips the table, border, and sticky cells together. */
+.table-frame{border-radius:6px;overflow:hidden}
+.table-scroll{border-radius:0}
+.table-scroll .progress-column{border-right:1px solid #c2cfba}
+
+/* The table's own edge is exposed during native rubber-band overscroll. */
+.table-scroll thead tr:first-child th:first-child{border-top-left-radius:5px}
+.table-scroll thead tr:first-child th:last-child{border-top-right-radius:5px}
+.table-scroll tbody tr:last-child th:first-child{border-bottom-left-radius:5px}
+.table-scroll tbody tr:last-child td:last-child{border-bottom-right-radius:5px}

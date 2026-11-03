@@ -1774,3 +1774,45 @@ test('hidden members route shows tenure, linked platforms, ownership, and CSV ex
   await page.goto('#/members'); await ready(page);
   await expect(page.getByRole('heading', { name: 'Test Clan members', exact: true })).toBeVisible();
 });
+
+test('members sticky header rows stay aligned and the name divider continues through the body', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/members'); await ready(page);
+  const scroll = page.locator('.members-scroll');
+  await expect(scroll).toHaveCSS('border-top-left-radius', '6px');
+  await expect(page.locator('.members-table')).toHaveCSS('border-top-left-radius', '6px');
+  await expect(page.locator('.members-table thead th').first()).toHaveCSS('border-top-left-radius', '5px');
+  await scroll.evaluate(element => { element.style.maxHeight = '150px'; });
+  const borders = await page.locator('.members-table .player-column').evaluateAll(cells => cells.map(cell => getComputedStyle(cell).borderRightWidth));
+  expect(borders.every(width => width === '2px')).toBe(true);
+  for (const top of [0, 4, 12, 40]) {
+    await scroll.evaluate((element, top) => { element.scrollTop = top; }, top);
+    const gap = await scroll.evaluate(element => {
+      const group = element.querySelector('.category-header-row th[scope="colgroup"]')!.getBoundingClientRect();
+      const column = element.querySelector('.record-header-row th')!.getBoundingClientRect();
+      return column.top - group.bottom;
+    });
+    expect(Math.abs(gap)).toBeLessThanOrEqual(1);
+  }
+});
+
+test('seal summary columns have normal dividers and the table clips rounded corners', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const widths = await page.locator('.table-scroll .progress-column').evaluateAll(cells => cells.map(cell => getComputedStyle(cell).borderRightWidth));
+  expect(widths.every(width => width === '1px')).toBe(true);
+  await expect(page.locator('.table-frame')).toHaveCSS('border-top-left-radius', '6px');
+  await expect(page.locator('.table-frame')).toHaveCSS('overflow', 'hidden');
+  await expect(page.locator('.table-scroll table')).toHaveCSS('border-top-left-radius', '6px');
+  await expect(page.locator('.table-scroll thead th').first()).toHaveCSS('border-top-left-radius', '5px');
+  await expect(page.locator('.table-scroll')).toHaveCSS('overflow-x', 'auto');
+  for (const offset of [0, 30]) {
+    await page.locator('.table-scroll').evaluate((element, offset) => { element.scrollLeft = offset; element.scrollTop = offset; }, offset);
+    const cornerClipped = await page.locator('.table-frame').evaluate(frame => {
+      const rect = frame.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + .5, rect.top + .5);
+      return !hit || !frame.contains(hit);
+    });
+    expect(cornerClipped).toBe(true);
+  }
+});

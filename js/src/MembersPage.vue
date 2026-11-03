@@ -66,7 +66,7 @@ function exportCsv() {
     <button class="members-export" @click="exportCsv">Export CSV</button>
   </div>
   <div class="table-caption"><span>{{ rows.length }} members shown</span><span>✓ Owned · · Not listed as owned · — Unavailable</span></div>
-  <div class="table-scroll members-scroll" tabindex="0" aria-label="Scrollable clan members table">
+  <div class="table-frame"><div class="table-scroll members-scroll" tabindex="0" aria-label="Scrollable clan members table">
     <table class="members-table">
       <thead><tr class="category-header-row"><th rowspan="2" scope="col" class="player-column">Bungie name</th><th :colspan="platformColumns.length" scope="colgroup"><span class="category-title">Platforms</span></th><th colspan="7" scope="colgroup"><span class="category-title">Account &amp; clan</span></th><th v-for="group in groups" :key="group.name" :colspan="group.columns.length" scope="colgroup"><span class="category-title">{{ group.name }}</span></th></tr>
         <tr class="record-header-row"><th v-for="(type, index) in platformColumns" :key="type" scope="col" :class="{ 'group-end': index === platformColumns.length - 1 }">{{ platforms[type] }}</th><th scope="col">Primary save</th><th scope="col">Last platform</th><th scope="col">Clan rank</th><th scope="col">Joined clan</th><th scope="col">Last seen</th><th scope="col">Profile status</th><th scope="col" class="group-end">Profile fetched</th><th v-for="col in columns" :key="`${col.kind}:${col.id}`" scope="col" :class="{ 'group-end': col.groupEnd }">{{ col.name }}</th></tr>
@@ -78,10 +78,10 @@ function exportCsv() {
         <td v-for="col in columns" :key="`${col.kind}:${col.id}`" :class="{ 'member-owned': ownership(player, col.kind, col.id), 'group-end': col.groupEnd }" :aria-label="`${col.name}: ${ownership(player, col.kind, col.id) === undefined ? 'unavailable' : ownership(player, col.kind, col.id) ? 'owned' : 'not listed as owned'}`">{{ ownership(player, col.kind, col.id) === undefined ? '—' : ownership(player, col.kind, col.id) ? '✓' : '·' }}</td>
       </tr></tbody>
     </table>
-  </div>
+  </div></div>
   <p class="footnote">Ownership reflects the profile's platform and Bungie's reported entitlements. Private or stale profiles may retain older data. Missing ownership data is shown as unavailable.</p>
 </template>
 <style scoped>
-.members-scroll{--category-header-height:32px;--player-column-width:206px}.members-table th,.members-table td{border-right:1px solid #d3ddcc}.members-table .group-end,.members-table .category-header-row th{border-right:2px solid #b7c6af}.members-table .category-header-row .player-column{z-index:5}
+.members-scroll{border-radius:6px;--category-header-height:32px;--player-column-width:206px}.members-table th,.members-table td{border-right:1px solid #d3ddcc}.members-table .group-end,.members-table .player-column,.members-table .category-header-row th{border-right:2px solid #b7c6af}.members-table .category-header-row th{height:32px;padding:5px 12px}.members-table .category-header-row .player-column{z-index:5}
 .members-export{background:#edf1e8;border:1px solid var(--line);border-radius:5px;padding:10px 16px}.members-table{width:max-content;min-width:100%}.members-table th,.members-table td{padding:10px 14px;height:auto;min-width:110px}.members-table thead th{font-size:12px;max-width:160px;white-space:normal;text-align:center}.members-table .player-column{min-width:206px;text-align:left}.members-table tbody td{white-space:nowrap;font-size:12px}.members-table tbody th{font-weight:500}.members-table .member-owned{background:#e7efdc;color:#436335;text-align:center}.members-table tbody tr:hover td{box-shadow:inset 0 0 0 999px #294e3606}.member-error{display:block;max-width:240px;white-space:normal;color:#8b5547}.members-table a{text-decoration:none}.members-table a:hover{text-decoration:underline}
 </style>

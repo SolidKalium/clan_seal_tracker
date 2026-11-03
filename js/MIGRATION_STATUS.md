@@ -27,6 +27,7 @@ Deferred polish and interaction design; these are not for immediate implementati
   - [ ] Page right-edge overscroll still uses a uniform browser canvas color rather than matching header/content bands. Oversized header/page paint extensions did not fix it and were reverted after a jitter report. Favor stable native scrolling over more paint/compositor workarounds.
   - [ ] Consider making the table rubberband shift the opposite edge into its margin? Might not be possible.
   - [ ] Consider making the scrollbar for the other dimension track with the table rubberbanding overscroll content. Might not be possible.
+  - [ ] The corners might not behave well, especially on the /#/members table
 - [ ] Retest page overscroll jitter after updating Safari (see "Overscroll jitter investigation — 2026-11-01"). Sideways snapping follows back history in the tab; top snapping happens on any vertically scrollable page. If it persists, file with Apple using a plain 3000 px page with no stylesheet or script, opened in a fresh tab.
 - [ ] Shrink tooltips and review their information density. Keep them useful for quick inspection without obscuring large portions of the table.
   - [ ] Overall compactness can also be considered. For reference, the PHP version for Rivensbane seal and the current 27-member Anomaly clan fits with plenty of vertical margin and a small amount of horizontal margin on a full screen view. Someone might like more breathing room, but likely not at the cost of difficulty of use. So usability features like pinning some players or a compactness toggle could allow a view that is less compact.
@@ -59,6 +60,7 @@ Deferred polish and interaction design; these are not for immediate implementati
 - [ ] Check for data not made visible by this site
   - [ ] For instance, metrics
 - [ ] Review the TODOs and notes in the PHP files for any ideas not carried forward
+- [ ] If viewing lots of clans and players, should we do any automated cleanup of the db?
 
 ## Known quirks
 
