@@ -1,0 +1,56 @@
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
+import { expect, it } from 'vitest';
+import { compile, readJsonc } from '../scripts/compile-data.mjs';
+import { catalogCoverage } from '../src/catalogCoverage';
+import type { Definitions, PageConfig } from '../src/types';
+
+const snapshot = process.env.TRACKER_COVERAGE_SNAPSHOT ?? new URL('./fixtures/catalog-manifest.json.gz', import.meta.url);
+const defs: Definitions = JSON.parse(gunzipSync(readFileSync(snapshot)).toString('utf8'));
+const catalog = compile({ secret_key: 'coverage-test', group_id: 1 }, readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'pages.jsonc')).catalog;
+it(`represents every triumph, badge, and named seal in manifest ${defs.version}`, () => {
+  const report = catalogCoverage(defs, catalog);
+  for (const key of ['missingTriumphs', 'missingBadges', 'missingSeals', 'unavailable'] as const) {
+    expect(report[key], `${key} (${report[key].length}); first 50 entries:\n${JSON.stringify(report[key].slice(0, 50), null, 2)}`).toEqual([]);
+  }
+  expect(report.totals.triumphs).toBeGreaterThan(0);
+  expect(report.totals.badges).toBeGreaterThan(0);
+  expect(report.totals.seals).toBeGreaterThan(0);
+});
+
+const node = (hash: number, name: string, children: object, completionRecordHash = 0) => ({ hash, displayProperties: { name }, children, completionRecordHash });
+const tiny: Definitions = { version: 'test', language: 'en', nodes: {
+  '1': node(1, 'Triumphs', { records: [{ recordHash: 10 }] }),
+  '2': node(2, 'Titles', { presentationNodes: [{ presentationNodeHash: 3 }] }),
+  '3': node(3, 'A seal', { records: [{ recordHash: 10 }] }, 11),
+  '4': node(4, 'Badges', { presentationNodes: [{ presentationNodeHash: 5 }] }),
+  '5': node(5, 'A badge', { presentationNodes: [{ presentationNodeHash: 6 }] }),
+  '6': node(6, 'Titan', { collectibles: [{ collectibleHash: 20 }] }),
+}, records: {
+  '10': { hash: 10, scope: 0, displayProperties: { name: 'A triumph' } },
+  '11': { hash: 11, scope: 0, displayProperties: { name: 'A seal' }, titleInfo: { titlesByGender: { Male: 'A title' } } },
+}, objectives: {}, collectibles: { '20': { hash: 20, scope: 0, displayProperties: { name: 'A collectible' } } } };
+const roots = { triumphs: ['1', '2'], seals: ['2'], badges: ['4'] };
+const pages: PageConfig[] = [
+  { id: 'seal', name: 'A seal', category: 'Other seals', sealNodeHash: '3', records: {} },
+  { id: 'badge', name: 'A badge', category: 'Other badges', badgeNodeHash: '5', records: {} },
+];
+it('detects removed pages and newly introduced triumphs, with names and tree paths', () => {
+  const complete = catalogCoverage(tiny, pages, roots);
+  expect(complete.missingTriumphs).toEqual([]);
+  expect(complete.missingBadges).toEqual([]);
+  expect(complete.missingSeals).toEqual([]);
+  const removed = catalogCoverage(tiny, [], roots);
+  expect(removed.missingTriumphs).toMatchObject([{ hash: '10', name: 'A triumph', paths: ['Triumphs', 'Titles / A seal'] }]);
+  expect(removed.missingSeals).toMatchObject([{ hash: '3' }]);
+  expect(removed.missingBadges).toMatchObject([{ hash: '5' }]);
+  const added: Definitions = { ...tiny, nodes: { ...tiny.nodes, '1': node(1, 'Triumphs', { records: [{ recordHash: 10 }, { recordHash: 12 }] }) }, records: { ...tiny.records, '12': { hash: 12, scope: 0, displayProperties: { name: 'New triumph' } } } };
+  expect(catalogCoverage(added, pages, roots).missingTriumphs).toMatchObject([{ hash: '12', name: 'New triumph' }]);
+});
+it('requires usable rendered views rather than only configured node references', () => {
+  const incomplete = { ...tiny, collectibles: {} };
+  const result = catalogCoverage(incomplete, pages, roots);
+  expect(result.missingBadges).toMatchObject([{ hash: '5' }]);
+  expect(result.unavailable).toMatchObject([{ page: 'badge', mode: 'badge' }]);
+  expect(() => catalogCoverage(tiny, pages, { ...roots, triumphs: ['missing'] })).toThrow('Coverage root or child node is missing');
+});

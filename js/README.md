@@ -75,3 +75,15 @@ npx playwright install-deps chromium
 The second command may require root. Chromium is the automated target; real Safari remains a manual acceptance check. Live API access must also be checked separately, because mocked browser tests do not validate Bungie origin registration.
 
 `npm run build` writes an ignored static bundle to `js/dist/`, configured for `/js/`. `npm run preview` serves it locally on port 5173 when the dev server is stopped. No publication is performed.
+
+### Curated catalog coverage
+
+`npm --prefix js test` includes a strict manifest-coverage test. It builds the actual seal, badge, full-raid/dungeon, and triumph views and verifies that every record reachable through the current/legacy **Triumphs**, weapon patterns/catalysts, Guardian Ranks, and active/legacy seal trees is represented. Every badge under the Badges root and every named seal under the active/legacy title roots must also have a usable curated view. A configured node whose view fails to build does not count. Failures report missing hashes, names, and tree paths, or the unavailable page/mode.
+
+Lore books and the current Medals branch are siblings of Triumphs, not part of this assertion. Orphan/internal definitions outside these trees and unnamed/redacted titles are also outside its scope. Historical pages explicitly marked `unavailableReason` do not count toward coverage of records that remain in the manifest. There is no missing-record allowlist.
+
+- `npm --prefix js run test:coverage`: run against the pinned, compressed public-definition fixture (also included in the normal unit suite).
+- `npm --prefix js run test:coverage:live`: download the current English manifest and check it without changing the fixture. This detects content added after the pinned snapshot.
+- `npm --prefix js run update:coverage`: refresh the pinned fixture; review catalog coverage against it before committing.
+
+The generated `tests/fixtures/catalog-manifest.json.gz` contains only static definition fields needed to build and audit the views. It is independent of PHP's definition cache, contains no API key or player data, and is not loaded by the site. Refresh it when updating the manifest baseline; changes to curated pages are checked offline on every test run.

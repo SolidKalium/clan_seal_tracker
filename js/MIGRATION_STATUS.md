@@ -7,7 +7,6 @@
   - Potentially: the unimplemented (or maybe partially implemented) milestones page (might or might not require being logged in, at least for some info)
   - Potentially: other medals
   - Seasonal challenges might look different now. Certainly, the old seasons have been removed. Challenges might exist in a "non-season" way now
-- A test case to verify all triumphs, badges, and seals in the manifest's tree show up somewhere in the main json.
 
 **Members page:**
 - Might remain on a "hidden path" or require being logged in as someone in the clan (when that is supported), since it lists entitlements and similar things.
@@ -60,6 +59,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Is a hash (`/#/foo/bar) really the right approach instead of using normal paths?
 - [ ] Should seals with lower requirments than 100% of triumphs calculate differently or have a toggle for how that is handled?
 - [ ] Something to "pull forward" all columns that someone is missing. Might need to break the top-level table headers
+- [ ] How to handle the members page. It might remain on a "hidden path" or require being logged in as someone in the clan (when that is supported), since it lists entitlements and similar things.
 
 ## Known quirks
 

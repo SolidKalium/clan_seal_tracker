@@ -623,3 +623,9 @@ Moved the Moments/Monument page and all its historical editions from Other to Ot
 ## Lifetime — 2026-11-02
 
 Added Lifetime as the first page in Other. Use the complete current Lifetime presentation root (203 triumphs), with All lifetime, New Light, Titan, Hunter, Warlock, Social, Cooperative, and Competitive tabs. This includes the broader Social/Cooperative/Competitive content rather than only PHP’s New Light and class leaf lists. Column groups follow native record categories; character-scoped triumphs retain the existing best-whole-record policy.
+
+## Curated catalog coverage test — 2026-11-02
+
+Added a strict coverage audit using the actual page builder and the compiled public catalog. Check current and legacy Triumphs, patterns/catalysts, Guardian Ranks, seal requirements, every badge in the Badges root, and all named active/legacy seals. Missing entries and unusable views fail with hashes, names, and source paths. Tests also prove that deleting pages, adding a new unmapped triumph, or breaking a referenced badge causes a failure. No missing-record allowlist is used.
+
+Pin a compressed, minimal public-definition snapshot for deterministic offline unit tests, with independent commands to refresh it or audit Bungie's latest manifest without changing the fixture. The test does not depend on PHP caches or credentials. Lore and current Medals are separate sibling trees and remain outside the triumph coverage assertion; the initial broader audit found 1,104 lore records and 341 medals not represented. Orphan/internal records and unnamed titles are not curated public triumphs/seals. These scope distinctions are documented in README rather than silently treating everything in DestinyRecordDefinition as a triumph.
