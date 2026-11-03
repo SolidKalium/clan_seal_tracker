@@ -19,7 +19,10 @@ export class TrackerRepository {
   definitions(onCached: CachedCallback<Definitions>, force = false): Promise<LoadResult<Definitions>> {
     return this.once('definitions', async () => {
       const key = `definitions:${this.language}`;
-      const cached = await this.store.get<Definitions>(key);
+      const snapshot = await this.store.get<Definitions>(key);
+      const checked = await this.store.get<{ version: string }>(`${key}:checked`);
+      const cached = snapshot && checked?.value.version === snapshot.value.version && checked.fetchedAt > snapshot.fetchedAt
+        ? { ...snapshot, fetchedAt: checked.fetchedAt, lastAttemptAt: checked.fetchedAt } : snapshot;
       if (cached) onCached({ entry: cached, status: fresh(cached, 5 * MINUTE) ? 'cached' : 'stale' });
       if (!force && cached?.value.collectibles && cached.value.items && cached.value.perks && cached.value.otherDefinitionsVersion === 1 && fresh(cached, 5 * MINUTE)) return { entry: cached, status: 'cached' };
       try {
@@ -54,9 +57,11 @@ export class TrackerRepository {
           }]));
           value = { version: manifest.version, language: this.language, nodes, records, objectives, collectibles, items: compactItems, perks, guardianRanks, checklists, commendations, commendationNodes, otherDefinitionsVersion: 1 };
         }
-        // One complete snapshot, one atomic IndexedDB put. Never expose half a manifest.
+        // Unchanged definitions only need a small freshness marker, not another
+        // structured clone of the entire manifest into IndexedDB.
         const entry: Cached<Definitions> = { key, value, fetchedAt: Date.now(), lastAttemptAt: Date.now() };
-        await this.store.put(entry);
+        if (value === cached?.value) await this.store.put({ key: `${key}:checked`, value: { version: value.version }, fetchedAt: entry.fetchedAt });
+        else await this.store.put(entry);
         return { entry, status: 'fresh' };
       } catch (e) { return this.failed(cached, e); }
     });
@@ -105,7 +110,7 @@ export class TrackerRepository {
       } catch { return cached?.value; }
     });
   }
-  profile(member: Member, onCached: CachedCallback<Profile>, force = false): Promise<LoadResult<Profile>> {
+  profile(member: Member, onCached: CachedCallback<Profile>, force = false, retryFailures = false): Promise<LoadResult<Profile>> {
     const user = member.destinyUserInfo;
     const identity = `${user.membershipType}_${user.membershipId}`;
     return this.once(`profile:${identity}`, async () => {
@@ -113,7 +118,7 @@ export class TrackerRepository {
       if (cached) onCached({ entry: cached, status: cached.private ? 'private' : profileFresh(cached, member) ? 'cached' : 'stale', error: cached.error });
       if (!force && profileFresh(cached, member)) return { entry: cached, status: 'cached' };
       // Avoid repeatedly refetching private/error profiles on every page navigation.
-      if (!force && cached?.lastAttemptAt && (cached.private || cached.error) && Date.now() - cached.lastAttemptAt < MINUTE) return { entry: cached, status: cached.private ? 'private' : 'stale', error: cached.error };
+      if (!force && !retryFailures && cached?.lastAttemptAt && (cached.private || cached.error) && Date.now() - cached.lastAttemptAt < MINUTE) return { entry: cached, status: cached.private ? 'private' : 'stale', error: cached.error };
       try {
         let primary: UserInfo = user;
         if (user.crossSaveOverride && user.crossSaveOverride !== user.membershipType) {

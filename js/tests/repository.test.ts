@@ -34,11 +34,49 @@ it('deduplicates concurrent profile refreshes', async () => {
   await Promise.all([repository.profile(member, noop, true), repository.profile(member, noop, true)]);
   expect(t.api).toHaveBeenCalledTimes(1);
 });
+
+it('manual sync reuses inactive profiles, refreshes changed activity, and retries private or failed profiles', async () => {
+  const key = 'profile:3_4611686018485645582';
+  const inactive = { ...member, isOnline: false, lastOnlineStatusChange: '1' };
+  const cached = { key, value: good, fetchedAt: Date.now(), components: [100, 104, 202, 800, 900, 1200, 1400], lastAttemptAt: Date.now() };
+  await store.put(cached);
+  const t = transport(good), repo = new TrackerRepository(store, t, '1');
+  expect((await repo.profile(inactive, noop, false, true)).status).toBe('cached');
+  expect(t.api).not.toHaveBeenCalled();
+  await repo.profile({ ...inactive, lastOnlineStatusChange: String((Date.now() + 1000) / 1000) }, noop, false, true);
+  expect(t.api).toHaveBeenCalledTimes(1);
+  for (const failure of [{ private: true }, { error: 'offline' }]) {
+    await store.put({ ...cached, ...failure });
+    await repo.profile(inactive, noop, false, true);
+  }
+  expect(t.api).toHaveBeenCalledTimes(3);
+  await repo.profile(inactive, noop, true);
+  expect(t.api).toHaveBeenCalledTimes(4);
+});
 it('does not replace a complete manifest with a partial download', async () => {
   await store.put({ key: 'definitions:en', value: snapshot, fetchedAt: 123 });
   const t = transport({ version: 'new', jsonWorldComponentContentPaths: { en: { DestinyPresentationNodeDefinition: '/common/destiny2_content/nodes.json', DestinyRecordDefinition: '/common/destiny2_content/records.json', DestinyObjectiveDefinition: '/common/destiny2_content/objectives.json' } } });
   const result = await new TrackerRepository(store, t, '1').definitions(noop, true);
   expect(result.status).toBe('stale'); expect((await store.get<Definitions>('definitions:en'))?.value.version).toBe('old');
+});
+
+it('checks unchanged manifest versions without downloading or rewriting the snapshot', async () => {
+  const value: Definitions = { ...snapshot, collectibles: {}, items: {}, perks: {}, otherDefinitionsVersion: 1 };
+  await store.put({ key: 'definitions:en', value, fetchedAt: 123 });
+  const writes = vi.spyOn(store, 'put');
+  const t = transport({ version: 'old' });
+  const repo = new TrackerRepository(store, t, '1');
+  const result = await repo.definitions(noop, true);
+  expect(result.entry?.value).toBe(value);
+  expect(t.resource).not.toHaveBeenCalled();
+  expect(writes.mock.calls.map(([entry]) => entry.key)).toEqual(['definitions:en:checked']);
+  const reopened = new CacheStore(store.db.name);
+  try {
+    const cached = await new TrackerRepository(reopened, t, '1').definitions(noop);
+    expect(cached.status).toBe('cached');
+    expect(t.api).toHaveBeenCalledTimes(1);
+    expect(cached.entry?.fetchedAt).toBe(result.entry?.fetchedAt);
+  } finally { reopened.db.close(); }
 });
 it('persists across store instances and clears API cache without deleting preferences', async () => {
   await store.setPreference('table', { sort: 'name' }); await store.put({ key: 'x', value: 42, fetchedAt: 123 });

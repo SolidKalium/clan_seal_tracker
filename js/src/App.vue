@@ -32,6 +32,8 @@ const players = shallowRef<Record<string, PlayerData>>({});
 const busy = ref(true), phase = ref('Starting tracker…'), issues = ref<string[]>([]), storageWarning = ref('');
 const rosterState = ref(''), definitionsState = ref('');
 const profileSyncActive = ref(false), profileSyncDone = ref(0), profileSyncTotal = ref(0);
+const manifestCheckedAt = ref<number>(), clanCheckedAt = ref<number>();
+const lastProfilePass = ref<{ completedAt: number; loaded: number; reused: number; private: number; unavailable: number }>();
 const hash = ref(window.location.hash);
 const search = ref(''), filter = ref('all'), sort = ref('progress');
 const badgeClass = ref('best');
@@ -289,10 +291,17 @@ const age = (time?: number) => {
 };
 const statusLabel = (p: PlayerData) => p.status === 'private' && p.profile?.profileRecords?.data ? 'Private · older data' : p.status === 'private' ? 'Private' : p.status === 'unavailable' ? 'Unavailable' : p.status === 'loading' ? 'Loading' : p.status === 'stale' ? 'Stale' : 'Up to date';
 function applyProfile(member: PlayerData['member'], result: LoadResult<Profile>) {
+  const previous = players.value[memberKey(member)];
+  if (previous && JSON.stringify(previous.member) === JSON.stringify(member) && previous.profile === result.entry?.value && (previous.status === result.status || result.status === 'cached' && previous.status === 'fresh') && previous.fetchedAt === result.entry?.fetchedAt && previous.error === result.error) return;
   players.value = { ...players.value, [memberKey(member)]: { member, profile: result.entry?.value, status: result.status, fetchedAt: result.entry?.fetchedAt, error: result.error } };
   storageWarning.value = store.warning;
 }
 async function hydrate(rosterValue: Roster) {
+  const current = Object.values(players.value);
+  if (current.length === rosterValue.members.length && rosterValue.members.every(member => {
+    const old = players.value[memberKey(member)];
+    return old && JSON.stringify(old.member) === JSON.stringify(member);
+  })) return;
   const next: Record<string, PlayerData> = {};
   await Promise.all(rosterValue.members.map(async member => {
     const old = players.value[memberKey(member)];
@@ -301,12 +310,13 @@ async function hydrate(rosterValue: Roster) {
   }));
   players.value = next;
 }
+let rosterHydration: Promise<void> = Promise.resolve();
 function acceptDefinitions(result: LoadResult<Definitions>) {
-  if (result.entry) definitions.value = result.entry.value;
+  if (result.entry) { definitions.value = result.entry.value; manifestCheckedAt.value = result.entry.fetchedAt; }
   definitionsState.value = result.status;
 }
 function acceptRoster(result: LoadResult<Roster>) {
-  if (result.entry) { roster.value = result.entry.value; void hydrate(result.entry.value); }
+  if (result.entry) { roster.value = result.entry.value; clanCheckedAt.value = result.entry.fetchedAt; rosterHydration = hydrate(result.entry.value); }
   rosterState.value = result.status;
 }
 async function load(force = false) {
@@ -315,17 +325,29 @@ async function load(force = false) {
   try {
     const [d, r] = await Promise.all([repository.definitions(acceptDefinitions, force), repository.roster(acceptRoster, force)]);
     acceptDefinitions(d);
-    if (r.entry) { roster.value = r.entry.value; await hydrate(r.entry.value); }
+    await rosterHydration;
+    if (r.entry) { roster.value = r.entry.value; clanCheckedAt.value = r.entry.fetchedAt; await hydrate(r.entry.value); }
     rosterState.value = r.status;
     issues.value = [d.error, r.error].filter((v): v is string => !!v);
     if (r.entry) {
       phase.value = 'Checking profiles…';
       profileSyncTotal.value = r.entry.value.members.length; profileSyncDone.value = 0; profileSyncActive.value = true;
+      const pass = { completedAt: 0, loaded: 0, reused: 0, private: 0, unavailable: 0 };
       await eachLimited(r.entry.value.members, async member => {
-        const result = await repository.profile(member, cached => applyProfile(member, cached), force);
+        const result = await repository.profile(member, cached => applyProfile(member, cached), false, force);
+        if (result.status === 'fresh') pass.loaded++;
+        else if (result.status === 'cached') pass.reused++;
+        else if (result.status === 'private') pass.private++;
+        else pass.unavailable++;
         applyProfile(member, result);
         profileSyncDone.value++;
       });
+      pass.completedAt = Date.now();
+      // Keep the last network pass when a reload only reuses the cache.
+      if (force || pass.loaded || pass.private || pass.unavailable || !lastProfilePass.value) {
+        lastProfilePass.value = pass;
+        await store.setPreference('lastProfilePass:v2', pass);
+      }
     }
     phase.value = 'Ready';
   } catch {
@@ -338,6 +360,8 @@ async function clearCache() {
   busy.value = true; phase.value = 'Clearing API cache…';
   try {
     await store.clearCache();
+    lastProfilePass.value = undefined; manifestCheckedAt.value = undefined; clanCheckedAt.value = undefined;
+    await store.setPreference('lastProfilePass:v2', null);
     definitions.value = undefined; roster.value = undefined; players.value = {}; detail.value = undefined;
   } finally { busy.value = false; }
   await load();
@@ -359,6 +383,7 @@ onMounted(async () => {
   window.addEventListener('scroll', closeTooltip);
   try {
     const preferences = await store.preference('table', { search: '', filter: 'all', sort: 'progress' });
+    lastProfilePass.value = await store.preference('lastProfilePass:v2', undefined);
     sidebarCollapsed.value = await store.preference('sidebarCollapsed', false) === true;
     search.value = typeof preferences.search === 'string' ? preferences.search : '';
     filter.value = ['all', 'complete', 'incomplete', 'unavailable'].includes(preferences.filter) ? preferences.filter : 'all';
@@ -374,7 +399,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
     <div class="header-status">
       <section class="sync-strip" :class="{ 'sync-busy': busy }" role="status" aria-live="polite">
 
-        <div class="status-copy"><div class="status-primary"><button class="sync-indicator" :class="[`sync-${syncColor}`, { 'is-updating': busy }]" aria-label="Record sync status" :aria-describedby="tooltip?.kind === 'sync' ? 'record-tooltip' : undefined" @mouseenter="openTooltip($event, { kind: 'sync' })" @mouseleave="closeTooltip" @focus="openTooltip($event, { kind: 'sync' })" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="status-dot" aria-hidden="true"></span></button><span class="status-heading">{{ busy ? 'Syncing records' : issues.length || failedCount ? 'Sync incomplete' : 'Records synced' }}</span></div><span class="status-counts"><template v-if="busy">{{ phase }}<span v-if="profileSyncActive"> · {{ profileSyncDone }} / {{ profileSyncTotal }} done</span></template><template v-else>{{ resolved }} / {{ roster?.members.length ?? '—' }} profiles<span v-if="staleCount"> · {{ staleCount }} stale / private</span><span v-if="failedCount"> · {{ failedCount }} unavailable</span></template></span></div>
+        <div class="status-copy"><div class="status-primary" @mouseenter="openTooltip($event, { kind: 'sync' })" @mouseleave="closeTooltip"><button class="sync-indicator" :class="[`sync-${syncColor}`, { 'is-updating': busy }]" aria-label="Record sync status" :aria-describedby="tooltip?.kind === 'sync' ? 'record-tooltip' : undefined" @focus="openTooltip($event, { kind: 'sync' })" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="status-dot" aria-hidden="true"></span></button><span class="status-heading">{{ busy ? 'Syncing records' : issues.length || failedCount ? 'Sync incomplete' : 'Records synced' }}</span></div><span class="status-counts"><template v-if="busy">{{ phase }}<span v-if="profileSyncActive"> · {{ profileSyncDone }} / {{ profileSyncTotal }} done</span></template><template v-else>{{ resolved }} / {{ roster?.members.length ?? '—' }} profiles<span v-if="staleCount"> · {{ staleCount }} stale / private</span><span v-if="failedCount"> · {{ failedCount }} unavailable</span></template></span></div>
       </section>
       <button class="refresh" :disabled="busy" :aria-label="busy ? 'Updating…' : 'Refresh data'" title="Refresh data" @click="load(true)"><span aria-hidden="true">↻</span><span class="refresh-label">{{ busy ? 'Updating…' : 'Refresh data' }}</span></button>
     </div>
@@ -478,7 +503,17 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
       </template>
       <template v-else-if="!isHome"><section :class="currentPage ? 'view-unavailable' : 'empty-state'" :role="currentPage ? 'status' : undefined"><h1 v-if="!currentPage">{{ definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions ? busy ? 'Loading definitions…' : 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section></template>
       <Teleport to="body">
-        <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><RecordDetails v-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><ul class="sync-legend"><li v-for="status in syncLegend" :key="status.color" :class="[`sync-${status.color}`, { current: syncColor === status.color }]"><span class="status-dot" aria-hidden="true"></span><div><span class="sync-legend-label">{{ status.label }}</span><p>{{ status.description }}</p></div></li></ul></div></div>
+        <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><RecordDetails v-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><div class="sync-history">
+          <h4>Latest checks</h4>
+          <p>Game definitions: <strong>{{ manifestCheckedAt ? age(manifestCheckedAt) : 'not yet checked' }}</strong></p>
+          <p>Clan roster: <strong>{{ clanCheckedAt ? age(clanCheckedAt) : 'not yet checked' }}</strong><span v-if="roster && clanCheckedAt" class="sync-detail-line">{{ roster.members.filter(member => member.isOnline).length }} members online</span></p>
+          <p v-if="lastProfilePass">Profiles: <strong>{{ age(lastProfilePass.completedAt) }}</strong>
+            <span class="sync-detail-line">{{ lastProfilePass.loaded }} {{ lastProfilePass.loaded === 1 ? 'profile' : 'profiles' }} refreshed</span>
+            <span class="sync-detail-line">{{ lastProfilePass.reused }} {{ lastProfilePass.reused === 1 ? 'profile' : 'profiles' }} already up to date</span>
+            <span class="sync-detail-line">{{ lastProfilePass.private }} {{ lastProfilePass.private === 1 ? 'profile is' : 'profiles are' }} private</span>
+            <span v-if="lastProfilePass.unavailable" class="sync-detail-line">{{ lastProfilePass.unavailable }} {{ lastProfilePass.unavailable === 1 ? 'profile check' : 'profile checks' }} failed</span>
+          </p>
+        </div><ul class="sync-legend"><li v-for="status in syncLegend" :key="status.color" :class="[`sync-${status.color}`, { current: syncColor === status.color }]"><span class="status-dot" aria-hidden="true"></span><div><span class="sync-legend-label">{{ status.label }}</span><p>{{ status.description }}</p></div></li></ul></div></div>
       </Teleport>
       <footer><span>CLAN SEAL TRACKER <span class="muted">/ JavaScript MVP</span></span><span>Public Bungie data · cached locally · not affiliated with Bungie</span></footer>
     </main>

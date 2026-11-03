@@ -8,7 +8,7 @@ const records = { '99': record(99, 'Seal', { titleInfo: { titlesByGender: { Male
 const objectives = { '103': { hash: 103, completionValue: 10, progressDescription: 'Final encounter' }, '101': { hash: 101, completionValue: 10, progressDescription: 'Encounters' }, '102': { hash: 102, completionValue: 1, progressDescription: 'Challenge' } };
 const members = ['Ada', 'Banshee', 'Crow'].map((name, i) => ({ destinyUserInfo: { membershipType: 3, membershipId: `461168601848564558${i}`, displayName: name, bungieGlobalDisplayName: name }, isOnline: false, lastOnlineStatusChange: '1', joinDate: ['2020-06-01T12:00:00Z', '2022-06-01T12:00:00Z', '2018-06-01T12:00:00Z'][i], memberType: [5, 3, 2][i] }));
 const envelope = (Response: unknown) => ({ ErrorCode: 1, ErrorStatus: 'Success', ThrottleSeconds: 0, Response });
-async function setup(page: Page, state: { offline: boolean; calls: number; originError?: boolean; delay?: number; profileGate?: Promise<void>; extended?: boolean; other?: boolean }) {
+async function setup(page: Page, state: { offline: boolean; calls: number; originError?: boolean; delay?: number; profileGate?: Promise<void>; extended?: boolean; other?: boolean; activeMembers?: boolean }) {
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://www.bungie.net/**', async route => {
     const path = new URL(route.request().url()).pathname;
@@ -28,7 +28,7 @@ async function setup(page: Page, state: { offline: boolean; calls: number; origi
     if (path === root + 'perks.json') return route.fulfill({ json: { '401': { displayProperties: { name: 'Mod perk', description: 'Improves the augment.' } } } });
     if (path === root + 'collectibles.json') return route.fulfill({ json: { '201': { hash: 201, scope: 0, itemHash: 301, sourceString: 'Source: Last Wish Raid', displayProperties: { name: 'Raid weapon' } }, '202': { hash: 202, scope: 1, itemHash: 302, displayProperties: { name: 'Titan helmet' } }, '203': { hash: 203, scope: 1, itemHash: 302, displayProperties: { name: 'Hunter helmet' } } } });
     if (path === root + 'objectives.json') return route.fulfill({ json: objectives });
-    if (path.includes('/Members/')) return route.fulfill({ json: envelope({ results: members, hasMore: false }) });
+    if (path.includes('/Members/')) return route.fulfill({ json: envelope({ results: state.activeMembers ? members.map(member => ({ ...member, lastOnlineStatusChange: String((Date.now() + 1000) / 1000) })) : members, hasMore: false }) });
     if (/\/GroupV2\/\d+\/$/.test(path)) return route.fulfill({ json: envelope({ detail: { name: 'Test Clan' } }) });
     if (path.includes('/User/GetMembershipsById/')) return route.fulfill({ json: envelope({ destinyMemberships: [
       { membershipType: 2, membershipId: 'linked-psn', displayName: 'PSN Guardian' },
@@ -82,7 +82,7 @@ test('clan overview, seal table, filters, sort, details, and persisted preferenc
   expect(errors).toEqual([]);
 });
 
-test('warm reload needs no network, and failed refresh retains rows with stale labels', async ({ page }) => {
+test('warm reload needs no network, and failed roster refresh retains fresh inactive profiles', async ({ page }) => {
   const state = { offline: false, calls: 0 }; await setup(page, state);
   await page.goto('#/seal/last_wish'); await ready(page);
   const calls = state.calls;
@@ -93,7 +93,7 @@ test('warm reload needs no network, and failed refresh retains rows with stale l
   await expect(page.locator('tbody tr')).toHaveCount(3);
   await expect(page.locator('.notice')).toContainText('Cannot reach Bungie');
   await page.getByRole('button', { name: 'Guardian details: Banshee', exact: true }).hover();
-  await expect(page.getByRole('tooltip')).toContainText('Stale');
+  await expect(page.getByRole('tooltip')).toContainText('Up to date');
 });
 
 test('clear cache preserves preferences but downloads fresh API data', async ({ page }) => {
@@ -291,11 +291,12 @@ test('page canvas stays neutral and sidebar backdrop reaches footer', async ({ p
 });
 
 test('refresh progress counts the current pass instead of already-cached profiles', async ({ page }) => {
-  const state: { offline: boolean; calls: number; profileGate?: Promise<void> } = { offline: false, calls: 0 };
+  const state: { offline: boolean; calls: number; profileGate?: Promise<void>; activeMembers?: boolean } = { offline: false, calls: 0 };
   await setup(page, state); await page.goto('#/seal/last_wish'); await ready(page);
   await expect(page.locator('.status-counts')).toContainText('3 / 3 profiles');
   let finish!: () => void;
   state.profileGate = new Promise<void>(resolve => { finish = resolve; });
+  state.activeMembers = true;
   await page.getByRole('button', { name: 'Refresh data', exact: true }).click();
   await expect(page.locator('.status-counts')).toHaveText('Checking profiles… · 0 / 3 done');
   await expect(page.locator('tbody tr')).toHaveCount(3);
@@ -1640,7 +1641,8 @@ test('Lifetime is first in Other and exposes the current section tabs with neste
 });
 
 test('unreadable profile diagnostics are logged and persist after retry and reload', async ({ page }) => {
-  await setup(page, { offline: false, calls: 0 });
+  const state = { offline: false, calls: 0, activeMembers: false };
+  await setup(page, state);
   let fail = false;
   const warnings: string[] = [];
   page.on('console', message => { if (message.type() === 'warning') warnings.push(message.text()); });
@@ -1663,6 +1665,7 @@ test('unreadable profile diagnostics are logged and persist after retry and relo
   }));
   await page.goto('#/seal/last_wish'); await ready(page);
   fail = true;
+  state.activeMembers = true;
   await page.getByRole('button', { name: 'Refresh data', exact: true }).click(); await ready(page);
   const failed = await diagnostics();
   expect(failed.error).toBe('Bungie returned an unreadable response.');
@@ -1677,4 +1680,23 @@ test('unreadable profile diagnostics are logged and persist after retry and relo
   expect(recovered.history).toHaveLength(1);
   await page.reload(); await ready(page);
   expect((await diagnostics()).history).toHaveLength(1);
+});
+
+test('status text and pip share check times and the previous profile pass summary', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await page.locator('.status-heading').hover();
+  const tip = page.getByRole('tooltip');
+  await expect(tip).toContainText('Game definitions: just now');
+  await expect(tip).toContainText('Clan roster: just now');
+  await expect(tip).toContainText('0 members online');
+  await expect(tip).toContainText('2 profiles refreshed');
+  await expect(tip).toContainText('0 profiles already up to date');
+  await expect(tip).toContainText('1 profile is private');
+  await page.getByRole('button', { name: 'Refresh data', exact: true }).click(); await ready(page);
+  await page.getByRole('button', { name: 'Record sync status', exact: true }).focus();
+  await expect(tip).toContainText('0 profiles refreshed');
+  await expect(tip).toContainText('2 profiles already up to date');
+  await expect(tip).toContainText('1 profile is private');
+  await expect(tip).toContainText('Sync status');
 });

@@ -23,8 +23,8 @@
 - CSS
 - Tree shake
 - Check resource usage and for any hot points
-  - Page has been freezing up during automated dev work recently, to the point Chrome calls it unresponsive, even twice back to back. That's a potential sign that calcualtion dependencies are excessive, but it could just be based on the json updating and forcing everything cached to be evicted in case it actually changed; in that case, trying to cache parts of the json to limit dev refreshed might be excessive for the final build, unless it can be easily optimized out for that and is simple to implement. This happened even when the database storage for error requests was being added.
-    - JSON config is no longer written automatically when it isn't changed
+  - Page responsiveness can be lower than ideal. For instance the "All lifetime" tab takes maybe 0.3-0.6s to load. It is about 200 columns wide. It's responsive once loaded.
+  - During a refresh, the app can stop responding for a couple seconds. Updates have made this much less common because it now avoids unnecessary work when the data hasn't changed.
 - For "Linear Fusion Rifle Aptitude" triumph on the lifetime page, is the [] text supposed to show an icon?
 
 ## Revisit list
