@@ -348,3 +348,12 @@ export interface Cell {
   detail: string;
   unowned: boolean;
 }
+
+/** Totals from the most recent completed profile refresh. */
+export interface ProfilePass {
+  completedAt: number;
+  loaded: number;
+  reused: number;
+  private: number;
+  unavailable: number;
+}

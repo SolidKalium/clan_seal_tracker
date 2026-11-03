@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import FriendIcon from './FriendIcon.vue';
 import PlayerAffiliations from './PlayerAffiliations.vue';
-import {
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  shallowRef,
-  watch,
-} from 'vue';
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import { clanMembershipPlatform } from './members';
 import { FriendDirectory, type FriendClan } from './friends';
 import { PlayerLogin, type PlayerAccount } from './auth';
@@ -40,7 +32,10 @@ import CellConditions from './CellConditions.vue';
 import ClanEmblem from './ClanEmblem.vue';
 import GuardianDetails from './GuardianDetails.vue';
 import config from '../.generated/config.json';
-import catalogJson from '../.generated/catalog.json';
+import { catalog, catalogGroups } from './catalog';
+import { age } from './format';
+import SyncDetails from './SyncDetails.vue';
+import { useTooltip } from './useTooltip';
 import { BungieTransport } from './api';
 import { CacheStore } from './storage';
 import { eachLimited, TrackerRepository } from './repository';
@@ -54,7 +49,7 @@ import {
   formatClasses,
   sealAwarded,
 } from './domain';
-import type { PageMode, BadgeOwnership } from './domain';
+import type { PageMode } from './domain';
 import { profileFresh } from './policy';
 import { combinePlayers, friendMembers, type PlayerList } from './playerLists';
 import { collapseCrossSaveMembers, compareClanTenure } from './clan';
@@ -66,12 +61,11 @@ import type {
   PageConfig,
   PlayerData,
   Profile,
+  ProfilePass,
   Roster,
   UserInfo,
-  Seal,
 } from './types';
 
-const catalog = catalogJson as PageConfig[];
 const store = new CacheStore();
 const transport = new BungieTransport(config.apiKey, (diagnostic) =>
   store.recordDiagnostic(diagnostic),
@@ -136,13 +130,7 @@ const profileSyncActive = ref(false),
   profileSyncTotal = ref(0);
 const manifestCheckedAt = ref<number>(),
   clanCheckedAt = ref<number>();
-const lastProfilePass = ref<{
-  completedAt: number;
-  loaded: number;
-  reused: number;
-  private: number;
-  unavailable: number;
-}>();
+const lastProfilePass = ref<ProfilePass>();
 const locationHash = () =>
   window.location.hash ||
   (/\/members\/?$/.test(window.location.pathname) ? '#/members' : '');
@@ -160,51 +148,22 @@ const badgeClasses = computed(
 const preferencesReady = ref(false);
 const sidebarCollapsed = ref(false);
 const detail = shallowRef<{ player: string; heading: Heading; cell: Cell }>();
-type TooltipContent =
-  | { kind: 'characters'; player?: PlayerData; groupKey: string }
-  | {
-      kind: 'record';
-      player?: string;
-      heading: Heading;
-      cell?: Cell;
-      groupKey?: string;
-      objectiveHash?: string;
-    }
-  | {
-      kind: 'guardian';
-      guardian: PlayerData;
-      earnedTitle?: string;
-      earnedBadge?: BadgeOwnership & { name: string };
-      memberships?: UserInfo[];
-      loading: boolean;
-      error?: string;
-    }
-  | {
-      kind: 'summary';
-      seal: Seal;
-      label: string;
-      player?: string;
-      counts?: CompletionCounts;
-      badge: boolean;
-      broader: boolean;
-    }
-  | { kind: 'sync' }
-  | { kind: 'note'; text: string };
-const tooltip = shallowRef<
-  TooltipContent & {
-    id: number;
-    anchor: DOMRect;
-    style: Record<string, string>;
-  }
->();
-const tooltipElement = ref<HTMLElement>();
+const {
+  tooltip,
+  tooltipElement,
+  closeTooltip,
+  positionTooltip,
+  openTooltip,
+  showCharacterTooltip,
+  showTooltip,
+  leaveRecordTooltip,
+} = useTooltip();
 const groupHeader = ref<HTMLElement>();
 const topbar = ref<HTMLElement>();
 let topbarObserver: ResizeObserver | undefined;
 const groupHeaderHeight = ref(64);
 const playerColumnWidth = ref(206);
 let headerObserver: ResizeObserver | undefined;
-let tooltipSerial = 0;
 function headingIdentifiers(heading: Heading) {
   return {
     ...(heading.checklist
@@ -264,134 +223,6 @@ const tableColumns = computed(
       0,
     ) ?? 0),
 );
-function closeTooltip() {
-  tooltip.value = undefined;
-}
-async function positionTooltip(id: number) {
-  await nextTick();
-  const tip = tooltip.value;
-  if (!tip || tip.id !== id || !tooltipElement.value) return;
-  const rect = tip.anchor;
-  const bounds = tooltipElement.value.getBoundingClientRect();
-  const left = Math.max(
-    10,
-    Math.min(
-      tip.kind === 'note' && rect.width === 0
-        ? rect.left + 12
-        : rect.left + rect.width / 2 - bounds.width / 2,
-      window.innerWidth - bounds.width - 10,
-    ),
-  );
-  const top =
-    rect.bottom + bounds.height + 12 < window.innerHeight
-      ? rect.bottom + 8
-      : Math.max(10, rect.top - bounds.height - 8);
-  tooltip.value = {
-    ...tip,
-    style: { left: `${left}px`, top: `${top}px`, visibility: 'visible' },
-  };
-}
-async function openTooltip(event: Event, content: TooltipContent) {
-  const id = ++tooltipSerial;
-  const anchor =
-    content.kind === 'note' && event instanceof MouseEvent
-      ? new DOMRect(event.clientX, event.clientY, 0, 0)
-      : (event.currentTarget as HTMLElement).getBoundingClientRect();
-  tooltip.value = {
-    ...content,
-    id,
-    anchor,
-    style: { left: '0px', top: '0px', visibility: 'hidden' },
-  };
-  await positionTooltip(id);
-  return id;
-}
-function showCharacterTooltip(event: Event, player?: PlayerData) {
-  const element = (event.currentTarget as HTMLElement).closest<HTMLElement>(
-    '[data-character-group]',
-  )!;
-  const groupKey = element.dataset.characterGroup!;
-  if (
-    tooltip.value?.kind === 'characters' &&
-    tooltip.value.groupKey === groupKey
-  )
-    return;
-  const parts = [
-    ...element
-      .closest('table')!
-      .querySelectorAll<HTMLElement>('[data-character-group]'),
-  ].filter((part) => part.dataset.characterGroup === groupKey);
-  const bounds = parts.map((part) => part.getBoundingClientRect());
-  const left = Math.min(...bounds.map((r) => r.left)),
-    top = Math.min(...bounds.map((r) => r.top));
-  const right = Math.max(...bounds.map((r) => r.right)),
-    bottom = Math.max(...bounds.map((r) => r.bottom));
-  const id = ++tooltipSerial;
-  tooltip.value = {
-    kind: 'characters',
-    player,
-    groupKey,
-    id,
-    anchor: new DOMRect(left, top, right - left, bottom - top),
-    style: { left: '0px', top: '0px', visibility: 'hidden' },
-  };
-  void positionTooltip(id);
-}
-function showTooltip(
-  event: Event,
-  heading: Heading,
-  cell?: Cell,
-  player?: string,
-  objectiveHash?: string,
-) {
-  const element = (event.currentTarget as HTMLElement).closest<HTMLElement>(
-    '[data-record-tooltip]',
-  );
-  const groupKey = element?.dataset.recordTooltip;
-  if (
-    groupKey &&
-    tooltip.value?.kind === 'record' &&
-    tooltip.value.groupKey === groupKey
-  ) {
-    tooltip.value = { ...tooltip.value, objectiveHash };
-    return;
-  }
-  const id = ++tooltipSerial;
-  const parts = groupKey
-    ? [
-        ...document.querySelectorAll<HTMLElement>('[data-record-tooltip]'),
-      ].filter((el) => el.dataset.recordTooltip === groupKey)
-    : [event.currentTarget as HTMLElement];
-  const bounds = parts.map((el) => el.getBoundingClientRect());
-  const left = Math.min(...bounds.map((r) => r.left)),
-    top = Math.min(...bounds.map((r) => r.top));
-  const right = Math.max(...bounds.map((r) => r.right)),
-    bottom = Math.max(...bounds.map((r) => r.bottom));
-  tooltip.value = {
-    kind: 'record',
-    heading,
-    cell,
-    player,
-    groupKey,
-    objectiveHash,
-    id,
-    anchor: new DOMRect(left, top, right - left, bottom - top),
-    style: { left: '0px', top: '0px', visibility: 'hidden' },
-  };
-  void positionTooltip(id);
-}
-function leaveRecordTooltip(event: MouseEvent | FocusEvent) {
-  const next =
-    event.relatedTarget instanceof Element
-      ? event.relatedTarget.closest<HTMLElement>('[data-record-tooltip]')
-      : undefined;
-  if (
-    tooltip.value?.kind === 'record' &&
-    next?.dataset.recordTooltip === tooltip.value.groupKey
-  )
-    return;
-  closeTooltip();
-}
 async function showGuardianTooltip(event: Event, guardian: PlayerData) {
   const earnedTitle =
     selected.value &&
@@ -502,65 +333,6 @@ const seals = computed(() =>
     ? catalog.map((page) => buildSeal(page, definitions.value!, 'seal'))
     : [],
 );
-const catalogGroups = [
-  { name: 'Raids', title: 'Raid seals', kind: 'Raid', category: 'Raid seals' },
-  {
-    name: 'Dungeons',
-    title: 'Dungeons',
-    kind: 'Dungeon',
-    category: 'Dungeons',
-  },
-  {
-    name: 'Exotic missions',
-    title: 'Exotic missions',
-    kind: 'Exotic mission',
-    category: 'Exotic missions',
-  },
-  {
-    name: 'Activities',
-    title: 'Activity seals',
-    kind: 'Activity',
-    category: 'Activities',
-  },
-  {
-    name: 'Expansions',
-    title: 'Expansion seals',
-    kind: 'Expansion',
-    category: 'Expansions',
-  },
-  {
-    name: 'Destinations',
-    title: 'Destinations',
-    kind: 'Destination',
-    category: 'Destinations',
-  },
-  { name: 'Events', title: 'Events', kind: 'Event', category: 'Events' },
-  {
-    name: 'Seasons & Episodes',
-    title: 'Seasons & Episodes',
-    kind: 'Release',
-    category: 'Seasons & Episodes',
-  },
-  {
-    name: 'Other badges',
-    title: 'Other badges',
-    kind: 'Badge',
-    category: 'Other badges',
-  },
-  {
-    name: 'Other seals',
-    title: 'Other seals',
-    kind: 'Seal',
-    category: 'Other seals',
-  },
-  { name: 'Other', title: 'Other', kind: 'Other', category: 'Other' },
-].map((group, index) => ({
-  ...group,
-  id: `sidebar-section-${index}`,
-  pages: catalog.filter(
-    (p) => p.category === group.category && !p.parentPageId,
-  ),
-}));
 const openSections = ref<string[]>([]);
 watch(
   () => catalog.find((p) => p.id === routeId.value)?.category,
@@ -809,24 +581,6 @@ const syncColor = computed(() =>
         ? 'amber'
         : 'green',
 );
-const syncLegend = [
-  {
-    color: 'green',
-    label: 'Records synced',
-    description: 'Available records are up to date.',
-  },
-  {
-    color: 'amber',
-    label: 'Updating or needs attention',
-    description:
-      'Records are updating, stale, private, or stored only for this session.',
-  },
-  {
-    color: 'red',
-    label: 'Some records unavailable',
-    description: 'A request failed. Check the error details or retry.',
-  },
-];
 
 const nameOf = (p: PlayerData) =>
   p.profile?.profile?.data?.userInfo.bungieGlobalDisplayName ||
@@ -974,17 +728,6 @@ const changedHash = () => {
   hash.value = locationHash();
   detail.value = undefined;
   closeTooltip();
-};
-const age = (time?: number) => {
-  if (!time) return 'Not cached';
-  const minutes = Math.max(0, Math.floor((Date.now() - time) / 60_000));
-  return minutes < 1
-    ? 'just now'
-    : minutes < 60
-      ? `${minutes}m ago`
-      : minutes < 1440
-        ? `${Math.floor(minutes / 60)}h ago`
-        : `${Math.floor(minutes / 1440)}d ago`;
 };
 const statusLabel = (p: PlayerData) =>
   p.status === 'private' && p.profile?.profileRecords?.data
@@ -2852,80 +2595,15 @@ onUnmounted(() => {
           <p v-else-if="tooltip.kind === 'note'" class="tooltip-note">
             {{ tooltip.text }}
           </p>
-          <div v-else class="record-details sync-details">
-            <h3>Sync status</h3>
-            <div class="sync-history">
-              <h4>Latest checks</h4>
-              <p>
-                Game definitions:
-                <strong>{{
-                  manifestCheckedAt ? age(manifestCheckedAt) : 'not yet checked'
-                }}</strong>
-              </p>
-              <p>
-                {{ playerList === 'friends' ? 'Friends list' : 'Clan roster' }}:
-                <strong>{{
-                  clanCheckedAt ? age(clanCheckedAt) : 'not yet checked'
-                }}</strong
-                ><span v-if="roster && clanCheckedAt" class="sync-detail-line"
-                  >{{
-                    roster.members.filter((member) => member.isOnline).length
-                  }}
-                  members online</span
-                >
-              </p>
-              <p v-if="lastProfilePass">
-                Profiles:
-                <strong>{{ age(lastProfilePass.completedAt) }}</strong>
-                <span class="sync-detail-line"
-                  >{{ lastProfilePass.loaded }}
-                  {{ lastProfilePass.loaded === 1 ? 'profile' : 'profiles' }}
-                  refreshed</span
-                >
-                <span class="sync-detail-line"
-                  >{{ lastProfilePass.reused }}
-                  {{ lastProfilePass.reused === 1 ? 'profile' : 'profiles' }}
-                  already up to date</span
-                >
-                <span class="sync-detail-line"
-                  >{{ lastProfilePass.private }}
-                  {{
-                    lastProfilePass.private === 1
-                      ? 'profile is'
-                      : 'profiles are'
-                  }}
-                  private</span
-                >
-                <span
-                  v-if="lastProfilePass.unavailable"
-                  class="sync-detail-line"
-                  >{{ lastProfilePass.unavailable }}
-                  {{
-                    lastProfilePass.unavailable === 1
-                      ? 'profile check'
-                      : 'profile checks'
-                  }}
-                  failed</span
-                >
-              </p>
-            </div>
-            <ul class="sync-legend">
-              <li
-                v-for="status in syncLegend"
-                :key="status.color"
-                :class="[
-                  `sync-${status.color}`,
-                  { current: syncColor === status.color },
-                ]"
-              >
-                <span class="status-dot" aria-hidden="true"></span>
-                <div>
-                  <span class="sync-legend-label">{{ status.label }}</span>
-                  <p>{{ status.description }}</p>
-                </div>
-              </li>
-            </ul>
-          </div>
+          <SyncDetails
+            v-else
+            :color="syncColor"
+            :player-list="playerList"
+            :roster="roster"
+            :manifest-checked-at="manifestCheckedAt"
+            :clan-checked-at="clanCheckedAt"
+            :last-profile-pass="lastProfilePass"
+          />
         </div>
       </Teleport>
       <footer>
