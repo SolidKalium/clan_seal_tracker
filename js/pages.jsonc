@@ -7,35 +7,33 @@
     "name": "Last Wish",
     "sealNodeHash": "1486062207",
     "badgeNodeHash": "1086048586",
-    "otherNodeHashes": [
-      "1525933460"
-    ],
+    "otherNodeHashes": ["1525933460"],
     "collectibles": {
       "426204227": {},
       "1244899887": {},
       "1616812058": {},
-      "2061705522": {}
+      "2061705522": {},
     },
     "records": {
       "342038729": {},
       "380332968": {
         "column_name": "Petra's Run",
-        "order": -1
+        "order": -1,
       },
       "623283604": {},
       "628370196": {
         "column_name": "Chests",
-        "order": -2
+        "order": -2,
       },
       "717856991": {
         "column_name": "Wishes",
-        "order": -4
+        "order": -4,
       },
       "950932825": {},
       "1029956969": {},
       "1359055399": {
         "column_name": "Raid banners",
-        "order": -3
+        "order": -3,
       },
       "2360742598": {},
       "2585307516": {},
@@ -43,7 +41,7 @@
       "2610512925": {},
       "2756328801": {
         "column_name": "Badge",
-        "order": 1
+        "order": 1,
       },
       "2826160801": {},
       "2906615623": {},
@@ -51,23 +49,21 @@
       "3363925957": {},
       "3448775736": {
         "column_name": "Raid",
-        "order": 2
+        "order": 2,
       },
       "4078980921": {
         "column_name": "Clan",
-        "order": 3
+        "order": 3,
       },
-      "4104745812": {}
-    }
+      "4104745812": {},
+    },
   },
   {
     "id": "garden_of_salvation",
     "name": "Garden of Salvation",
     "sealNodeHash": "1827854727",
     "badgeNodeHash": "223465203",
-    "otherNodeHashes": [
-      "615240848"
-    ],
+    "otherNodeHashes": ["615240848"],
     "collectibles": {
       "160781275": {},
       "911081605": {},
@@ -76,51 +72,49 @@
       "2076751138": {},
       "2081488768": {},
       "2276007528": {},
-      "3796544862": {}
+      "3796544862": {},
     },
     "records": {
       "277137394": {},
       "521675034": {
-        "column_name": "Divinity"
+        "column_name": "Divinity",
       },
       "1221037312": {
         "column_name": "Clan",
-        "order": 3
+        "order": 3,
       },
       "1522774125": {
         "column_name": "Flawless",
-        "suppress": true
+        "suppress": true,
       },
       "1830799772": {},
       "1922270325": {
-        "column_name": "Chests"
+        "column_name": "Chests",
       },
       "2571794337": {},
       "2629178011": {},
       "3427328428": {},
       "3804486505": {
         "column_name": "Raid",
-        "order": 2
+        "order": 2,
       },
       "3866024089": {
         "column_name": "Badge",
-        "order": 1
-      }
-    }
+        "order": 1,
+      },
+    },
   },
   {
     "id": "dsc",
     "name": "Deep Stone Crypt",
     "sealNodeHash": "2960810718",
     "badgeNodeHash": "1235050036",
-    "otherNodeHashes": [
-      "1726708384"
-    ],
+    "otherNodeHashes": ["1726708384"],
     "collectibles": {
       "811728933": {},
       "1755084153": {},
       "2040177352": {},
-      "2802279446": {}
+      "2802279446": {},
     },
     "records": {
       "200612470": {},
@@ -128,49 +122,47 @@
       "513707022": {},
       "518342793": {
         "column_name": "Clan",
-        "order": 3
+        "order": 3,
       },
       "564366615": {},
       "633869177": {},
       "924334687": {},
       "992355976": {
-        "column_name": "Chests"
+        "column_name": "Chests",
       },
       "2699580344": {
         "column_name": "Day One",
         "suppress": true,
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "3185876102": {
         "column_name": "Raid",
-        "order": 2
+        "order": 2,
       },
       "3200831458": {},
       "3323713181": {
-        "column_name": "Exo Logs"
+        "column_name": "Exo Logs",
       },
       "3370786210": {},
       "3504856768": {
         "column_name": "Badge",
-        "order": 1
+        "order": 1,
       },
       "3560923614": {
         "column_name": "Flawless",
-        "suppress": true
+        "suppress": true,
       },
       "3834307795": {},
       "3875695735": {},
-      "4170453731": {}
-    }
+      "4170453731": {},
+    },
   },
   {
     "id": "vog",
     "name": "Vault of Glass",
     "sealNodeHash": "3734352323",
     "badgeNodeHash": "1154828558",
-    "otherNodeHashes": [
-      "132375837"
-    ],
+    "otherNodeHashes": ["132375837"],
     "collectibles": {
       "1995412174": {},
       "1995412175": {},
@@ -182,11 +174,11 @@
       "2923491623": {},
       "3837479520": {},
       "3837479521": {},
-      "3837479522": {}
+      "3837479522": {},
     },
     "records": {
       "507778024": {
-        "order": -1
+        "order": -1,
       },
       "578313932": {},
       "932039090": {},
@@ -194,24 +186,22 @@
       "1983700615": {},
       "2384429092": {
         "suppress": true,
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "2592913942": {},
       "2782679117": {
-        "column_name": "Badge"
+        "column_name": "Badge",
       },
       "3790077074": {},
-      "3969659747": {}
-    }
+      "3969659747": {},
+    },
   },
   {
     "id": "vow",
     "name": "Vow of the Disciple",
     "sealNodeHash": "2886738008",
     "badgeNodeHash": "1809003442",
-    "otherNodeHashes": [
-      "3779087602"
-    ],
+    "otherNodeHashes": ["3779087602"],
     "collectibles": {
       "131769494": {},
       "286736914": {},
@@ -222,52 +212,50 @@
       "2687147700": {},
       "2817568609": {},
       "2963782329": {},
-      "3932921591": {}
+      "3932921591": {},
     },
     "records": {
       "422252754": {},
       "486676807": {
-        "column_name": "Lore Book Unlocks"
+        "column_name": "Lore Book Unlocks",
       },
       "610864524": {
-        "column_name": "Master Difficulty"
+        "column_name": "Master Difficulty",
       },
       "876397380": {},
       "922211732": {
         "column_name": "Day 1",
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "989023188": {},
       "1053120087": {},
       "1057921323": {},
       "1607471906": {},
       "1729647218": {
-        "column_name": "Badge"
+        "column_name": "Badge",
       },
       "2383291155": {},
       "2896258222": {},
       "3330343477": {
-        "column_name": "Clan"
+        "column_name": "Clan",
       },
       "3620246150": {},
       "3868889639": {},
       "3991904123": {
-        "column_name": "Master Challenges"
+        "column_name": "Master Challenges",
       },
       "4019717242": {
-        "column_name": "Flawless"
+        "column_name": "Flawless",
       },
-      "4241035147": {}
-    }
+      "4241035147": {},
+    },
   },
   {
     "id": "kings_fall",
     "name": "King's Fall",
     "sealNodeHash": "2613142083",
     "badgeNodeHash": "3509969063",
-    "otherNodeHashes": [
-      "3596566041"
-    ],
+    "otherNodeHashes": ["3596566041"],
     "collectibles": {
       "38314821": {},
       "192937277": {},
@@ -277,58 +265,56 @@
       "2408235829": {},
       "2408235830": {},
       "2408235831": {},
-      "3956066174": {}
+      "3956066174": {},
     },
     "records": {
       "70932677": {
-        "column_name": "Clan"
+        "column_name": "Clan",
       },
       "437884069": {},
       "750389420": {},
       "773758208": {},
       "1329091971": {},
       "1360511082": {
-        "column_name": "Flawless"
+        "column_name": "Flawless",
       },
       "1594888684": {
-        "column_name": "Chests"
+        "column_name": "Chests",
       },
       "1760261415": {},
       "2069837521": {},
       "2120297138": {
-        "column_name": "Master Challenges"
+        "column_name": "Master Challenges",
       },
       "2546821156": {},
       "2579096068": {
         "column_name": "Day 1",
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "3147255355": {},
       "3255215894": {},
       "3388215749": {
-        "column_name": "Master Difficulty"
+        "column_name": "Master Difficulty",
       },
       "3539714738": {},
       "3650227809": {},
       "3666607158": {},
       "4268824781": {
-        "column_name": "Badge"
-      }
-    }
+        "column_name": "Badge",
+      },
+    },
   },
   {
     "id": "root_of_nightmares",
     "name": "Root of Nightmares",
     "sealNodeHash": "1976056830",
     "badgeNodeHash": "1968454484",
-    "otherNodeHashes": [
-      "4114450368"
-    ],
+    "otherNodeHashes": ["4114450368"],
     "collectibles": {
       "556817462": {},
       "1346566213": {},
       "1805281840": {
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "1856547360": {},
       "1856547361": {},
@@ -339,27 +325,27 @@
       "2553509474": {},
       "2677253635": {},
       "3383113994": {
-        "skip_for_completion": true
-      }
+        "skip_for_completion": true,
+      },
     },
     "records": {
       "31076871": {},
       "139617739": {
-        "column_name": "Lore Book"
+        "column_name": "Lore Book",
       },
       "391307104": {
-        "column_name": "Master Difficulty"
+        "column_name": "Master Difficulty",
       },
       "397062446": {
-        "column_name": "Flawless"
+        "column_name": "Flawless",
       },
       "417302779": {},
       "674616608": {
-        "column_name": "Badge"
+        "column_name": "Badge",
       },
       "700218081": {},
       "921507736": {
-        "column_name": "Chests"
+        "column_name": "Chests",
       },
       "1160810407": {},
       "1164396532": {},
@@ -368,61 +354,59 @@
       "2742412203": {},
       "3025362184": {
         "column_name": "Contest Mode",
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "3413963390": {},
       "3743137436": {},
       "3838502045": {},
       "4149006431": {
-        "column_name": "Master Challenges"
+        "column_name": "Master Challenges",
       },
       "4162933187": {},
       "4293716153": {
-        "column_name": "Clan"
-      }
-    }
+        "column_name": "Clan",
+      },
+    },
   },
   {
     "id": "crotas_end",
     "name": "Crota's End",
     "sealNodeHash": "238107129",
     "badgeNodeHash": "48971793",
-    "otherNodeHashes": [
-      "2782956855"
-    ],
+    "otherNodeHashes": ["2782956855"],
     "records": {
       "116345475": {
         "column_name": "Clan",
-        "order": 3
+        "order": 3,
       },
       "295018272": {
         "column_name": "Master Challenges",
-        "order": 90
+        "order": 90,
       },
       "411909019": {},
       "583710954": {},
       "710681626": {
-        "column_name": "Chests"
+        "column_name": "Chests",
       },
       "1294327154": {},
       "1732432755": {
         "column_name": "Master",
-        "order": 9
+        "order": 9,
       },
       "1741156110": {},
       "2045739672": {
         "column_name": "Raid",
-        "order": 2
+        "order": 2,
       },
       "2572383496": {
-        "column_name": "Flawless"
+        "column_name": "Flawless",
       },
       "3250738778": {},
       "3859670341": {},
       "3922046691": {
         "column_name": "Badge",
-        "order": 1
-      }
+        "order": 1,
+      },
     },
     "collectibles": {
       "203521123": {},
@@ -432,69 +416,67 @@
       "1370367757": {},
       "1524385790": {},
       "2606379132": {
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "3089071559": {},
-      "3375139625": {}
-    }
+      "3375139625": {},
+    },
   },
   {
     "id": "salvations_edge",
     "name": "Salvation's Edge",
     "sealNodeHash": "334829503",
     "badgeNodeHash": "988425963",
-    "otherNodeHashes": [
-      "2657827258"
-    ],
+    "otherNodeHashes": ["2657827258"],
     "records": {
       "519472433": {},
       "819153082": {
         "column_name": "Clan",
-        "order": 3
+        "order": 3,
       },
       "1077926398": {},
       "1568864289": {
         "column_name": "Badge",
-        "order": 1
+        "order": 1,
       },
       "1728165205": {
         "column_name": "Master",
-        "order": 9
+        "order": 9,
       },
       "2043998246": {},
       "2307589343": {
-        "column_name": "Chests"
+        "column_name": "Chests",
       },
       "2487240675": {
         "column_name": "Raid",
-        "order": 2
+        "order": 2,
       },
       "2577052324": {},
       "3123571268": {
-        "column_name": "Lore"
+        "column_name": "Lore",
       },
       "3202450274": {
         "column_name": "Master Challenges",
-        "order": 90
+        "order": 90,
       },
       "3208349713": {},
       "3553593767": {
-        "column_name": "Flawless"
+        "column_name": "Flawless",
       },
-      "3842096181": {}
+      "3842096181": {},
     },
     "collectibles": {
       "392205168": {},
       "654071284": {
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "735290470": {},
       "1021464224": {},
       "2437867248": {},
       "2912866390": {},
       "3311944448": {},
-      "3411864064": {}
-    }
+      "3411864064": {},
+    },
   },
   {
     "id": "the_desert_perpetual",
@@ -504,44 +486,44 @@
     "otherNodeHashes": [],
     "records": {
       "354655351": {
-        "column_name": "Chests"
+        "column_name": "Chests",
       },
       "2372577075": {
-        "column_name": "Epic Raid"
+        "column_name": "Epic Raid",
       },
       "2730634807": {
-        "column_name": "Flawless"
+        "column_name": "Flawless",
       },
       "2830411595": {
         "column_name": "Raid",
-        "order": 2
+        "order": 2,
       },
       "3215569786": {
-        "column_name": "Lore"
+        "column_name": "Lore",
       },
       "3385103507": {
         "column_name": "Badge",
-        "order": 1
+        "order": 1,
       },
       "3730746991": {
-        "column_name": "Flawless · Epic"
+        "column_name": "Flawless · Epic",
       },
       "3958740669": {
-        "order": 2
-      }
+        "order": 2,
+      },
     },
     "collectibles": {
       "2053307670": {
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
       "2519524947": {},
       "2597271471": {},
       "3666913356": {},
       "3666913357": {
-        "skip_for_completion": true
+        "skip_for_completion": true,
       },
-      "3862121212": {}
-    }
+      "3862121212": {},
+    },
   },
   {
     "id": "crucible",
@@ -549,24 +531,18 @@
     "category": "Activities",
     "sealNodeHash": "475207334",
     "badgeNodeHash": "701100740",
-    "otherNodeHashes": [
-      "3973313476",
-      "339137305",
-      "1667143694"
-    ],
+    "otherNodeHashes": ["3973313476", "339137305", "1667143694"],
     "records": {},
-    "collectibles": {}
+    "collectibles": {},
   },
   {
     "id": "iron_banner",
     "name": "Iron Banner",
     "category": "Activities",
     "sealNodeHash": "2161171268",
-    "otherNodeHashes": [
-      "3049172190"
-    ],
+    "otherNodeHashes": ["3049172190"],
     "records": {},
-    "collectibles": {}
+    "collectibles": {},
   },
   {
     "id": "gambit",
@@ -574,13 +550,9 @@
     "category": "Activities",
     "sealNodeHash": "3665267419",
     "badgeNodeHash": "1420354007",
-    "otherNodeHashes": [
-      "97371225",
-      "22122108",
-      "3758722403"
-    ],
+    "otherNodeHashes": ["97371225", "22122108", "3758722403"],
     "records": {},
-    "collectibles": {}
+    "collectibles": {},
   },
   {
     "id": "trials",
@@ -588,13 +560,9 @@
     "category": "Activities",
     "sealNodeHash": "1733555826",
     "badgeNodeHash": "564984975",
-    "otherNodeHashes": [
-      "2739258696",
-      "2463489289",
-      "3813527194"
-    ],
+    "otherNodeHashes": ["2739258696", "2463489289", "3813527194"],
     "records": {},
-    "collectibles": {}
+    "collectibles": {},
   },
   {
     "id": "strikes",
@@ -608,14 +576,14 @@
       "69244313",
       "245634203",
       "2973304209",
-      "3520248493"
+      "3520248493",
     ],
     "records": {
       "1004971789": {},
       "1891852050": {},
-      "2111785377": {}
+      "2111785377": {},
     },
-    "collectibles": {}
+    "collectibles": {},
   },
   {
     "id": "deadeye",
@@ -624,7 +592,7 @@
     "sealNodeHash": "361765966",
     "otherNodeHashes": [],
     "records": {},
-    "collectibles": {}
+    "collectibles": {},
   },
   {
     "id": "dreaming_city",
@@ -638,7 +606,7 @@
       "2983489279",
       "3593914021",
       "1995542897",
-      "302201398"
+      "302201398",
     ],
     "records": {},
     "collectibles": {
@@ -647,8 +615,8 @@
       "1469913807": {},
       "1895171074": {},
       "1895171075": {},
-      "3360537487": {}
-    }
+      "3360537487": {},
+    },
   },
   {
     "id": "shadowkeep",
@@ -662,12 +630,12 @@
       "2130735626",
       "1325869705",
       "2832559544",
-      "1676236275"
+      "1676236275",
     ],
     "records": {},
     "collectibles": {
-      "2538385076": {}
-    }
+      "2538385076": {},
+    },
   },
   {
     "id": "beyond_light",
@@ -675,15 +643,10 @@
     "category": "Expansions",
     "sealNodeHash": "79180995",
     "badgeNodeHash": "2078340986",
-    "otherNodeHashes": [
-      "135736218",
-      "3692479600",
-      "148653552",
-      "2322553724"
-    ],
+    "otherNodeHashes": ["135736218", "3692479600", "148653552", "2322553724"],
     "records": {
-      "2708727662": {}
-    }
+      "2708727662": {},
+    },
   },
   {
     "id": "30th",
@@ -701,8 +664,8 @@
       "3574136388": {},
       "3735490332": {},
       "3735490333": {},
-      "3835718947": {}
-    }
+      "3835718947": {},
+    },
   },
   {
     "id": "witch_queen",
@@ -715,7 +678,7 @@
       "2430016828",
       "3333204392",
       "1346478920",
-      "3880215604"
+      "3880215604",
     ],
     "records": {
       "220342896": {},
@@ -731,14 +694,14 @@
       "3770251030": {},
       "3863516258": {},
       "3907981638": {},
-      "4205772441": {}
+      "4205772441": {},
     },
     "collectibles": {
       "328283190": {},
       "1089205875": {},
       "3810283242": {},
-      "4028619089": {}
-    }
+      "4028619089": {},
+    },
   },
   {
     "id": "light_fall",
@@ -752,7 +715,7 @@
       "1192509750",
       "2429963846",
       "376062746",
-      "842301675"
+      "842301675",
     ],
     "records": {
       "170523067": {},
@@ -761,14 +724,14 @@
       "1517724383": {},
       "2292557505": {},
       "2618920720": {},
-      "2839479882": {}
+      "2839479882": {},
     },
     "collectibles": {
       "2629609053": {},
       "2843753795": {},
       "3709294547": {},
-      "4226434173": {}
-    }
+      "4226434173": {},
+    },
   },
   {
     "id": "the_final_shape",
@@ -776,42 +739,32 @@
     "category": "Expansions",
     "sealNodeHash": "2724376914",
     "badgeNodeHash": "1528010893",
-    "otherNodeHashes": [
-      "1309523808",
-      "2862419972",
-      "3810764472"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1309523808", "2862419972", "3810764472"],
+    "records": {},
   },
   {
     "id": "the_edge_of_fate",
     "name": "The Edge of Fate",
     "category": "Expansions",
     "sealNodeHash": "3588958240",
-    "otherNodeHashes": [
-      "2140539821"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2140539821"],
+    "records": {},
   },
   {
     "id": "renegades",
     "name": "Renegades",
     "category": "Expansions",
     "sealNodeHash": "2205068290",
-    "otherNodeHashes": [
-      "1981882108"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1981882108"],
+    "records": {},
   },
   {
     "id": "renegades_invasions",
     "name": "Renegades · Invasions",
     "category": "Expansions",
     "sealNodeHash": "347825339",
-    "otherNodeHashes": [
-      "2136916333"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2136916333"],
+    "records": {},
   },
   {
     "id": "season_5",
@@ -821,7 +774,7 @@
     "sealNodeHash": "450166688",
     "badgeNodeHash": "2399267278",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "season_6",
@@ -831,7 +784,7 @@
     "sealNodeHash": "2978379966",
     "badgeNodeHash": "2503214417",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "season_7",
@@ -841,7 +794,7 @@
     "sealNodeHash": "717225803",
     "badgeNodeHash": "2759158924",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "season_8",
@@ -851,7 +804,7 @@
     "sealNodeHash": "955166374",
     "badgeNodeHash": "3267852685",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "season_9",
@@ -861,7 +814,7 @@
     "sealNodeHash": "955166375",
     "badgeNodeHash": "4257248973",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "season_10",
@@ -870,7 +823,7 @@
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008461",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "season_11",
@@ -880,7 +833,7 @@
     "sealNodeHash": "1321008460",
     "badgeNodeHash": "3459575786",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "season_12",
@@ -888,14 +841,9 @@
     "name": "Season of the Hunt",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008463",
-    "otherNodeHashes": [
-      "3669331558",
-      "3937870096",
-      "2802812434",
-      "1808459779"
-    ],
+    "otherNodeHashes": ["3669331558", "3937870096", "2802812434", "1808459779"],
     "records": {
-      "2135780490": {}
+      "2135780490": {},
     },
     "collectibles": {
       "117301517": {},
@@ -903,8 +851,8 @@
       "1244896500": {},
       "1789224066": {},
       "2705309061": {},
-      "3551011276": {}
-    }
+      "3551011276": {},
+    },
   },
   {
     "id": "season_13",
@@ -912,20 +860,15 @@
     "name": "Season of the Chosen",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008462",
-    "otherNodeHashes": [
-      "643487148",
-      "1071337794",
-      "121075568",
-      "3006777794"
-    ],
+    "otherNodeHashes": ["643487148", "1071337794", "121075568", "3006777794"],
     "records": {
-      "1833569807": {}
+      "1833569807": {},
     },
     "collectibles": {
       "1434922082": {},
       "2208687510": {},
-      "3972162588": {}
-    }
+      "3972162588": {},
+    },
   },
   {
     "id": "season_14",
@@ -938,16 +881,16 @@
       "2826444925",
       "529389631",
       "3807851309",
-      "933409053"
+      "933409053",
     ],
     "records": {
-      "250211794": {}
+      "250211794": {},
     },
     "collectibles": {
       "80672475": {},
       "2333070885": {},
-      "2522582325": {}
-    }
+      "2522582325": {},
+    },
   },
   {
     "id": "season_15",
@@ -965,7 +908,7 @@
       "2479490220",
       "230744312",
       "1961109500",
-      "1158320377"
+      "1158320377",
     ],
     "records": {
       "478443982": {},
@@ -980,13 +923,13 @@
       "2939070754": {},
       "3430706981": {},
       "3950834212": {},
-      "4078726305": {}
+      "4078726305": {},
     },
     "collectibles": {
       "182540649": {},
       "720772515": {},
-      "4259407797": {}
-    }
+      "4259407797": {},
+    },
   },
   {
     "id": "season_16",
@@ -994,12 +937,7 @@
     "name": "Season of the Risen",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1321008459",
-    "otherNodeHashes": [
-      "1147698909",
-      "1541092394",
-      "3802714325",
-      "2860804863"
-    ],
+    "otherNodeHashes": ["1147698909", "1541092394", "3802714325", "2860804863"],
     "records": {
       "263158944": {},
       "930979915": {},
@@ -1008,7 +946,7 @@
       "3343946430": {},
       "3357460834": {},
       "3628100770": {},
-      "3842442685": {}
+      "3842442685": {},
     },
     "collectibles": {
       "1140859956": {},
@@ -1017,8 +955,8 @@
       "2218977062": {},
       "2243533023": {},
       "2897560445": {},
-      "3536167764": {}
-    }
+      "3536167764": {},
+    },
   },
   {
     "id": "season_17",
@@ -1031,7 +969,7 @@
       "1321501307",
       "3212312368",
       "4154823524",
-      "2551992318"
+      "2551992318",
     ],
     "records": {
       "662547074": {},
@@ -1047,14 +985,14 @@
       "2511032639": {},
       "2547048326": {},
       "3022631571": {},
-      "3693097974": {}
+      "3693097974": {},
     },
     "collectibles": {
       "77226437": {},
       "1179882117": {},
       "2589037677": {},
-      "3436952293": {}
-    }
+      "3436952293": {},
+    },
   },
   {
     "id": "season_18",
@@ -1068,7 +1006,7 @@
       "104852044",
       "823209491",
       "3564406313",
-      "3598863561"
+      "3598863561",
     ],
     "records": {
       "122415725": {},
@@ -1080,14 +1018,14 @@
       "3257403871": {},
       "3318895306": {},
       "3587005520": {},
-      "4013775975": {}
+      "4013775975": {},
     },
     "collectibles": {
       "1977134032": {},
       "2330682964": {},
       "3161668545": {},
-      "3849432554": {}
-    }
+      "3849432554": {},
+    },
   },
   {
     "id": "season_19",
@@ -1100,7 +1038,7 @@
       "1425512290",
       "1356402617",
       "2379774266",
-      "172285384"
+      "172285384",
     ],
     "records": {
       "51293100": {},
@@ -1129,11 +1067,11 @@
       "3835559140": {},
       "3862297426": {},
       "4022708297": {},
-      "4070327399": {}
+      "4070327399": {},
     },
     "collectibles": {
-      "985132347": {}
-    }
+      "985132347": {},
+    },
   },
   {
     "id": "season_20",
@@ -1141,12 +1079,7 @@
     "name": "Season of Defiance",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675700",
-    "otherNodeHashes": [
-      "3805032166",
-      "1723339410",
-      "2363027913",
-      "638109944"
-    ],
+    "otherNodeHashes": ["3805032166", "1723339410", "2363027913", "638109944"],
     "records": {
       "310266584": {},
       "752104278": {},
@@ -1159,7 +1092,7 @@
       "3091520691": {},
       "3171877617": {},
       "3393054854": {},
-      "3845305795": {}
+      "3845305795": {},
     },
     "collectibles": {
       "198847559": {},
@@ -1168,8 +1101,8 @@
       "1184569884": {},
       "1298489117": {},
       "1339968002": {},
-      "2035616561": {}
-    }
+      "2035616561": {},
+    },
   },
   {
     "id": "season_21",
@@ -1182,7 +1115,7 @@
       "3821148611",
       "886984653",
       "1823707661",
-      "2012935609"
+      "2012935609",
     ],
     "records": {
       "673861429": {},
@@ -1192,14 +1125,14 @@
       "2119725732": {},
       "2538406461": {},
       "3159538778": {},
-      "3328286012": {}
+      "3328286012": {},
     },
     "collectibles": {
       "2746608191": {},
       "2940602493": {},
       "3721933916": {},
-      "4024692942": {}
-    }
+      "4024692942": {},
+    },
   },
   {
     "id": "season_22",
@@ -1207,10 +1140,8 @@
     "name": "Season of the Witch",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675702",
-    "otherNodeHashes": [
-      "264892844"
-    ],
-    "records": {}
+    "otherNodeHashes": ["264892844"],
+    "records": {},
   },
   {
     "id": "season_23",
@@ -1218,10 +1149,8 @@
     "name": "Season of the Wish",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675703",
-    "otherNodeHashes": [
-      "4229305251"
-    ],
-    "records": {}
+    "otherNodeHashes": ["4229305251"],
+    "records": {},
   },
   {
     "id": "episode_echoes",
@@ -1229,10 +1158,8 @@
     "name": "Episode: Echoes",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675696",
-    "otherNodeHashes": [
-      "665075114"
-    ],
-    "records": {}
+    "otherNodeHashes": ["665075114"],
+    "records": {},
   },
   {
     "id": "episode_revenant",
@@ -1240,10 +1167,8 @@
     "name": "Episode: Revenant",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675697",
-    "otherNodeHashes": [
-      "711491817"
-    ],
-    "records": {}
+    "otherNodeHashes": ["711491817"],
+    "records": {},
   },
   {
     "id": "episode_heresy",
@@ -1251,30 +1176,24 @@
     "name": "Episode: Heresy",
     "category": "Seasons & Episodes",
     "sealNodeHash": "1270675698",
-    "otherNodeHashes": [
-      "518565296"
-    ],
-    "records": {}
+    "otherNodeHashes": ["518565296"],
+    "records": {},
   },
   {
     "id": "into_the_light",
     "name": "Into the Light",
     "category": "Seasons & Episodes",
     "sealNodeHash": "2291258849",
-    "otherNodeHashes": [
-      "3121766601"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3121766601"],
+    "records": {},
   },
   {
     "id": "rite_of_the_nine",
     "name": "Rite of the Nine",
     "category": "Seasons & Episodes",
     "sealNodeHash": "2603002048",
-    "otherNodeHashes": [
-      "2530001514"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2530001514"],
+    "records": {},
   },
   {
     "id": "monument_of_triumph",
@@ -1282,47 +1201,35 @@
     "tabLabel": "Monument",
     "category": "Other seals",
     "sealNodeHash": "1210906304",
-    "otherNodeHashes": [
-      "4024048810"
-    ],
-    "records": {}
+    "otherNodeHashes": ["4024048810"],
+    "records": {},
   },
   {
     "id": "nessus",
     "name": "Nessus",
     "category": "Destinations",
-    "otherNodeHashes": [
-      "1663192739",
-      "4161172201"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1663192739", "4161172201"],
+    "records": {},
   },
   {
     "id": "edz",
     "name": "European Dead Zone",
     "category": "Destinations",
-    "otherNodeHashes": [
-      "748764525",
-      "2074120351"
-    ],
-    "records": {}
+    "otherNodeHashes": ["748764525", "2074120351"],
+    "records": {},
   },
   {
     "id": "cosmodrome",
     "name": "Cosmodrome",
     "category": "Destinations",
-    "otherNodeHashes": [
-      "3177164055"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3177164055"],
+    "records": {},
   },
   {
     "id": "lost_sectors",
     "name": "Lost Sectors",
     "category": "Destinations",
-    "otherNodeHashes": [
-      "2862419972"
-    ],
+    "otherNodeHashes": ["2862419972"],
     "records": {
       "6245488": {},
       "114953849": {},
@@ -1404,16 +1311,14 @@
       "4110051606": {},
       "4146006034": {},
       "4165635946": {},
-      "4188160886": {}
-    }
+      "4188160886": {},
+    },
   },
   {
     "id": "fishing",
     "name": "Fishing",
     "category": "Destinations",
-    "otherNodeHashes": [
-      "1002011008"
-    ],
+    "otherNodeHashes": ["1002011008"],
     "records": {
       "297212877": {},
       "552405891": {},
@@ -1421,19 +1326,14 @@
       "1867130383": {},
       "2408877948": {},
       "3560023014": {},
-      "3758696003": {}
-    }
+      "3758696003": {},
+    },
   },
   {
     "id": "tangled_shore",
     "name": "Tangled Shore",
     "category": "Destinations",
-    "otherNodeHashes": [
-      "1128540555",
-      "1764843934",
-      "4294103237",
-      "1876261587"
-    ],
+    "otherNodeHashes": ["1128540555", "1764843934", "4294103237", "1876261587"],
     "records": {},
     "collectibles": {
       "326386367": {},
@@ -1441,8 +1341,8 @@
       "1282368191": {},
       "1335453328": {},
       "1335453329": {},
-      "2712527116": {}
-    }
+      "2712527116": {},
+    },
   },
   {
     "id": "reveler",
@@ -1450,7 +1350,7 @@
     "category": "Events",
     "sealNodeHash": "2594486939",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "solstice",
@@ -1458,7 +1358,7 @@
     "category": "Events",
     "sealNodeHash": "3598951881",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "festival_of_the_lost",
@@ -1466,7 +1366,7 @@
     "category": "Events",
     "sealNodeHash": "2592822840",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "dawning",
@@ -1474,7 +1374,7 @@
     "category": "Events",
     "sealNodeHash": "3896035657",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_games",
@@ -1482,7 +1382,7 @@
     "category": "Events",
     "sealNodeHash": "1317417718",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_games_2023_medals",
@@ -1490,10 +1390,8 @@
     "tabLabel": "2023 medals",
     "name": "Guardian Games 2023 Medals",
     "category": "Events",
-    "otherNodeHashes": [
-      "3674532950"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3674532950"],
+    "records": {},
   },
   {
     "id": "dawning_2020",
@@ -1501,11 +1399,8 @@
     "tabLabel": "2020",
     "name": "Dawning 2020",
     "category": "Events",
-    "otherNodeHashes": [
-      "12380736",
-      "2293230544"
-    ],
-    "records": {}
+    "otherNodeHashes": ["12380736", "2293230544"],
+    "records": {},
   },
   {
     "id": "guardian_games_2021",
@@ -1513,10 +1408,8 @@
     "tabLabel": "2021",
     "name": "Guardian Games 2021",
     "category": "Events",
-    "otherNodeHashes": [
-      "1965217294"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1965217294"],
+    "records": {},
   },
   {
     "id": "solstice_2021",
@@ -1524,10 +1417,8 @@
     "tabLabel": "2021",
     "name": "Solstice of Heroes 2021",
     "category": "Events",
-    "otherNodeHashes": [
-      "760002588"
-    ],
-    "records": {}
+    "otherNodeHashes": ["760002588"],
+    "records": {},
   },
   {
     "id": "festival_of_the_lost_2021",
@@ -1535,11 +1426,9 @@
     "tabLabel": "2021",
     "name": "Festival of the Lost 2021",
     "category": "Events",
-    "otherNodeHashes": [
-      "1488084792"
-    ],
+    "otherNodeHashes": ["1488084792"],
     "records": {},
-    "unavailableReason": "These triumphs were removed from Bungie’s manifest."
+    "unavailableReason": "These triumphs were removed from Bungie’s manifest.",
   },
   {
     "id": "dawning_2021",
@@ -1547,10 +1436,8 @@
     "tabLabel": "2021",
     "name": "Dawning 2021",
     "category": "Events",
-    "otherNodeHashes": [
-      "4277365833"
-    ],
-    "records": {}
+    "otherNodeHashes": ["4277365833"],
+    "records": {},
   },
   {
     "id": "guardian_games_2022",
@@ -1558,10 +1445,8 @@
     "tabLabel": "2022",
     "name": "Guardian Games 2022",
     "category": "Events",
-    "otherNodeHashes": [
-      "1734254471"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1734254471"],
+    "records": {},
   },
   {
     "id": "guardian_games_2022_medals",
@@ -1569,10 +1454,8 @@
     "tabLabel": "2022 medals",
     "name": "Guardian Games 2022 Medals",
     "category": "Events",
-    "otherNodeHashes": [
-      "3856185547"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3856185547"],
+    "records": {},
   },
   {
     "id": "heavy_metal",
@@ -1580,7 +1463,7 @@
     "category": "Events",
     "sealNodeHash": "2470605514",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "arms_week",
@@ -1588,7 +1471,7 @@
     "category": "Events",
     "sealNodeHash": "3417748255",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "call_to_arms",
@@ -1596,7 +1479,7 @@
     "category": "Events",
     "sealNodeHash": "2130405703",
     "otherNodeHashes": [],
-    "records": {}
+    "records": {},
   },
   {
     "id": "festival_of_the_lost_2022",
@@ -1605,7 +1488,7 @@
     "tabLabel": "2022",
     "category": "Events",
     "otherNodeHashes": ["2330977699"],
-    "records": {}
+    "records": {},
   },
   {
     "id": "conqueror_12",
@@ -1614,7 +1497,7 @@
     "records": {},
     "parentPageId": "strikes",
     "tabLabel": "Season 12",
-    "sealNodeHash": "581214566"
+    "sealNodeHash": "581214566",
   },
   {
     "id": "conqueror_11",
@@ -1623,7 +1506,7 @@
     "records": {},
     "parentPageId": "strikes",
     "tabLabel": "Season 11",
-    "sealNodeHash": "3212358005"
+    "sealNodeHash": "3212358005",
   },
   {
     "id": "conqueror_10",
@@ -1632,7 +1515,7 @@
     "records": {},
     "parentPageId": "strikes",
     "tabLabel": "Season 10",
-    "sealNodeHash": "1376640684"
+    "sealNodeHash": "1376640684",
   },
   {
     "id": "flawless_12",
@@ -1641,7 +1524,7 @@
     "records": {},
     "parentPageId": "trials",
     "tabLabel": "Season 12",
-    "sealNodeHash": "1276693937"
+    "sealNodeHash": "1276693937",
   },
   {
     "id": "flawless_11",
@@ -1650,7 +1533,7 @@
     "records": {},
     "parentPageId": "trials",
     "tabLabel": "Season 11",
-    "sealNodeHash": "3251218484"
+    "sealNodeHash": "3251218484",
   },
   {
     "id": "flawless_10",
@@ -1659,7 +1542,7 @@
     "records": {},
     "parentPageId": "trials",
     "tabLabel": "Season 10",
-    "sealNodeHash": "2086100423"
+    "sealNodeHash": "2086100423",
   },
   {
     "id": "unbroken",
@@ -1668,7 +1551,7 @@
     "records": {},
     "parentPageId": "crucible",
     "tabLabel": "Unbroken",
-    "sealNodeHash": "2107507397"
+    "sealNodeHash": "2107507397",
   },
   {
     "id": "strikes_legacy",
@@ -1677,21 +1560,15 @@
     "records": {},
     "parentPageId": "strikes",
     "tabLabel": "Legacy strikes",
-    "otherNodeHashes": [
-      "636644708",
-      "2675905563",
-      "1427965125"
-    ]
+    "otherNodeHashes": ["636644708", "2675905563", "1427965125"],
   },
   {
     "id": "leviathan",
     "name": "Leviathan",
     "category": "Raid seals",
     "records": {},
-    "otherNodeHashes": [
-      "2558323083"
-    ],
-    "tabLabel": "Leviathan"
+    "otherNodeHashes": ["2558323083"],
+    "tabLabel": "Leviathan",
   },
   {
     "id": "crown",
@@ -1700,9 +1577,7 @@
     "records": {},
     "parentPageId": "leviathan",
     "tabLabel": "Crown of Sorrow",
-    "otherNodeHashes": [
-      "2481808943"
-    ]
+    "otherNodeHashes": ["2481808943"],
   },
   {
     "id": "menagerie",
@@ -1711,9 +1586,7 @@
     "records": {},
     "parentPageId": "leviathan",
     "tabLabel": "Menagerie",
-    "otherNodeHashes": [
-      "297242190"
-    ]
+    "otherNodeHashes": ["297242190"],
   },
   {
     "id": "tribute_hall",
@@ -1722,9 +1595,7 @@
     "records": {},
     "parentPageId": "leviathan",
     "tabLabel": "Tribute Hall",
-    "otherNodeHashes": [
-      "1519064131"
-    ]
+    "otherNodeHashes": ["1519064131"],
   },
   {
     "id": "scourge_of_the_past",
@@ -1737,58 +1608,50 @@
       "1180238715": {},
       "223175561": {},
       "974101911": {},
-      "1778986403": {}
-    }
+      "1778986403": {},
+    },
   },
   {
     "id": "shattered_throne",
     "name": "Shattered Throne",
     "category": "Dungeons",
-    "otherNodeHashes": [
-      "1347078175"
-    ],
+    "otherNodeHashes": ["1347078175"],
     "records": {
-      "3918836030": {}
+      "3918836030": {},
     },
     "collectibles": {
-      "3163873689": {}
-    }
+      "3163873689": {},
+    },
   },
   {
     "id": "pit_of_heresy",
     "name": "Pit of Heresy",
     "category": "Dungeons",
-    "otherNodeHashes": [
-      "2828966211"
-    ],
+    "otherNodeHashes": ["2828966211"],
     "records": {
-      "2624728885": {}
+      "2624728885": {},
     },
     "collectibles": {
-      "3187653285": {}
-    }
+      "3187653285": {},
+    },
   },
   {
     "id": "prophecy",
     "name": "Prophecy",
     "category": "Dungeons",
-    "otherNodeHashes": [
-      "2228154284"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2228154284"],
+    "records": {},
   },
   {
     "id": "grasp_of_avarice",
     "name": "Grasp of Avarice",
     "category": "Dungeons",
-    "otherNodeHashes": [
-      "1476825620"
-    ],
+    "otherNodeHashes": ["1476825620"],
     "records": {
       "1705576010": {},
       "1770021330": {},
-      "1855685192": {}
-    }
+      "1855685192": {},
+    },
   },
   {
     "id": "duality",
@@ -1796,33 +1659,31 @@
     "category": "Dungeons",
     "sealNodeHash": "854126634",
     "badgeNodeHash": "3487512928",
-    "otherNodeHashes": [
-      "4032492628"
-    ],
+    "otherNodeHashes": ["4032492628"],
     "records": {
       "911294620": {},
       "1629497825": {},
       "1801613309": {
-        "column_name": "Void"
+        "column_name": "Void",
       },
       "1864837600": {
-        "column_name": "Solar"
+        "column_name": "Solar",
       },
       "1968204778": {},
       "2105786548": {
-        "column_name": "Badge"
+        "column_name": "Badge",
       },
       "2388189655": {
-        "column_name": "Clan"
+        "column_name": "Clan",
       },
       "2547048326": {},
       "3200960029": {
-        "column_name": "Class"
+        "column_name": "Class",
       },
       "3952021245": {
-        "column_name": "Arc"
-      }
-    }
+        "column_name": "Arc",
+      },
+    },
   },
   {
     "id": "spire_of_the_watcher",
@@ -1830,31 +1691,29 @@
     "category": "Dungeons",
     "sealNodeHash": "4183969062",
     "badgeNodeHash": "2268797508",
-    "otherNodeHashes": [
-      "3846053700"
-    ],
+    "otherNodeHashes": ["3846053700"],
     "records": {
       "185032465": {},
       "395235013": {
-        "column_name": "Class"
+        "column_name": "Class",
       },
       "466074981": {
-        "column_name": "Void"
+        "column_name": "Void",
       },
       "905181048": {
-        "column_name": "Badge"
+        "column_name": "Badge",
       },
       "1990962776": {
-        "column_name": "Solar"
+        "column_name": "Solar",
       },
       "3006836031": {
-        "column_name": "Clan"
+        "column_name": "Clan",
       },
       "3561230229": {
-        "column_name": "Arc"
+        "column_name": "Arc",
       },
-      "3610349332": {}
-    }
+      "3610349332": {},
+    },
   },
   {
     "id": "ghosts_of_the_deep",
@@ -1862,120 +1721,102 @@
     "category": "Dungeons",
     "sealNodeHash": "1705744655",
     "badgeNodeHash": "164858691",
-    "otherNodeHashes": [
-      "2279316529"
-    ],
+    "otherNodeHashes": ["2279316529"],
     "records": {
       "278051646": {},
       "646449162": {
-        "column_name": "Void"
+        "column_name": "Void",
       },
       "1169793114": {},
       "2238420633": {},
       "2519881105": {
-        "column_name": "Badge"
+        "column_name": "Badge",
       },
       "3187362676": {
-        "column_name": "Class"
+        "column_name": "Class",
       },
       "3202440564": {
-        "column_name": "Arc"
+        "column_name": "Arc",
       },
       "3358913961": {
-        "column_name": "Solar"
+        "column_name": "Solar",
       },
       "3817062456": {
-        "column_name": "Clan"
-      }
-    }
+        "column_name": "Clan",
+      },
+    },
   },
   {
     "id": "warlords_ruin",
     "name": "Warlord's Ruin",
     "category": "Dungeons",
     "sealNodeHash": "1021469803",
-    "otherNodeHashes": [
-      "3022435577"
-    ],
+    "otherNodeHashes": ["3022435577"],
     "badgeNodeHash": "3754709239",
     "records": {
-      "23667519": {}
-    }
+      "23667519": {},
+    },
   },
   {
     "id": "vespers_host",
     "name": "Vesper's Host",
     "category": "Dungeons",
     "sealNodeHash": "2723381343",
-    "otherNodeHashes": [
-      "3254829425"
-    ],
+    "otherNodeHashes": ["3254829425"],
     "badgeNodeHash": "2157285411",
-    "records": {}
+    "records": {},
   },
   {
     "id": "sundered_doctrine",
     "name": "Sundered Doctrine",
     "category": "Dungeons",
     "sealNodeHash": "2105055614",
-    "otherNodeHashes": [
-      "2009673092"
-    ],
+    "otherNodeHashes": ["2009673092"],
     "badgeNodeHash": "2142982716",
-    "records": {}
+    "records": {},
   },
   {
     "id": "equilibrium",
     "name": "Equilibrium",
     "category": "Dungeons",
     "sealNodeHash": "1504131436",
-    "otherNodeHashes": [
-      "3851744670"
-    ],
+    "otherNodeHashes": ["3851744670"],
     "badgeNodeHash": "1208791766",
     "records": {
-      "3422590101": {}
-    }
+      "3422590101": {},
+    },
   },
   {
     "id": "harbinger",
     "name": "Harbinger",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "1460167656"
-    ],
+    "otherNodeHashes": ["1460167656"],
     "records": {
       "1107121513": {
-        "order": -1
-      }
-    }
+        "order": -1,
+      },
+    },
   },
   {
     "id": "vox_obscura",
     "name": "Vox Obscura",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "3419158345"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3419158345"],
+    "records": {},
   },
   {
     "id": "seraphs_shield",
     "name": "Operation: Seraph's Shield",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "3968203274"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3968203274"],
+    "records": {},
   },
   {
     "id": "avalon",
     "name": "//node.ovrd.AVALON//",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "4017297210"
-    ],
-    "records": {}
+    "otherNodeHashes": ["4017297210"],
+    "records": {},
   },
   {
     "id": "presage",
@@ -1984,73 +1825,61 @@
     "otherNodeHashes": [],
     "records": {
       "15917031": {},
-      "846398159": {}
-    }
+      "846398159": {},
+    },
   },
   {
     "id": "presage_legacy",
     "name": "Presage (Legacy)",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "3108806378"
-    ],
+    "otherNodeHashes": ["3108806378"],
     "records": {
       "15917031": {
-        "order": -1
-      }
+        "order": -1,
+      },
     },
     "parentPageId": "presage",
-    "tabLabel": "Legacy triumphs"
+    "tabLabel": "Legacy triumphs",
   },
   {
     "id": "the_whisper",
     "name": "The Whisper",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "3818825440"
-    ],
+    "otherNodeHashes": ["3818825440"],
     "records": {
-      "4213978314": {}
-    }
+      "4213978314": {},
+    },
   },
   {
     "id": "zero_hour",
     "name": "Zero Hour",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "142994346"
-    ],
+    "otherNodeHashes": ["142994346"],
     "records": {
       "476814483": {},
-      "3828243410": {}
-    }
+      "3828243410": {},
+    },
   },
   {
     "id": "starcrossed",
     "name": "Starcrossed",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "2612647205"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2612647205"],
+    "records": {},
   },
   {
     "id": "encore",
     "name": "Encore",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "1688234294"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1688234294"],
+    "records": {},
   },
   {
     "id": "kells_fall",
     "name": "Kell's Fall",
     "category": "Exotic missions",
-    "otherNodeHashes": [
-      "97625532"
-    ],
-    "records": {}
+    "otherNodeHashes": ["97625532"],
+    "records": {},
   },
   {
     "id": "dual_destiny",
@@ -2060,8 +1889,8 @@
     "records": {
       "2547616574": {},
       "3225424862": {},
-      "3706398661": {}
-    }
+      "3706398661": {},
+    },
   },
   {
     "id": "oblation",
@@ -2072,8 +1901,8 @@
       "109458567": {},
       "226708009": {},
       "1113748224": {},
-      "1401561385": {}
-    }
+      "1401561385": {},
+    },
   },
   {
     "id": "fire_and_ice",
@@ -2081,8 +1910,8 @@
     "category": "Exotic missions",
     "otherNodeHashes": [],
     "records": {
-      "2129873423": {}
-    }
+      "2129873423": {},
+    },
   },
   {
     "id": "whetstone",
@@ -2091,8 +1920,8 @@
     "otherNodeHashes": [],
     "records": {
       "2331933042": {},
-      "2733426143": {}
-    }
+      "2733426143": {},
+    },
   },
   {
     "id": "the_other_side",
@@ -2100,8 +1929,8 @@
     "category": "Exotic missions",
     "otherNodeHashes": [],
     "records": {
-      "1662610173": {}
-    }
+      "1662610173": {},
+    },
   },
   {
     "id": "wild_card",
@@ -2109,8 +1938,8 @@
     "category": "Exotic missions",
     "otherNodeHashes": [],
     "records": {
-      "3891840283": {}
-    }
+      "3891840283": {},
+    },
   },
   {
     "id": "lifetime",
@@ -2118,10 +1947,8 @@
     "category": "Other",
     "tabLabel": "All lifetime",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "2956802394"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2956802394"],
+    "records": {},
   },
   {
     "id": "lifetime_new_light",
@@ -2130,10 +1957,8 @@
     "parentPageId": "lifetime",
     "tabLabel": "New Light",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "1995818321"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1995818321"],
+    "records": {},
   },
   {
     "id": "lifetime_titan",
@@ -2142,10 +1967,8 @@
     "parentPageId": "lifetime",
     "tabLabel": "Titan",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "3436349154"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3436349154"],
+    "records": {},
   },
   {
     "id": "lifetime_hunter",
@@ -2154,10 +1977,8 @@
     "parentPageId": "lifetime",
     "tabLabel": "Hunter",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "264195358"
-    ],
-    "records": {}
+    "otherNodeHashes": ["264195358"],
+    "records": {},
   },
   {
     "id": "lifetime_warlock",
@@ -2166,10 +1987,8 @@
     "parentPageId": "lifetime",
     "tabLabel": "Warlock",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "1424071291"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1424071291"],
+    "records": {},
   },
   {
     "id": "lifetime_social",
@@ -2178,10 +1997,8 @@
     "parentPageId": "lifetime",
     "tabLabel": "Social",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "2509121759"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2509121759"],
+    "records": {},
   },
   {
     "id": "lifetime_cooperative",
@@ -2190,10 +2007,8 @@
     "parentPageId": "lifetime",
     "tabLabel": "Cooperative",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "135923183"
-    ],
-    "records": {}
+    "otherNodeHashes": ["135923183"],
+    "records": {},
   },
   {
     "id": "lifetime_competitive",
@@ -2202,10 +2017,8 @@
     "parentPageId": "lifetime",
     "tabLabel": "Competitive",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "428193679"
-    ],
-    "records": {}
+    "otherNodeHashes": ["428193679"],
+    "records": {},
   },
   {
     "id": "seal_overview",
@@ -2213,7 +2026,7 @@
     "category": "Other",
     "kind": "seals",
     "tabLabel": "Active seals",
-    "records": {}
+    "records": {},
   },
   {
     "id": "seal_overview_legacy",
@@ -2222,7 +2035,7 @@
     "kind": "seals",
     "parentPageId": "seal_overview",
     "tabLabel": "Legacy seals",
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_ranks",
@@ -2230,7 +2043,7 @@
     "category": "Other",
     "kind": "ranks",
     "tabLabel": "Ranks",
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_2",
@@ -2239,7 +2052,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "2 · Explorer",
     "guardianRank": 2,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_3",
@@ -2248,7 +2061,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "3 · Initiate",
     "guardianRank": 3,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_4",
@@ -2257,7 +2070,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "4 · Scout",
     "guardianRank": 4,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_5",
@@ -2266,7 +2079,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "5 · Adventurer",
     "guardianRank": 5,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_6",
@@ -2275,7 +2088,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "6 · Veteran",
     "guardianRank": 6,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_7",
@@ -2284,7 +2097,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "7 · Elite",
     "guardianRank": 7,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_8",
@@ -2293,7 +2106,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "8 · Justiciar",
     "guardianRank": 8,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_9",
@@ -2302,7 +2115,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "9 · Vanquisher",
     "guardianRank": 9,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_10",
@@ -2311,7 +2124,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "10 · Exemplar",
     "guardianRank": 10,
-    "records": {}
+    "records": {},
   },
   {
     "id": "guardian_rank_11",
@@ -2320,7 +2133,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "11 · Paragon",
     "guardianRank": 11,
-    "records": {}
+    "records": {},
   },
   {
     "id": "commendations",
@@ -2329,7 +2142,7 @@
     "parentPageId": "guardian_ranks",
     "tabLabel": "Commendations",
     "kind": "commendations",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklists",
@@ -2337,7 +2150,7 @@
     "category": "Other",
     "tabLabel": "Region Chests",
     "checklistHash": "1697465175",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_3142056444",
@@ -2346,7 +2159,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Lost Sectors",
     "checklistHash": "3142056444",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_2609997025",
@@ -2355,7 +2168,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Corrupted Eggs",
     "checklistHash": "2609997025",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_1297424116",
@@ -2364,7 +2177,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Ahamkara Bones",
     "checklistHash": "1297424116",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_2726513366",
@@ -2373,7 +2186,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Cat Statues",
     "checklistHash": "2726513366",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_1856270404",
@@ -2382,7 +2195,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Dead Ghosts - Moon",
     "checklistHash": "1856270404",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_1912364094",
@@ -2391,7 +2204,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Jade Rabbits",
     "checklistHash": "1912364094",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_817948795",
@@ -2400,7 +2213,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Penguin Souvenirs",
     "checklistHash": "817948795",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_1885088224",
@@ -2409,7 +2222,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Entropic Shards",
     "checklistHash": "1885088224",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_2568476210",
@@ -2418,7 +2231,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Dead Exos",
     "checklistHash": "2568476210",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_3595926713",
@@ -2427,7 +2240,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Eternity Ancient Skulls",
     "checklistHash": "3595926713",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_3373333905",
@@ -2436,7 +2249,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Lucent Moths",
     "checklistHash": "3373333905",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_3089927156",
@@ -2445,7 +2258,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Darkness Rifts",
     "checklistHash": "3089927156",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_703136805",
@@ -2454,7 +2267,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Apogee Repeaters",
     "checklistHash": "703136805",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_1793940260",
@@ -2463,7 +2276,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Nimbus Action Figures",
     "checklistHash": "1793940260",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_626486626",
@@ -2472,7 +2285,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Feathers of Light",
     "checklistHash": "626486626",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_2844537300",
@@ -2481,7 +2294,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Lost Encryption Bits",
     "checklistHash": "2844537300",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_3048564473",
@@ -2490,7 +2303,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Visions of the Traveler",
     "checklistHash": "3048564473",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_1062690000",
@@ -2499,7 +2312,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Kepler Ability Chests",
     "checklistHash": "1062690000",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_2526495740",
@@ -2508,7 +2321,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Kepler Urns",
     "checklistHash": "2526495740",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_3430812784",
@@ -2517,7 +2330,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Paracausal Geometries",
     "checklistHash": "3430812784",
-    "records": {}
+    "records": {},
   },
   {
     "id": "checklist_853997642",
@@ -2526,7 +2339,7 @@
     "parentPageId": "checklists",
     "tabLabel": "Renegades Tapes",
     "checklistHash": "853997642",
-    "records": {}
+    "records": {},
   },
   {
     "id": "catalysts",
@@ -2534,10 +2347,8 @@
     "category": "Other",
     "tabLabel": "All catalysts",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "2744330515"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2744330515"],
+    "records": {},
   },
   {
     "id": "patterns",
@@ -2545,12 +2356,8 @@
     "category": "Other",
     "tabLabel": "All patterns",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "127506319",
-      "3289524180",
-      "1464475380"
-    ],
-    "records": {}
+    "otherNodeHashes": ["127506319", "3289524180", "1464475380"],
+    "records": {},
   },
   {
     "id": "exotic_weapons",
@@ -2558,10 +2365,8 @@
     "category": "Other",
     "tabLabel": "All exotic weapons",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "2214408526"
-    ],
-    "records": {}
+    "otherNodeHashes": ["2214408526"],
+    "records": {},
   },
   {
     "id": "exotic_armor",
@@ -2569,10 +2374,8 @@
     "category": "Other",
     "tabLabel": "All exotic armor",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "1789205056"
-    ],
-    "records": {}
+    "otherNodeHashes": ["1789205056"],
+    "records": {},
   },
   {
     "id": "mods",
@@ -2580,80 +2383,78 @@
     "category": "Other",
     "tabLabel": "All mods",
     "groupByNode": true,
-    "otherNodeHashes": [
-      "3509235358"
-    ],
-    "records": {}
+    "otherNodeHashes": ["3509235358"],
+    "records": {},
   },
   {
     "id": "destination_red_war_badge",
     "name": "Destinations: Red War",
     "category": "Other badges",
     "badgeNodeHash": "2904806741",
-    "records": {}
+    "records": {},
   },
   {
     "id": "exotics_red_war_badge",
     "name": "Exotics: Red War",
     "category": "Other badges",
     "badgeNodeHash": "3241617029",
-    "records": {}
+    "records": {},
   },
   {
     "id": "destination_curse_badge",
     "name": "Destinations: Curse of Osiris and Warmind",
     "category": "Other badges",
     "badgeNodeHash": "1331476689",
-    "records": {}
+    "records": {},
   },
   {
     "id": "exotics_curse_badge",
     "name": "Exotics: Curse of Osiris and Warmind",
     "category": "Other badges",
     "badgeNodeHash": "1419883649",
-    "records": {}
+    "records": {},
   },
   {
     "id": "destination_forsaken_badge",
     "name": "Destinations: Forsaken",
     "category": "Other badges",
     "badgeNodeHash": "2881240068",
-    "records": {}
+    "records": {},
   },
   {
     "id": "exotics_forsaken_badge",
     "name": "Exotics: Forsaken",
     "category": "Other badges",
     "badgeNodeHash": "3333531796",
-    "records": {}
+    "records": {},
   },
   {
     "id": "pantheon_badge",
     "name": "The Pantheon",
     "category": "Other badges",
     "badgeNodeHash": "1697245957",
-    "records": {}
+    "records": {},
   },
   {
     "id": "chronicler",
     "name": "Chronicler",
     "category": "Other seals",
     "sealNodeHash": "3680676656",
-    "records": {}
+    "records": {},
   },
   {
     "id": "wayfarer",
     "name": "Wayfarer",
     "category": "Other seals",
     "sealNodeHash": "1106177979",
-    "records": {}
+    "records": {},
   },
   {
     "id": "legend",
     "name": "Legend",
     "category": "Other seals",
     "sealNodeHash": "1622359234",
-    "records": {}
+    "records": {},
   },
   {
     "id": "pantheon",
@@ -2661,7 +2462,7 @@
     "category": "Other seals",
     "sealNodeHash": "548534407",
     "records": {},
-    "tabLabel": "Godsbane"
+    "tabLabel": "Godsbane",
   },
   {
     "id": "pantheon_godslayer",
@@ -2670,7 +2471,7 @@
     "sealNodeHash": "3492865493",
     "records": {},
     "parentPageId": "pantheon",
-    "tabLabel": "Godslayer"
+    "tabLabel": "Godslayer",
   },
   {
     "id": "moments_of_triumph_2024",
@@ -2679,7 +2480,7 @@
     "parentPageId": "monument_of_triumph",
     "tabLabel": "2024",
     "sealNodeHash": "1210906306",
-    "records": {}
+    "records": {},
   },
   {
     "id": "moments_of_triumph_2023",
@@ -2688,7 +2489,7 @@
     "parentPageId": "monument_of_triumph",
     "tabLabel": "2023",
     "sealNodeHash": "1210906309",
-    "records": {}
+    "records": {},
   },
   {
     "id": "moments_of_triumph_2022",
@@ -2697,7 +2498,7 @@
     "parentPageId": "monument_of_triumph",
     "tabLabel": "2022",
     "sealNodeHash": "1210906308",
-    "records": {}
+    "records": {},
   },
   {
     "id": "moments_of_triumph_2021",
@@ -2706,7 +2507,7 @@
     "parentPageId": "monument_of_triumph",
     "tabLabel": "2021",
     "sealNodeHash": "1210906311",
-    "records": {}
+    "records": {},
   },
   {
     "id": "moments_of_triumph_2020",
@@ -2715,7 +2516,7 @@
     "parentPageId": "monument_of_triumph",
     "tabLabel": "2020",
     "sealNodeHash": "1210906310",
-    "records": {}
+    "records": {},
   },
   {
     "id": "moments_of_triumph_2019",
@@ -2724,6 +2525,6 @@
     "parentPageId": "monument_of_triumph",
     "tabLabel": "2019",
     "sealNodeHash": "1194128730",
-    "records": {}
-  }
+    "records": {},
+  },
 ]

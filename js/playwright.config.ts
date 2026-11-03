@@ -6,5 +6,11 @@ export default defineConfig({
   fullyParallel: false,
   use: { baseURL, ignoreHTTPSErrors: devHttps, trace: 'retain-on-failure' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: { ignoreHTTPSErrors: devHttps, command: 'npm run dev', url: baseURL, reuseExistingServer: !process.env.CI, timeout: 30_000 },
+  webServer: {
+    ignoreHTTPSErrors: devHttps,
+    command: 'npm run dev',
+    url: baseURL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 30_000,
+  },
 });

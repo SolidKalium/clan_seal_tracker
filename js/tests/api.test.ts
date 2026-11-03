@@ -3,55 +3,154 @@ import { ApiError, BungieTransport } from '../src/api';
 import { EXCERPT_LIMIT, type RequestDiagnostic } from '../src/diagnostics';
 const key = 'sensitive-api-key-for-test';
 const warnings = vi.spyOn(console, 'warn').mockImplementation(() => {});
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); warnings.mockClear(); });
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+  warnings.mockClear();
+});
 it('captures bounded unreadable response diagnostics, redacts the key, and logs the same information', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(`<html>${key}${'x'.repeat(3000)}</html>`, { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/html', 'Retry-After': '10' } })));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      new Response(`<html>${key}${'x'.repeat(3000)}</html>`, {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'text/html', 'Retry-After': '10' },
+      }),
+    ),
+  );
   const saved: RequestDiagnostic[] = [];
-  const api = new BungieTransport(key, async d => { saved.push(d); });
-  const error = await api.api('/Destiny2/3/Profile/123/').catch(e => e) as ApiError;
+  const api = new BungieTransport(key, async (d) => {
+    saved.push(d);
+  });
+  const error = (await api
+    .api('/Destiny2/3/Profile/123/')
+    .catch((e) => e)) as ApiError;
   expect(error.message).toBe('Bungie returned an unreadable response.');
-  expect(error.diagnostic).toMatchObject({ status: 503, statusText: 'Service Unavailable', contentType: 'text/html', retryAfter: '10', attempt: 1, bodyTruncated: true });
+  expect(error.diagnostic).toMatchObject({
+    status: 503,
+    statusText: 'Service Unavailable',
+    contentType: 'text/html',
+    retryAfter: '10',
+    attempt: 1,
+    bodyTruncated: true,
+  });
   expect(error.diagnostic?.bodyExcerpt).toHaveLength(EXCERPT_LIMIT);
   expect(error.diagnostic?.bodyExcerpt).toContain('[redacted]');
   expect(JSON.stringify(saved)).not.toContain(key);
   expect(saved).toEqual([error.diagnostic]);
-  expect(warnings).toHaveBeenCalledWith('[Clan Seal Tracker] Request failed', error.diagnostic);
+  expect(warnings).toHaveBeenCalledWith(
+    '[Clan Seal Tracker] Request failed',
+    error.diagnostic,
+  );
 });
 it('logs failed rate-limit attempts even when a retry succeeds, without logging a successful payload', async () => {
   vi.useFakeTimers();
-  const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ ErrorCode: 36, ErrorStatus: 'Throttled', Response: { secret: 'error-payload-not-to-log' } }, { status: 429, headers: { 'Retry-After': '2' } })).mockResolvedValueOnce(Response.json({ ErrorCode: 1, Response: { profile: 'successful-private-payload' } }));
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(
+      Response.json(
+        {
+          ErrorCode: 36,
+          ErrorStatus: 'Throttled',
+          Response: { secret: 'error-payload-not-to-log' },
+        },
+        { status: 429, headers: { 'Retry-After': '2' } },
+      ),
+    )
+    .mockResolvedValueOnce(
+      Response.json({
+        ErrorCode: 1,
+        Response: { profile: 'successful-private-payload' },
+      }),
+    );
   vi.stubGlobal('fetch', fetcher);
   const saved: RequestDiagnostic[] = [];
-  const request = new BungieTransport(key, async d => { saved.push(d); }).api('/test');
+  const request = new BungieTransport(key, async (d) => {
+    saved.push(d);
+  }).api('/test');
   await vi.advanceTimersByTimeAsync(2000);
-  await expect(request).resolves.toEqual({ profile: 'successful-private-payload' });
+  await expect(request).resolves.toEqual({
+    profile: 'successful-private-payload',
+  });
   expect(fetcher).toHaveBeenCalledTimes(2);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ status: 429, retrying: true, retryAfter: '2', apiCode: 36, apiStatus: 'Throttled' });
+  expect(saved[0]).toMatchObject({
+    status: 429,
+    retrying: true,
+    retryAfter: '2',
+    apiCode: 36,
+    apiStatus: 'Throttled',
+  });
   expect(JSON.stringify(saved)).not.toContain('error-payload-not-to-log');
   expect(JSON.stringify(saved)).not.toContain('successful-private-payload');
 });
 it('records structured API errors without copying their Response data', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ ErrorCode: 99, ErrorStatus: 'UnexpectedError', Response: { userInfo: 'do-not-log' } })));
-  const error = await new BungieTransport(key).api('/test').catch(e => e) as ApiError;
-  expect(error.diagnostic).toMatchObject({ status: 200, apiCode: 99, apiStatus: 'UnexpectedError' });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      Response.json({
+        ErrorCode: 99,
+        ErrorStatus: 'UnexpectedError',
+        Response: { userInfo: 'do-not-log' },
+      }),
+    ),
+  );
+  const error = (await new BungieTransport(key)
+    .api('/test')
+    .catch((e) => e)) as ApiError;
+  expect(error.diagnostic).toMatchObject({
+    status: 200,
+    apiCode: 99,
+    apiStatus: 'UnexpectedError',
+  });
   expect(error.diagnostic?.bodyExcerpt).toBeUndefined();
   expect(JSON.stringify(error.diagnostic)).not.toContain('do-not-log');
 });
 it('records network and definition failures without exposing request headers', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Network failed')));
-  const error = await new BungieTransport(key).api('/test').catch(e => e) as ApiError;
-  expect(error.diagnostic).toMatchObject({ url: 'https://www.bungie.net/Platform/test', cause: 'TypeError: Network failed' });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockRejectedValue(new TypeError('Network failed')),
+  );
+  const error = (await new BungieTransport(key)
+    .api('/test')
+    .catch((e) => e)) as ApiError;
+  expect(error.diagnostic).toMatchObject({
+    url: 'https://www.bungie.net/Platform/test',
+    cause: 'TypeError: Network failed',
+  });
   expect(error.diagnostic?.status).toBeUndefined();
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Bad gateway', { status: 502 })));
-  const resourceError = await new BungieTransport(key).resource('/common/destiny2_content/test.json').catch(e => e) as ApiError;
-  expect(resourceError.diagnostic).toMatchObject({ status: 502, bodyExcerpt: 'Bad gateway' });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(new Response('Bad gateway', { status: 502 })),
+  );
+  const resourceError = (await new BungieTransport(key)
+    .resource('/common/destiny2_content/test.json')
+    .catch((e) => e)) as ApiError;
+  expect(resourceError.diagnostic).toMatchObject({
+    status: 502,
+    bodyExcerpt: 'Bad gateway',
+  });
   expect(JSON.stringify(resourceError.diagnostic)).not.toContain(key);
 });
 
 it('sends public search bodies as JSON POST requests through the same transport', async () => {
-  const fetcher = vi.fn().mockResolvedValue(Response.json({ ErrorCode: 1, Response: { results: [] } }));
+  const fetcher = vi
+    .fn()
+    .mockResolvedValue(
+      Response.json({ ErrorCode: 1, Response: { results: [] } }),
+    );
   vi.stubGlobal('fetch', fetcher);
-  await new BungieTransport(key).api('/GroupV2/Search/', { name: 'Example', groupType: 1 });
-  expect(fetcher).toHaveBeenCalledWith('https://www.bungie.net/Platform/GroupV2/Search/', expect.objectContaining({ method: 'POST', body: '{"name":"Example","groupType":1}', headers: { 'X-API-Key': key, 'Content-Type': 'application/json' } }));
+  await new BungieTransport(key).api('/GroupV2/Search/', {
+    name: 'Example',
+    groupType: 1,
+  });
+  expect(fetcher).toHaveBeenCalledWith(
+    'https://www.bungie.net/Platform/GroupV2/Search/',
+    expect.objectContaining({
+      method: 'POST',
+      body: '{"name":"Example","groupType":1}',
+      headers: { 'X-API-Key': key, 'Content-Type': 'application/json' },
+    }),
+  );
 });

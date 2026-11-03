@@ -1,0 +1,4 @@
+# Prettier also skips .gitignore entries (dist, .generated, test-results, …).
+*.md
+tests/fixtures/
+package-lock.json
