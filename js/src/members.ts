@@ -1,8 +1,14 @@
-import type { PlayerData, Profile, UserInfo } from './types';
+import type { Member, PlayerData, Profile, UserInfo } from './types';
 export interface MemberEntitlements {
   seasons: Record<string, { displayProperties?: { name?: string }; seasonNumber?: number; startDate?: string }>;
 }
 export const platforms: Record<number, string> = { 1: 'Xbox', 2: 'PlayStation', 3: 'Steam', 4: 'Battle.net', 5: 'Stadia', 6: 'Epic Games' };
+// The roster membership is distinct from the account supplying cross-save data.
+export function clanMembershipPlatform(member: Member, memberships: UserInfo[] = []): string | undefined {
+  const user = member.destinyUserInfo;
+  const independentPlatforms = !user.crossSaveOverride && new Set([user.membershipType, ...memberships.map(m => m.membershipType)].filter(type => type >= 1 && type <= 6)).size > 1;
+  return (user.crossSaveOverride && user.crossSaveOverride !== user.membershipType) || independentPlatforms ? platforms[user.membershipType] ?? `Platform ${user.membershipType}` : undefined;
+}
 // Bungie DestinyGameVersions flags, including the post-PHP expansions.
 export const gameVersions: [number, string][] = [[1, 'Destiny 2'], [2, 'Curse of Osiris'], [4, 'Warmind'], [8, 'Forsaken'], [16, 'Year 2 Annual Pass'], [32, 'Shadowkeep'], [64, 'Beyond Light'], [128, '30th Anniversary'], [256, 'The Witch Queen'], [512, 'Lightfall'], [1024, 'The Final Shape'], [2048, 'The Edge of Fate'], [4096, 'Renegades']];
 export function memberName(player: PlayerData): string {

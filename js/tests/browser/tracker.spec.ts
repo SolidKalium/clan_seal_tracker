@@ -171,9 +171,8 @@ test('group dividers, compact rows, guardian names, and pointer-transparent tool
   await page.getByRole('button', { name: 'Guardian details: Banshee', exact: true }).hover();
   await expect(page.getByRole('tooltip')).toContainText('Steam Guardian');
   await expect(page.getByRole('tooltip')).toContainText('PSN Guardian');
-  await expect(page.getByRole('tooltip').locator('.objective-details li').first()).toHaveClass('primary-platform');
-  await expect(page.getByRole('tooltip').locator('.objective-details li').first()).toContainText('Steam Guardian');
-  await expect(page.getByRole('tooltip').locator('.primary-platform-label')).toHaveText('Primary save');
+  await expect(page.getByRole('tooltip').locator('.primary-platform')).toHaveCount(0);
+  await expect(page.getByRole('tooltip').locator('.primary-platform-label')).toHaveCount(0);
   await expect(page.getByRole('tooltip')).toContainText('Up to date');
   expect(await page.locator('tbody tr').first().locator('th').evaluate(e => getComputedStyle(e).boxShadow)).not.toBe('none');
   expect(await page.locator('tbody tr').first().locator('td').first().evaluate(e => getComputedStyle(e).boxShadow)).not.toBe('none');
@@ -1945,6 +1944,19 @@ test('clan search supports pagination, empty/error results, and direct ID lookup
   await expect(page.locator('.clan-choices li')).toHaveCount(1);
   await expect(page.locator('.clan-choices li')).toContainText('Beacon');
   await expect(page.locator('.clan-name')).toHaveText('Test Clan');
+  const dialog = page.getByRole('dialog');
+  const bounds = (await dialog.boundingBox())!;
+  for (const point of [
+    { x: bounds.x + 5, y: bounds.y + bounds.height / 2 },
+    { x: bounds.x + bounds.width - 5, y: bounds.y + bounds.height / 2 },
+    { x: bounds.x + bounds.width / 2, y: bounds.y + 5 },
+    { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height - 5 },
+  ]) {
+    await page.mouse.click(point.x, point.y);
+    await expect(dialog).toBeVisible();
+  }
+  await page.mouse.click(bounds.x - 8, bounds.y + 20);
+  await expect(dialog).toHaveCount(0);
 });
 
 test('switching clans during profile refresh ignores late results from the old clan', async ({ page }) => {
@@ -2017,7 +2029,8 @@ async function setupLogin(page: Page, state: { hold?: Promise<void> } = {}) {
     const url = new URL(route.request().url());
     if (url.pathname === '/en/oauth/authorize') return route.fulfill({ contentType: 'text/html', body: '<p>Fixture Bungie authorization</p>' });
     if (url.pathname === '/platform/app/oauth/token/') return route.fulfill({ json: { access_token: 'fixture-private-token', token_type: 'Bearer', expires_in: 3600, membership_id: '7' } });
-    if (url.pathname === '/Platform/User/GetMembershipsForCurrentUser/') return route.fulfill({ json: envelope({ destinyMemberships: [members[2]!.destinyUserInfo], bungieNetUser: { membershipId: '7', displayName: 'Signed-in Crow' } }) });
+    if (url.pathname === '/Platform/Social/Friends/') return route.fulfill({ json: envelope({ friends: [] }) });
+    if (url.pathname === '/Platform/User/GetMembershipsForCurrentUser/') return route.fulfill({ json: envelope({ destinyMemberships: [members[2]!.destinyUserInfo], bungieNetUser: { membershipId: '7', displayName: 'Signed-in Crow', uniqueName: 'Signed-in Crow#0427' } }) });
     if (url.pathname.startsWith('/Platform/GroupV2/User/')) return route.fulfill({ json: envelope({ results: [{ group: { groupId: '4242', name: 'Test Clan' } }] }) });
     if (url.pathname.includes('/Profile/') && route.request().headers().authorization) {
       expect(url.pathname).toContain(members[2]!.destinyUserInfo.membershipId);
@@ -2041,11 +2054,18 @@ test('player login selects their clan, isolates private progression, and signs o
   await page.goto('#/seal/last_wish'); await ready(page);
   await expect(page.getByRole('button', { name: 'Retry profile: Crow' })).toBeVisible();
   await completeLogin(page); await ready(page);
-  await expect(page.locator('.login-name')).toHaveText('Signed-in Crow');
+  await expect(page.locator('.login-display-name')).toHaveText('Signed-in Crow');
+  await expect(page.locator('.login-name-code')).toHaveText('#0427');
+  await expect(page.locator('.login-name')).toHaveAttribute('data-bungie-membership-id', '7');
+  await expect(page.locator('.login-name')).toHaveAttribute('data-membership-id', members[2]!.destinyUserInfo.membershipId);
+  await expect(page.locator('.login-name')).toHaveAttribute('data-membership-type', '3');
+  await expect(page.locator('.sidebar .clan-name')).toHaveAttribute('data-clan-id', '4242');
+  await expect(page.locator('.sidebar .clan-name')).not.toContainText('4242');
   expect(page.url()).toMatch(/\/js\/#\/seal\/last_wish$/);
   await expect(page.getByRole('button', { name: 'Retry profile: Crow' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Choose clan' }).click();
   await expect(page.getByRole('dialog')).toContainText('Your clan');
+  await expect(page.getByRole('dialog').locator('[data-clan-id="4242"]')).toContainText('ID 4242');
   await page.keyboard.press('Escape');
   const publicCache = await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => { const request = indexedDB.open('clan-seal-tracker-v1'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
@@ -2056,7 +2076,7 @@ test('player login selects their clan, isolates private progression, and signs o
   expect(crowEntry.private).toBe(true);
   expect(crowEntry.value.profileRecords.data).toBeUndefined();
   await page.reload(); await ready(page);
-  await expect(page.locator('.login-name')).toHaveText('Signed-in Crow');
+  await expect(page.locator('.login-display-name')).toHaveText('Signed-in Crow');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await ready(page);
   await expect(page.getByRole('button', { name: 'Retry profile: Crow' })).toBeVisible();
   expect(await page.evaluate(() => sessionStorage.getItem('bungie-login:v1'))).toBeNull();
@@ -2081,4 +2101,87 @@ test('plain HTTP redirects to HTTPS on the same port and preserves the page and 
   await page.goto('http://localhost:5173/js/?example=one%20two#/seal/last_wish'); await ready(page);
   expect(page.url()).toBe('https://localhost:5173/js/?example=one%20two#/seal/last_wish');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Rivensbane seal');
+});
+
+
+test('friend clan suggestions explain relationships, stay behind your clan, and disappear on logout', async ({ page }) => {
+  await setupLogin(page);
+  await page.route('https://www.bungie.net/Platform/Social/Friends/', route => {
+    expect(route.request().headers().authorization).toBe('Bearer fixture-private-token');
+    return route.fulfill({ json: envelope({ friends: ['Ada', 'Banshee', 'Crow', 'Drifter'].map((name, i) => ({ relationship: 1, bungieGlobalDisplayName: name, onlineStatus: i === 0 ? 1 : 0, lastSeenAsMembershipId: String(100 + i), lastSeenAsBungieMembershipType: 3, bungieNetUser: { membershipId: String(200 + i) } })) }) });
+  });
+  await page.route('https://www.bungie.net/Platform/GroupV2/User/3/10*/0/1/', route => {
+    expect(route.request().headers().authorization).toBeUndefined();
+    return route.fulfill({ json: envelope({ results: [{ group: { groupId: '555', name: 'Friends Together', groupType: 1, memberCount: 12 } }] }) });
+  });
+  await page.goto('#/seal/last_wish'); await ready(page); await completeLogin(page); await ready(page);
+  await page.getByRole('button', { name: 'Choose clan' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.locator('.clan-choices li').first()).toContainText('Your clan');
+  await expect(dialog).toContainText('Friends: Ada, Banshee, and 2 more');
+  await expect(dialog.getByRole('button', { name: /Friends Together/ })).toContainText('12 members');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await ready(page);
+  await page.getByRole('button', { name: 'Choose clan' }).click();
+  await expect(dialog).not.toContainText('Friends Together');
+});
+
+test('roster platform labels distinguish cross-save memberships while preserving both rows', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const duplicate = { ...members[0]!, destinyUserInfo: { ...members[0]!.destinyUserInfo, membershipType: 1, membershipId: '999', crossSaveOverride: 3 } };
+  await page.route('https://www.bungie.net/Platform/GroupV2/*/Members/**', route => route.fulfill({ json: envelope({ results: [members[0], duplicate], hasMore: false }) }));
+  await page.route('https://www.bungie.net/Platform/User/GetMembershipsById/999/1/', route => route.fulfill({ json: envelope({ destinyMemberships: [members[0]!.destinyUserInfo] }) }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await expect(page.locator('tbody tr')).toHaveCount(2);
+  const label = page.locator('th[data-membership-id="999"]');
+  await expect(label).toContainText('Ada (Xbox)');
+  await expect(page.locator(`th[data-membership-id="${members[0]!.destinyUserInfo.membershipId}"] .joined-platform`)).toContainText('Steam');
+  await label.getByRole('button', { name: 'Guardian details: Ada', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Clan membership: Xbox');
+  await expect(page.getByRole('tooltip')).toContainText('Steam primary save');
+  await expect(page.getByRole('tooltip').locator('.primary-platform')).toContainText('Steam');
+  await expect(page.getByRole('tooltip').locator('.primary-platform-label')).toHaveText('Primary save');
+  await page.goto('#/members'); await ready(page);
+  await expect(page.locator('tbody .joined-platform')).toHaveText([' (Steam)', ' (Xbox)']);
+});
+
+test('independent linked platforms get membership labels and keep their own profile data', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const steam = members[0]!, xbox = { ...steam, destinyUserInfo: { ...steam.destinyUserInfo, membershipType: 1, membershipId: '999', crossSaveOverride: 0 } };
+  await page.route('https://www.bungie.net/Platform/GroupV2/*/Members/**', route => route.fulfill({ json: envelope({ results: [steam, xbox], hasMore: false }) }));
+  await page.route('https://www.bungie.net/Platform/User/GetMembershipsById/**', route => route.fulfill({ json: envelope({ destinyMemberships: [steam.destinyUserInfo, xbox.destinyUserInfo] }) }));
+  let xboxRequested = false;
+  await page.route('https://www.bungie.net/Platform/Destiny2/1/Profile/999/**', route => {
+    xboxRequested = true;
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: xbox.destinyUserInfo } }, profileRecords: { data: { records: { '42': { state: 4 }, '43': { state: 4 } } } } }) });
+  });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  expect(xboxRequested).toBe(true);
+  await expect(page.locator('tbody tr')).toHaveCount(2);
+  await expect(page.locator('th[data-membership-id="999"] .joined-platform')).toContainText('Xbox');
+  await expect(page.locator(`th[data-membership-id="${steam.destinyUserInfo.membershipId}"] .joined-platform`)).toContainText('Steam');
+  await page.locator('th[data-membership-id="999"]').getByRole('button', { name: 'Guardian details: Ada', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('this platform’s own save; cross-save is off');
+  await expect(page.getByRole('tooltip').locator('.primary-platform-label')).toHaveCount(0);
+  await page.goto('#/members'); await ready(page);
+  await expect(page.locator('tbody .joined-platform')).toHaveCount(2);
+});
+
+test('cross-save duplicate clan memberships collapse into the primary row with an explanatory tooltip', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const account = { membershipType: 254, membershipId: '7', displayName: 'Ada' };
+  const primary = { ...members[0]!, bungieNetUserInfo: account, destinyUserInfo: { ...members[0]!.destinyUserInfo, crossSaveOverride: 3 } };
+  const duplicate = { ...primary, destinyUserInfo: { ...primary.destinyUserInfo, membershipType: 1, membershipId: '999' } };
+  await page.route('https://www.bungie.net/Platform/GroupV2/*/Members/**', route => route.fulfill({ json: envelope({ results: [duplicate, primary], hasMore: false }) }));
+  await page.route('https://www.bungie.net/Platform/User/GetMembershipsById/**', route => route.fulfill({ json: envelope({ destinyMemberships: [primary.destinyUserInfo, duplicate.destinyUserInfo] }) }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+  await expect(page.locator(`th[data-membership-id="${primary.destinyUserInfo.membershipId}"]`)).toBeVisible();
+  await page.getByRole('button', { name: 'Guardian details: Ada', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Also a clan member on Xbox. That save is currently overridden by the Steam save.');
+  await expect(page.getByRole('tooltip').locator('[data-membership-id="999"]')).toBeVisible();
+  await page.goto('#/members'); await ready(page);
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+  await page.locator('tbody th a').hover();
+  await expect(page.getByRole('tooltip')).toContainText('Also a clan member on Xbox');
 });

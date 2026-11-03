@@ -191,3 +191,7 @@ tbody tr:hover>td.commendation-section,tbody tr:focus-within>td.commendation-sec
 
 .sidebar-actions{display:contents}
 @media(max-width:700px){.shell:not(.sidebar-collapsed) .sidebar-actions{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;margin-bottom:13px}.shell:not(.sidebar-collapsed) .sidebar-actions .clan-picker-button,.shell:not(.sidebar-collapsed) .sidebar-actions .login-controls{margin:0}.shell:not(.sidebar-collapsed) .login-controls{flex-direction:row;align-items:center;gap:8px}.shell:not(.sidebar-collapsed) .login-name{max-width:140px}}
+
+.login-name-code{font-size:.92em;font-weight:400;color:var(--muted);opacity:.8;white-space:nowrap}
+
+.joined-platform{font-size:.75em;font-weight:400;color:var(--muted);white-space:nowrap}.clan-membership-platform{font-size:11px;color:var(--muted);line-height:1.5}

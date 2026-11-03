@@ -48,6 +48,6 @@ export interface Seal { requirements?: import('./completion').SealRequirements; 
 export type DataStatus = 'fresh' | 'cached' | 'stale' | 'private' | 'unavailable';
 export interface Cached<T> { key: string; value: T; fetchedAt: number; components?: number[]; lastAttemptAt?: number; error?: string; errorInfo?: import('./diagnostics').RequestDiagnostic; private?: boolean }
 export interface LoadResult<T> { entry?: Cached<T>; status: DataStatus; error?: string }
-export interface PlayerData { member: Member; profile?: Profile; status: DataStatus | 'loading'; fetchedAt?: number; error?: string }
+export interface PlayerData { member: Member; otherClanMemberships?: Member[]; profile?: Profile; status: DataStatus | 'loading'; fetchedAt?: number; error?: string }
 export interface ObjectiveCell { hash: string; name: string; progress: number; target: number; complete: boolean; missing: boolean; text: string; fraction: number }
 export interface Cell { sealGildings?: number; patternUnlocked?: boolean; scoringClass?: { name: string; icon?: string; armorFraction?: number; best: boolean }; conditions?: import('./recordState').RecordCondition[]; unclaimed?: boolean; variants?: { name: string; icon?: string; complete: boolean; missing: boolean; setComplete: boolean; setMissing: boolean }[]; objectives: ObjectiveCell[]; fraction: number; complete: boolean; missing: boolean; text: string; detail: string; unowned: boolean }

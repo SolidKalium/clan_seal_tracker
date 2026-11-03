@@ -30,3 +30,14 @@ it('keeps duplicate-class guardians and distinguishes missing classes from unava
   expect(accountGuardians({ characters: { privacy: 2 } })).toBeUndefined();
   expect(guardianPower(undefined, 0)).toBe('—');
 });
+
+it('labels independent multi-platform memberships but leaves single-platform and cross-save-primary rows unlabelled', async () => {
+  const { clanMembershipPlatform } = await import('../src/members');
+  const member = { destinyUserInfo: { membershipType: 3, membershipId: '1', displayName: 'Name', crossSaveOverride: 0 } };
+  const linked = [member.destinyUserInfo, { membershipType: 1, membershipId: '2', displayName: 'Xbox' }];
+  expect(clanMembershipPlatform(member, linked)).toBe('Steam');
+  expect(clanMembershipPlatform(member, [member.destinyUserInfo])).toBeUndefined();
+  expect(clanMembershipPlatform(member)).toBeUndefined();
+  expect(clanMembershipPlatform({ destinyUserInfo: { ...member.destinyUserInfo, crossSaveOverride: 3 } }, linked)).toBeUndefined();
+  expect(clanMembershipPlatform({ destinyUserInfo: { ...member.destinyUserInfo, crossSaveOverride: 1 } }, linked)).toBe('Steam');
+});

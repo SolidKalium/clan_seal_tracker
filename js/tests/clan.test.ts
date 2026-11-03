@@ -15,3 +15,17 @@ it('labels all Bungie runtime clan ranks and handles unknown data', () => {
   expect(clanRankLabel()).toBe('Rank unavailable');
   expect(clanRankLabel(99)).toBe('Unknown rank');
 });
+
+it('combines only memberships of the same Bungie account with the same nonzero override, preferring its primary membership', async () => {
+  const { collapseCrossSaveMembers } = await import('../src/clan');
+  const player = (type: number, override: number, account = '7'): import('../src/types').PlayerData => ({ status: 'fresh', member: { destinyUserInfo: { membershipId: String(type), membershipType: type, displayName: 'Same name', crossSaveOverride: override }, bungieNetUserInfo: { membershipId: account, membershipType: 254, displayName: 'Same name' } } });
+  const xbox = player(1, 3), steam = player(3, 3);
+  const result = collapseCrossSaveMembers([xbox, steam]);
+  expect(result).toHaveLength(1);
+  expect(result[0]?.member).toBe(steam.member);
+  expect(result[0]?.otherClanMemberships).toEqual([xbox.member]);
+  expect(collapseCrossSaveMembers([player(1, 0), player(3, 0)])).toHaveLength(2);
+  expect(collapseCrossSaveMembers([player(1, 1), player(3, 3)])).toHaveLength(2);
+  expect(collapseCrossSaveMembers([player(1, 3), player(3, 3, '8')])).toHaveLength(2);
+  expect(collapseCrossSaveMembers([{ ...xbox, member: { ...xbox.member, bungieNetUserInfo: undefined } }, steam])).toHaveLength(2);
+});

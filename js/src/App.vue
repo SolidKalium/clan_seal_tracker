@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+import { clanMembershipPlatform } from './members';
+import { FriendDirectory, type FriendClan } from './friends';
 import { PlayerLogin, type PlayerAccount } from './auth';
 import RecordDetails from './RecordDetails.vue';
 import MembersPage from './MembersPage.vue';
@@ -25,7 +27,7 @@ import { eachLimited, TrackerRepository } from './repository';
 import { buildSeal, buildSealTemplate, selectRecord, headingCell, bestBadgeClass, badgeOwnership, formatClasses, sealAwarded } from './domain';
 import type { PageMode, BadgeOwnership } from './domain';
 import { profileFresh } from './policy';
-import { compareClanTenure } from './clan';
+import { collapseCrossSaveMembers, compareClanTenure } from './clan';
 import type { Cell, Definitions, Heading, LoadResult, PageConfig, PlayerData, Profile, Roster, UserInfo, Seal } from './types';
 
 const catalog = catalogJson as PageConfig[];
@@ -35,6 +37,10 @@ const account = shallowRef<PlayerAccount>();
 const ownClan = shallowRef<ClanChoice>();
 const loginNotice = ref('');
 const login = new PlayerLogin(config as { apiKey: string; oauthClientId?: string; oauthRedirectUri?: string }, undefined, message => { if (account.value) void signOut(message); else loginNotice.value = message; });
+const friendDirectory = new FriendDirectory(login, transport);
+const friendClans = shallowRef<FriendClan[]>([]);
+const friendsLoading = ref(false), friendsError = ref('');
+let friendsGeneration = 0;
 let loginExpiryTimer: ReturnType<typeof setTimeout> | undefined;
 const fallbackClan: ClanChoice = { id: config.clanId, name: `Clan ${config.clanId}` };
 const clanSelection = shallowRef(readClanSelection(undefined, fallbackClan));
@@ -46,6 +52,8 @@ const passPreferenceKey = (id = repository.clanId) => `lastProfilePass:v2:${id}`
 const definitions = shallowRef<Definitions>();
 const roster = shallowRef<Roster>();
 const players = shallowRef<Record<string, PlayerData>>({});
+const displayedPlayers = computed(() => collapseCrossSaveMembers(Object.values(players.value)));
+const linkedPlatforms = shallowRef<Record<string, UserInfo[]>>({});
 const busy = ref(true), phase = ref('Starting tracker…'), issues = ref<string[]>([]), storageWarning = ref('');
 const rosterState = ref(''), definitionsState = ref('');
 const profileSyncActive = ref(false), profileSyncDone = ref(0), profileSyncTotal = ref(0);
@@ -234,7 +242,7 @@ const headingTitle = computed(() => routeMode.value === 'badge'
   ? resolveStringVariables(definitions.value?.nodes[currentPage.value?.badgeNodeHash ?? '']?.displayProperties.name || currentPage.value?.name || '')
   : routeMode.value === 'seal' ? selected.value?.title ?? viewPage.value?.name : currentPage.value?.id === 'monument_of_triumph' ? 'Monument of Triumph' : viewPage.value?.name);
 const headingKind = computed(() => currentPage.value?.category === 'Other' && !currentPage.value?.sealNodeHash ? undefined : routeMode.value === 'badge' ? 'badge' : routeMode.value === 'seal' && currentPage.value?.sealNodeHash ? 'seal' : routeMode.value === 'triumphs' ? 'triumphs' : undefined);
-const badgeOwnerCount = computed(() => selected.value ? Object.values(players.value).filter(p => badgeOwnership(p.profile, selected.value!.headings).completeClasses.length > 0).length : 0);
+const badgeOwnerCount = computed(() => selected.value ? displayedPlayers.value.filter(p => badgeOwnership(p.profile, selected.value!.headings).completeClasses.length > 0).length : 0);
 const activeTriumphsOnly = computed(() => routeMode.value === 'triumphs' && !currentPage.value?.parentPageId && !selected.value?.legacy && pageEditions.value.some(page => page.parentPageId && sealsById.value[page.id]?.legacy));
 const viewDescription = computed(() => currentPage.value?.category === 'Other' && !currentPage.value?.sealNodeHash || routeMode.value === 'seal' || routeMode.value === 'badge' ? selected.value?.description : '');
 const breadcrumb = computed(() => {
@@ -259,7 +267,7 @@ const summaryLabel = computed(() => collectionView.value ? 'Collected' : routeMo
 function showSummary(event: Event, player?: string, counts?: CompletionCounts) {
   if (selected.value) void openTooltip(event, { kind: 'summary', seal: selected.value, label: summaryLabel.value, player, counts, badge: routeMode.value === 'badge', broader: routeMode.value === 'raid' || routeMode.value === 'triumphs' });
 }
-const known = computed(() => Object.values(players.value).filter(p => !!p.profile?.profileRecords?.data));
+const known = computed(() => displayedPlayers.value.filter(p => !!p.profile?.profileRecords?.data));
 const resolved = computed(() => Object.values(players.value).filter(p => p.status !== 'loading').length);
 const failedCount = computed(() => Object.values(players.value).filter(p => p.status === 'unavailable').length);
 const staleCount = computed(() => Object.values(players.value).filter(p => p.status === 'stale' || p.status === 'private').length);
@@ -286,7 +294,8 @@ const rows = computed(() => {
   if (!seal) return [];
   const scored = seal.headings.filter(h => !h.skip);
   const gildingIndex = seal.headings.findIndex(h => h.metric === 'gildingCount' || h.metric === 'gilded');
-  return Object.entries(players.value).map(([id, p]) => {
+  return displayedPlayers.value.map(p => {
+    const id = memberKey(p.member);
     let hasData = routeMode.value === 'badge' ? !!(p.profile?.profileCollectibles?.data || p.profile?.characterCollectibles?.data) : !!p.profile?.profileRecords?.data;
     const classIndex = badgeClass.value === 'best' ? bestBadgeClass(p.profile, seal.headings) : Math.max(0, Number(badgeClass.value));
     const headings = (selectedTemplate.value?.headings ?? seal.headings).map(h => {
@@ -326,6 +335,16 @@ function applyProfile(member: PlayerData['member'], result: LoadResult<Profile>)
   if (previous && JSON.stringify(previous.member) === JSON.stringify(member) && previous.profile === result.entry?.value && (previous.status === result.status || result.status === 'cached' && previous.status === 'fresh') && previous.fetchedAt === result.entry?.fetchedAt && previous.error === result.error) return;
   players.value = { ...players.value, [memberKey(member)]: { member, profile: result.entry?.value, status: result.status, fetchedAt: result.entry?.fetchedAt, error: result.error } };
   storageWarning.value = store.warning;
+}
+async function loadClanPlatforms(value: Roster, generation: number, repo: TrackerRepository) {
+  await eachLimited(value.members.filter(member => !member.destinyUserInfo.crossSaveOverride), async member => {
+    const key = memberKey(member);
+    if (generation !== clanGeneration || linkedPlatforms.value[key]) return;
+    try {
+      const memberships = await repo.memberships(member.destinyUserInfo);
+      if (generation === clanGeneration) linkedPlatforms.value = { ...linkedPlatforms.value, [key]: memberships };
+    } catch { /* Keep the unlabelled row until linked platforms can be checked. */ }
+  });
 }
 async function hydrate(rosterValue: Roster) {
   const generation = clanGeneration;
@@ -370,6 +389,7 @@ async function load(force = false) {
     rosterState.value = r.status;
     issues.value = [d.error, r.error].filter((v): v is string => !!v);
     if (r.entry) {
+      void loadClanPlatforms(r.entry.value, generation, repo);
       // Remember verified names, not just the name in a search result.
       const selectedClan = { ...clanSelection.value.selected, name: r.entry.value.name, memberCount: r.entry.value.members.length };
       clanSelection.value = { selected: selectedClan, recent: recentClans(clanSelection.value.recent, selectedClan) };
@@ -401,6 +421,20 @@ async function load(force = false) {
     if (current()) { issues.value = [...issues.value, 'The tracker could not finish loading. Retry to continue.']; phase.value = 'Loading stopped'; }
   } finally { if (current()) { profileSyncActive.value = false; busy.value = false; storageWarning.value = store.warning; } }
 }
+async function loadFriends(force = false) {
+  if (!account.value || friendsLoading.value) return;
+  const generation = friendsGeneration;
+  friendsLoading.value = true; friendsError.value = '';
+  try {
+    const result = await friendDirectory.load(force);
+    if (generation !== friendsGeneration) return;
+    friendClans.value = result.clans;
+    if (result.failed) friendsError.value = `Could not check clans for ${result.failed} friends. Other suggestions are available.`;
+  } catch {
+    if (generation === friendsGeneration) friendsError.value = 'Could not load friends. Enable ReadUserData in the Bungie app permissions and sign in again, or retry if this was a connection error.';
+  } finally { if (generation === friendsGeneration) friendsLoading.value = false; }
+}
+watch(clanPickerOpen, open => { if (open) void loadFriends(); });
 function signIn() {
   loginNotice.value = '';
   try { window.location.assign(login.begin()); }
@@ -408,6 +442,7 @@ function signIn() {
 }
 async function signOut(message = '') {
   clearTimeout(loginExpiryTimer);
+  ++friendsGeneration; friendDirectory.clear(); friendClans.value = []; friendsLoading.value = false; friendsError.value = '';
   login.end(); account.value = undefined; ownClan.value = undefined; loginNotice.value = message;
   // Invalidate pending callbacks and remove every private value from the UI immediately.
   ++clanGeneration; closeTooltip(); detail.value = undefined; players.value = {};
@@ -424,7 +459,7 @@ async function selectClan(clan: ClanChoice) {
   closeTooltip(); detail.value = undefined;
   clanSelection.value = { selected: clan, recent: recentClans(clanSelection.value.recent, clan) };
   repository = new TrackerRepository(store, transport, clan.id, config.language, login);
-  roster.value = undefined; players.value = {}; rosterState.value = ''; clanCheckedAt.value = undefined;
+  roster.value = undefined; players.value = {}; linkedPlatforms.value = {}; rosterState.value = ''; clanCheckedAt.value = undefined;
   lastProfilePass.value = undefined; rosterHydration = Promise.resolve();
   issues.value = []; profileSyncActive.value = false; profileSyncDone.value = 0; profileSyncTotal.value = 0;
   search.value = ''; filter.value = 'all';
@@ -492,7 +527,7 @@ onMounted(async () => {
     search.value = typeof preferences.search === 'string' ? preferences.search : '';
     filter.value = ['all', 'complete', 'incomplete', 'unavailable'].includes(preferences.filter) ? preferences.filter : 'all';
     sort.value = ['progress', 'highest', 'name', 'tenure'].includes(preferences.sort) ? preferences.sort : 'progress';
-  } finally { preferencesReady.value = true; busy.value = false; void load(); }
+  } finally { preferencesReady.value = true; busy.value = false; void load(); void loadFriends(); }
 });
 onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('focus', checkLoginExpiry); document.removeEventListener('visibilitychange', checkLoginExpiry); window.removeEventListener('hashchange', changedHash); window.removeEventListener('resize', closeTooltip); window.removeEventListener('scroll', closeTooltip); headerObserver?.disconnect(); topbarObserver?.disconnect(); closeTooltip(); });
 </script>
@@ -513,17 +548,17 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
       <button class="sidebar-toggle" :aria-label="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" :aria-expanded="!sidebarCollapsed" aria-controls="clan-menu" :title="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" @click="sidebarCollapsed = !sidebarCollapsed"><svg viewBox="0 0 20 20" aria-hidden="true" :class="{ reversed: sidebarCollapsed }"><path d="m12 4-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
       <ClanEmblem :emblem="roster?.emblem" :name="roster?.name ?? 'Clan'" />
       <p v-if="!sidebarCollapsed" class="eyebrow">CLAN</p>
-      <h2 class="clan-name" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }">{{ roster?.name ?? clanSelection.selected.name }}</h2>
+      <h2 class="clan-name" :data-clan-id="clanSelection.selected.id" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }">{{ roster?.name ?? clanSelection.selected.name }}</h2>
       <div class="sidebar-actions">
       <button class="clan-picker-button" :class="{ 'clan-picker-collapsed': sidebarCollapsed }" aria-label="Choose clan" :disabled="!preferencesReady" @click="clanPickerOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><span v-if="!sidebarCollapsed">Choose clan</span></button>
       <div class="login-controls" :class="{ 'login-collapsed': sidebarCollapsed }">
-        <template v-if="account"><span v-if="!sidebarCollapsed" class="login-name">{{ account.name }}</span><button type="button" aria-label="Sign out" @click="signOut()"><span aria-hidden="true">↪</span><span v-if="!sidebarCollapsed">Sign out</span></button></template>
+        <template v-if="account"><span v-if="!sidebarCollapsed" class="login-name" :data-bungie-membership-id="account.membershipId" :data-membership-id="account.primary?.membershipId" :data-membership-type="account.primary?.membershipType"><span class="login-display-name">{{ account.name }}</span><span v-if="account.nameCode" class="login-name-code">#{{ account.nameCode }}</span></span><button type="button" aria-label="Sign out" @click="signOut()"><span aria-hidden="true">↪</span><span v-if="!sidebarCollapsed">Sign out</span></button></template>
         <button v-else type="button" aria-label="Sign in with Bungie" :disabled="!preferencesReady" @click="signIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span v-if="!sidebarCollapsed">Sign in with Bungie</span></button>
       </div>
       </div>
       <p v-if="loginNotice" class="login-notice" role="status">{{ loginNotice }}</p>
       <div id="clan-menu" v-show="!sidebarCollapsed" class="sidebar-content">
-      <p class="muted small">{{ roster ? `${roster.members.length} guardians` : busy ? 'Connecting to Bungie' : 'Check the connection notice' }}</p>
+      <p class="muted small">{{ roster ? `${displayedPlayers.length} guardians` : busy ? 'Connecting to Bungie' : 'Check the connection notice' }}</p>
       <a href="#/" class="nav-home" :class="{ active: isHome }">Overview <span>↗</span></a>
       <div v-for="group in catalogGroups" :key="group.name" class="sidebar-section">
       <button class="eyebrow section-toggle" :aria-expanded="openSections.includes(group.category)" :aria-controls="group.id" @click="toggleSection(group.category)"><span>{{ group.name }}</span><svg viewBox="0 0 20 20" aria-hidden="true" :class="{ expanded: openSections.includes(group.category) }"><path d="m7 4 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
@@ -540,7 +575,7 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
         <section class="page-heading seal-heading"><div><p class="eyebrow">{{ breadcrumb }}</p><h1>{{ headingTitle }}<span v-if="headingKind" class="heading-kind">{{ ' ' + headingKind }}</span></h1></div><div v-if="headingKind === 'seal' || headingKind === 'badge'" class="heading-tally"><img v-if="selected?.icon" class="heading-owner-icon" :class="`heading-${headingKind}-icon`" :src="`https://www.bungie.net${selected.icon}`" alt=""><div class="title-tally"><strong>{{ headingKind === 'badge' ? badgeOwnerCount : selected ? titleCount(selected) : '—' }}</strong><span>{{ headingKind === 'badge' ? 'badge owners' : 'title holders' }}</span></div></div></section>
         <ViewTabs :label="viewLabel" :tabs="viewTabs" />
       </template>
-      <MembersPage v-if="isMembers" :key="clanSelection.selected.id" :players="Object.values(players)" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" :tooltip-id="tooltip?.kind === 'characters' ? 'record-tooltip' : undefined" @show-characters="showCharacterTooltip" @close-tooltip="closeTooltip" />
+      <MembersPage v-if="isMembers" :key="clanSelection.selected.id" :players="displayedPlayers" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" :tooltip-id="tooltip?.kind === 'characters' ? 'record-tooltip' : undefined" @show-guardian="showGuardianTooltip" @show-characters="showCharacterTooltip" @close-tooltip="closeTooltip" />
       <template v-else-if="isHome">
         <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, plan you fireteam, and make the next run count.</p></section>
         <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => s.page.sealNodeHash && !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
@@ -551,7 +586,7 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
             <SealWatermark :icon="sealsById[page.id]?.icon" />
             <span class="card-top"><span class="card-icon" aria-hidden="true">◇</span><span class="eyebrow">{{ page.seasonNumber ? `SEASON ${page.seasonNumber}` : group.kind.toUpperCase() + (group.category === 'Raid seals' ? ` ${String(i + 1).padStart(2, '0')}` : '') }}<span v-if="sealsById[page.id]?.legacy"> · LEGACY</span></span></span>
             <h3>{{ sealsById[page.id]?.title ?? page.name }}</h3><p>{{ page.name }}</p>
-            <div class="card-bottom"><span v-if="sealsById[page.id]?.unavailable">Unavailable in current manifest</span><span v-else-if="definitions && page.sealNodeHash">{{ titleCount(sealsById[page.id]!) }} title holders</span><span v-else-if="definitions && page.category === 'Other badges'">{{ Object.values(players).filter(p => badgeOwnership(p.profile, sealsById[page.id]?.headings ?? []).completeClasses.length > 0).length }} badge owners</span><span v-else-if="page.category === 'Other'">{{ otherPageSummary(page) }}</span><span v-else-if="definitions">{{ sealsById[page.id]?.headings.length ?? 0 }} triumphs</span><span v-else>Loading definitions…</span><span aria-hidden="true">↗</span></div>
+            <div class="card-bottom"><span v-if="sealsById[page.id]?.unavailable">Unavailable in current manifest</span><span v-else-if="definitions && page.sealNodeHash">{{ titleCount(sealsById[page.id]!) }} title holders</span><span v-else-if="definitions && page.category === 'Other badges'">{{ displayedPlayers.filter(p => badgeOwnership(p.profile, sealsById[page.id]?.headings ?? []).completeClasses.length > 0).length }} badge owners</span><span v-else-if="page.category === 'Other'">{{ otherPageSummary(page) }}</span><span v-else-if="definitions">{{ sealsById[page.id]?.headings.length ?? 0 }} triumphs</span><span v-else>Loading definitions…</span><span aria-hidden="true">↗</span></div>
           </a>
         </div>
         </section>
@@ -587,7 +622,7 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
             </thead>
             <tbody>
               <tr v-for="row in rows" :key="row.id" :class="{ 'row-complete': row.complete }">
-                <th scope="row" class="player-column" :data-guardian-id="row.id" :data-membership-id="row.member.destinyUserInfo.membershipId" :data-membership-type="row.member.destinyUserInfo.membershipType"><div class="guardian-row"><button class="guardian-button" :aria-label="`Guardian details: ${row.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showGuardianTooltip($event, row)" @mouseleave="closeTooltip" @focus="showGuardianTooltip($event, row)" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="player-name">{{ row.name }} <span v-if="row.earned" class="earned" :class="{ 'earned-gold': row.badge?.allClasses }" :aria-label="row.earnedLabel">✦</span><span v-if="['stale', 'private', 'unavailable'].includes(row.status)" class="guardian-warning" :aria-label="statusLabel(row)">●</span></span></button><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :disabled="busy" :aria-label="`Retry profile: ${row.name}`" @click="retryPlayer(row.id)">↻</button></div></th>
+                <th scope="row" class="player-column" :data-guardian-id="row.id" :data-membership-id="row.member.destinyUserInfo.membershipId" :data-membership-type="row.member.destinyUserInfo.membershipType"><div class="guardian-row"><button class="guardian-button" :aria-label="`Guardian details: ${row.name}`" :aria-describedby="tooltip ? 'record-tooltip' : undefined" @mouseenter="showGuardianTooltip($event, row)" @mouseleave="closeTooltip" @focus="showGuardianTooltip($event, row)" @blur="closeTooltip" @keydown.esc="closeTooltip"><span class="player-name">{{ row.name }}<small v-if="clanMembershipPlatform(row.member, linkedPlatforms[memberKey(row.member)])" class="joined-platform"> ({{ clanMembershipPlatform(row.member, linkedPlatforms[memberKey(row.member)]) }})</small> <span v-if="row.earned" class="earned" :class="{ 'earned-gold': row.badge?.allClasses }" :aria-label="row.earnedLabel">✦</span><span v-if="['stale', 'private', 'unavailable'].includes(row.status)" class="guardian-warning" :aria-label="statusLabel(row)">●</span></span></button><button v-if="['private', 'unavailable', 'stale'].includes(row.status)" class="retry" :disabled="busy" :aria-label="`Retry profile: ${row.name}`" @click="retryPlayer(row.id)">↻</button></div></th>
                 <td v-if="!metricView" class="progress-column summary-cell" tabindex="0" :aria-label="`${row.name}: ${summaryLabel}`" :aria-describedby="tooltip?.kind === 'summary' ? 'record-tooltip' : undefined" @mouseenter="showSummary($event, row.name, row.counts)" @mouseleave="closeTooltip" @focus="showSummary($event, row.name, row.counts)" @blur="closeTooltip" @keydown.esc="closeTooltip"><template v-if="row.hasData"><strong>{{ Math.round(row.fraction * 100) }}<small>%</small></strong><span class="mini-progress"><span :style="{ width: `${row.fraction * 100}%` }"></span></span></template><span v-else class="muted">{{ row.status === 'loading' ? 'Loading…' : 'No data' }}</span></td>
                 <template v-for="(cell, i) in row.cells" :key="row.headings[i]!.hash">
                   <td v-if="cell.variants" class="record-end armor-ownership-cell" :class="{ 'cell-complete': cell.complete, 'cell-unclaimed': cell.unclaimed, 'cell-missing': cell.variants.every(v => v.missing) }" :data-record-tooltip="`player:${row.id}:${row.headings[i]!.hash}`" @mouseenter="showTooltip($event, row.headings[i]!, cell, row.name)" @mouseleave="leaveRecordTooltip" @focusin="showTooltip($event, row.headings[i]!, cell, row.name)" @focusout="leaveRecordTooltip">
@@ -615,7 +650,7 @@ onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('
         <p v-else class="footnote"><template v-if="routeMode === 'raid' || routeMode === 'badge'">Collection progress uses one whole class set (the most complete by default). Shared items count for every class. </template><template v-if="routeMode === 'raid' || routeMode === 'triumphs'">The percentage averages the columns included in this table<span v-if="selected.page.sealNodeHash">, separately from the in-game seal requirements</span>. </template><template v-if="selected.page.category === 'Activities'"> Gilding requirements are included in this view’s percentage.</template> Day-one triumphs and lifetime gilding counts do not affect the percentage. A missing record is shown separately from an incomplete one. Watermarks explain content locks and visibility conditions on hover. Click a cell for objective details.</p>
       </template>
       <template v-else-if="!isHome"><section :class="currentPage ? 'view-unavailable' : 'empty-state'" :role="currentPage ? 'status' : undefined"><h1 v-if="!currentPage">{{ definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions ? busy ? 'Loading definitions…' : 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section></template>
-      <Teleport to="body"><ClanPicker v-if="clanPickerOpen" :selected="clanSelection.selected" :recent="clanSelection.recent" :fallback="{ ...fallbackClan, name: clanSelection.recent.find(clan => clan.id === fallbackClan.id)?.name ?? fallbackClan.name }" :own="ownClan" :directory="clanDirectory" @select="selectClan" @close="clanPickerOpen = false" /></Teleport>
+      <Teleport to="body"><ClanPicker v-if="clanPickerOpen" :selected="clanSelection.selected" :recent="clanSelection.recent" :fallback="{ ...fallbackClan, name: clanSelection.recent.find(clan => clan.id === fallbackClan.id)?.name ?? fallbackClan.name }" :own="ownClan" :friends="friendClans" :friends-loading="friendsLoading" :friends-error="friendsError" @retry-friends="loadFriends(true)" :directory="clanDirectory" @select="selectClan" @close="clanPickerOpen = false" /></Teleport>
       <Teleport to="body">
         <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><CharacterDetails v-if="tooltip.kind === 'characters'" :player="tooltip.player" /><RecordDetails v-else-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" :unit="tooltip.seal.page.kind === 'seals' ? 'seal' : undefined" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><div class="sync-history">
           <h4>Latest checks</h4>

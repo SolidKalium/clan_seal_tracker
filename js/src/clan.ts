@@ -20,3 +20,21 @@ export function clanRankLabel(memberType?: number): string {
   const ranks: Record<number, string> = { 0: 'None', 1: 'Beginner', 2: 'Member', 3: 'Admin', 4: 'Acting Founder', 5: 'Founder' };
   return memberType === undefined ? 'Rank unavailable' : ranks[memberType] ?? 'Unknown rank';
 }
+
+// Only an account-wide cross-save override makes these roster memberships
+// equivalent. Independent saves and unknown Bungie identities stay separate.
+export function collapseCrossSaveMembers(players: import('./types').PlayerData[]): import('./types').PlayerData[] {
+  const groups = new Map<string, import('./types').PlayerData[]>();
+  for (const player of players) {
+    const user = player.member.destinyUserInfo;
+    const account = player.member.bungieNetUserInfo?.membershipId;
+    const key = account && user.crossSaveOverride ? `account:${account}:${user.crossSaveOverride}` : `membership:${user.membershipType}:${user.membershipId}`;
+    const group = groups.get(key) ?? [];
+    group.push(player); groups.set(key, group);
+  }
+  return [...groups.values()].map(group => {
+    if (group.length === 1) return group[0]!;
+    const primary = group.find(p => p.member.destinyUserInfo.membershipType === p.member.destinyUserInfo.crossSaveOverride) ?? group[0]!;
+    return { ...primary, otherClanMemberships: group.filter(p => p !== primary).map(p => p.member) };
+  });
+}

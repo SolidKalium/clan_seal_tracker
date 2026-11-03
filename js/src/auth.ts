@@ -8,7 +8,7 @@ const browserSession: SessionStorage = { getItem: key => window.sessionStorage.g
 const SESSION_KEY = 'bungie-login:v1', PENDING_KEY = 'bungie-login-pending:v1';
 interface Token { accessToken: string; expiresAt: number; membershipId: string; clientId: string }
 interface Pending { state: string; createdAt: number; returnHash: string; redirectUri: string }
-export interface PlayerAccount { name: string; membershipId: string; memberships: UserInfo[]; primary?: UserInfo }
+export interface PlayerAccount { name: string; nameCode?: string; membershipId: string; memberships: UserInfo[]; primary?: UserInfo }
 export interface SelfAccess {
   store: CacheStore;
   primary(user: UserInfo): UserInfo | undefined;
@@ -72,11 +72,16 @@ export class PlayerLogin implements SelfAccess {
     }
     if (this.token) {
       try {
-        const data = await this.api<{ destinyMemberships: UserInfo[]; primaryMembershipId?: string; bungieNetUser: { membershipId: string; uniqueName?: string; displayName: string } }>('/User/GetMembershipsForCurrentUser/');
+        const data = await this.api<{ destinyMemberships: UserInfo[]; primaryMembershipId?: string; bungieNetUser: { membershipId: string; uniqueName?: string; displayName: string; cachedBungieGlobalDisplayName?: string; cachedBungieGlobalDisplayNameCode?: number } }>('/User/GetMembershipsForCurrentUser/');
         if (data.bungieNetUser?.membershipId !== this.token?.membershipId || !Array.isArray(data.destinyMemberships)) throw new Error();
         const memberships = data.destinyMemberships.filter(u => Number.isInteger(u.membershipType) && /^\d+$/.test(u.membershipId));
         const primary = memberships.find(u => u.membershipId === data.primaryMembershipId) ?? memberships.find(u => u.crossSaveOverride === u.membershipType) ?? memberships[0];
-        this.account = { name: data.bungieNetUser.uniqueName || data.bungieNetUser.displayName, membershipId: data.bungieNetUser.membershipId, memberships, primary };
+        const identity = data.bungieNetUser;
+        const fullName = identity.cachedBungieGlobalDisplayName || identity.uniqueName || primary?.bungieGlobalDisplayName || identity.displayName;
+        const suffix = /^(.*)#(\d{4})$/.exec(fullName);
+        const code = identity.cachedBungieGlobalDisplayNameCode ?? primary?.bungieGlobalDisplayNameCode;
+        const nameCode = Number.isInteger(code) && code! >= 0 && code! <= 9999 ? String(code).padStart(4, '0') : suffix?.[2];
+        this.account = { name: suffix?.[1] ?? fullName, nameCode, membershipId: data.bungieNetUser.membershipId, memberships, primary };
       } catch { this.end(); throw new Error('Could not verify your Bungie account. Please sign in again.'); }
     }
     return callback && !!this.account;
@@ -89,7 +94,7 @@ export class PlayerLogin implements SelfAccess {
   private authorization(path: string): string {
     if (!this.token || this.token.expiresAt <= Date.now()) { this.end('Your login expired. Sign in again to access your private progression.'); throw new Error('Login expired.'); }
     const match = /^\/Destiny2\/(\d+)\/Profile\/(\d+)\/\?components=[\d,]+$/.exec(path);
-    if (path !== '/User/GetMembershipsForCurrentUser/' && (!match || !this.account?.memberships.some(u => u.membershipType === Number(match[1]) && u.membershipId === match[2]))) throw new Error('Authenticated requests are limited to your own profile.');
+    if (path !== '/User/GetMembershipsForCurrentUser/' && path !== '/Social/Friends/' && (!match || !this.account?.memberships.some(u => u.membershipType === Number(match[1]) && u.membershipId === match[2]))) throw new Error('Authenticated requests are limited to your own profile and friend list.');
     return this.token.accessToken;
   }
   api<T>(path: string) { return this.transport.api<T>(path); }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { clanMembershipPlatform } from './members';
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import type { PlayerData, UserInfo } from './types';
 import { clanRankLabel, compareClanTenure } from './clan';
 import { eachLimited } from './repository';
 import { gameVersions, guardianClasses, guardianPower, memberName, membersCsv, ownership, platformName, platforms, primarySave, type MemberEntitlements } from './members';
 const props = defineProps<{ players: PlayerData[]; clanName?: string; tooltipId?: string; memberships: (user: UserInfo) => Promise<UserInfo[]>; entitlements: () => Promise<MemberEntitlements> }>();
-const emit = defineEmits<{ 'show-characters': [event: Event, player?: PlayerData]; 'close-tooltip': [] }>();
+const emit = defineEmits<{ 'show-guardian': [event: Event, player: PlayerData]; 'show-characters': [event: Event, player?: PlayerData]; 'close-tooltip': [] }>();
 const headingRow = ref<HTMLTableRowElement>();
 const headingHeight = ref(60);
 let headingObserver: ResizeObserver | undefined;
@@ -89,7 +90,7 @@ function exportCsv() {
         <tr class="objective-header-row"><th v-for="guardianClass in guardianClasses" :key="guardianClass.type" class="guardian-power-heading" scope="col" data-character-group="header" @mouseenter="emit('show-characters', $event)" @mouseleave="leaveCharacters" @focusin="emit('show-characters', $event)" @focusout="leaveCharacters"><button class="heading-button" :aria-describedby="tooltipId" @keydown.esc="emit('close-tooltip')">{{ guardianClass.name }}</button></th></tr>
       </thead>
       <tbody><tr v-for="player in rows" :key="idOf(player)" :data-membership-id="player.member.destinyUserInfo.membershipId">
-        <th scope="row" class="player-column"><a :href="`https://www.bungie.net/7/en/User/Profile/${(player.member.bungieNetUserInfo ?? player.member.destinyUserInfo).membershipType}/${(player.member.bungieNetUserInfo ?? player.member.destinyUserInfo).membershipId}`" target="_blank" rel="noopener noreferrer">{{ memberName(player) }}</a></th>
+        <th scope="row" class="player-column"><a :href="`https://www.bungie.net/7/en/User/Profile/${(player.member.bungieNetUserInfo ?? player.member.destinyUserInfo).membershipType}/${(player.member.bungieNetUserInfo ?? player.member.destinyUserInfo).membershipId}`" target="_blank" rel="noopener noreferrer" @mouseenter="emit('show-guardian', $event, player)" @mouseleave="emit('close-tooltip')" @focus="emit('show-guardian', $event, player)" @blur="emit('close-tooltip')">{{ memberName(player) }}<small v-if="clanMembershipPlatform(player.member, namesFor(player))" class="joined-platform"> ({{ clanMembershipPlatform(player.member, namesFor(player)) }})</small></a></th>
         <td v-for="(type, index) in platformColumns" :key="type" :class="{ 'group-end': index === platformColumns.length - 1 }">{{ platformName(namesFor(player), type) || '—' }}</td>
         <td>{{ primarySave(player) }}</td><td>{{ platforms[player.member.destinyUserInfo.LastSeenDisplayNameType ?? 0] || '—' }}</td><td>{{ clanRankLabel(player.member.memberType) }}</td><td>{{ date(player.member.joinDate) }}</td><td>{{ player.member.isOnline ? 'Online' : date(lastSeen(player)) }}</td><td v-for="guardianClass in guardianClasses" :key="guardianClass.type" class="guardian-power" :data-character-group="idOf(player)" @mouseenter="emit('show-characters', $event, player)" @mouseleave="leaveCharacters" @focusin="emit('show-characters', $event, player)" @focusout="leaveCharacters"><button class="cell-button" :aria-label="`${memberName(player)}: ${guardianClass.name} guardians: ${guardianPower(player.profile, guardianClass.type)}`" :aria-describedby="tooltipId" @keydown.esc="emit('close-tooltip')">{{ guardianPower(player.profile, guardianClass.type) }}</button></td><td>{{ profileStatus(player) }}<small v-if="player.error || platformErrors[idOf(player)]" class="member-error">{{ player.error || platformErrors[idOf(player)] }}</small></td><td class="group-end">{{ date(player.fetchedAt) }}</td>
         <td v-for="col in columns" :key="`${col.kind}:${col.id}`" :class="{ 'member-owned': ownership(player, col.kind, col.id), 'group-end': col.groupEnd }" :aria-label="`${col.name}: ${ownership(player, col.kind, col.id) === undefined ? 'unavailable' : ownership(player, col.kind, col.id) ? 'owned' : 'not listed as owned'}`">{{ ownership(player, col.kind, col.id) === undefined ? '—' : ownership(player, col.kind, col.id) ? '✓' : '·' }}</td>

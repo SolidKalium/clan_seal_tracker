@@ -1,3 +1,4 @@
+import { friendReason, type FriendClan } from './friends';
 import type { Transport } from './api';
 export interface ClanChoice { id: string; name: string; memberCount?: number }
 export interface RecentClan extends ClanChoice { viewedAt: number }
@@ -7,9 +8,11 @@ export const validClanId = (value: unknown): value is string => typeof value ===
 export function recentClans(recent: RecentClan[], clan: ClanChoice, now = Date.now()): RecentClan[] {
   return [{ ...clan, viewedAt: now }, ...recent.filter(entry => entry.id !== clan.id)].slice(0, RECENT_CLAN_LIMIT);
 }
-export function clanSuggestions(selected: ClanChoice, recent: RecentClan[], fallback: ClanChoice, own?: ClanChoice) {
+export function clanSuggestions(selected: ClanChoice, recent: RecentClan[], fallback: ClanChoice, own?: ClanChoice, friends: FriendClan[] = []) {
   const seen = new Set<string>();
-  return [...(own ? [{ clan: own, reason: 'Your clan', viewedAt: undefined }] : []), { clan: selected, reason: 'Selected clan', viewedAt: undefined },
+  const selectedFriends = friends.find(clan => clan.id === selected.id);
+  return [...(own ? [{ clan: own, reason: 'Your clan', viewedAt: undefined }] : []), { clan: selected, reason: selectedFriends ? `Selected clan · ${friendReason(selectedFriends)}` : 'Selected clan', viewedAt: undefined },
+    ...friends.map(clan => ({ clan, reason: friendReason(clan), viewedAt: undefined })),
     ...recent.map(clan => ({ clan, reason: 'Recently viewed', viewedAt: clan.viewedAt })),
     { clan: fallback, reason: 'Suggested default', viewedAt: undefined },
   ].filter(entry => !seen.has(entry.clan.id) && !!seen.add(entry.clan.id));

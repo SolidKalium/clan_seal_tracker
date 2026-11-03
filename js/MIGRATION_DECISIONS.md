@@ -647,3 +647,21 @@ Use Bungie's Public OAuth client from the browser, without a client secret or se
 Keep the access token in tab session storage and authenticated profile payloads in a separate memory-only cache. Attach Bearer credentials only to account verification and the signed-in player's verified profile IDs. All other players use public requests and the existing public cache; clan membership or friendship grants no additional progression/activity access. No inventory components are added. Logout and expiry invalidate pending UI updates, discard private values, and return to public data. Public-client tokens have no refresh token; require reauthentication at expiry.
 
 Local OAuth requires HTTPS. Vite enables a self-signed development certificate when the configured redirect uses HTTPS; the redirect URL and registered browser origin must both use the HTTPS address. Plain HTTP on the development port redirects to the configured HTTPS origin while preserving the requested route; the listener also retains native HTTPS and Vite HMR. Never export client secrets through the settings compiler.
+
+### Friends’ clan suggestions — 2026-11-03
+
+Load accepted Bungie friends after login with ReadUserData, retaining social relationships only in session memory. Resolve their clans using public membership-to-clan endpoints with three concurrent requests and short session caches. Suggestions show up to three friend names with a remaining count, deduplicate against recents/default, and keep the visitor’s own clan first without extra labels. Preserve partial results and expose retry failures in the chooser.
+
+Bungie provides current presence and last-used membership, but no last-active timestamp in this list. Do not invent activity dates or fetch every friend’s full profile merely for clan suggestions. Friend-player lists remain deferred.
+
+### Cross-save clan memberships and friend reasons — 2026-11-03
+
+Keep separate roster memberships visible. When a roster platform differs from its cross-save override, label that row with the joined platform; account details explain which primary save supplies progress. Apply the label on both progress tables and Members. Clan 2231282 currently has the same Bungie account joined through Stadia and Xbox, both reporting a Stadia cross-save override; matching progress is expected. No deduplication is introduced.
+
+Friend-clan reasons use three entries at most: when more than three friends share a clan, show two names and “x more” instead of a third name plus another count.
+
+When cross-save is disabled, label the roster platform if public linked memberships confirm multiple Destiny platforms. The roster’s applicableMembershipTypes only lists the current platform in this case, so use the existing cached public membership endpoint in the background. A single-platform account stays unlabelled. Each independent membership continues to request its own profile, and no “Primary save” label is invented.
+
+### Collapsing overridden clan memberships — 2026-11-03
+
+Combine roster rows sharing a Bungie account ID and the same nonzero cross-save override. Prefer the primary-save membership when present; retain other clan memberships as display-only metadata for guardian tooltips, explicitly noting that those saves are overridden. Apply the grouping to progress tables, Members/CSV, guardian counts and title/badge owner counts. Keep sync/cache entries scoped to their original memberships. Unknown identities, independent saves without cross-save, and inconsistent override values stay separate.

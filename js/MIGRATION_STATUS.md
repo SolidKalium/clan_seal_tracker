@@ -3,11 +3,10 @@
 ## TODO list
 
 **Misc:**
-- Friends' clan suggestions after player login, with up to three friends shown as the reason for suggesting one
 - Support multiple player lists. Switch in the side bar.
   - Clan view
-  - Friend list (when logged in. Show player's emblem and name)
-  - Clan + friends (when logged in) (Show clan and player emblems. Show clan name.)
+  - Friend list (when logged in. Show player's emblem and name when collapsed.)
+  - Clan + friends (when logged in) (Show clan and player emblems. Show clan name when collapsed.)
 
 **Cleanup pass:**
 - Review page high-level structure
