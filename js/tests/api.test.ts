@@ -48,3 +48,10 @@ it('records network and definition failures without exposing request headers', a
   expect(resourceError.diagnostic).toMatchObject({ status: 502, bodyExcerpt: 'Bad gateway' });
   expect(JSON.stringify(resourceError.diagnostic)).not.toContain(key);
 });
+
+it('sends public search bodies as JSON POST requests through the same transport', async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ ErrorCode: 1, Response: { results: [] } }));
+  vi.stubGlobal('fetch', fetcher);
+  await new BungieTransport(key).api('/GroupV2/Search/', { name: 'Example', groupType: 1 });
+  expect(fetcher).toHaveBeenCalledWith('https://www.bungie.net/Platform/GroupV2/Search/', expect.objectContaining({ method: 'POST', body: '{"name":"Example","groupType":1}', headers: { 'X-API-Key': key, 'Content-Type': 'application/json' } }));
+});

@@ -77,8 +77,8 @@ function exportCsv() {
   <section class="page-heading"><div><p class="eyebrow">CLAN / MEMBERS</p><h1>{{ clanName || 'Clan' }} members</h1></div></section>
   <p v-if="definitionError" class="notice" role="status">{{ definitionError }}</p>
   <div class="table-tools">
-    <label class="search"><input v-model="search" type="search" aria-label="Search members" placeholder="Search members…"></label>
-    <label class="select-control"><span class="sr-only">Sort members</span><select v-model="sort" aria-label="Sort members"><option value="tenure">Clan tenure · longest first</option><option value="name">Guardian name</option><option value="activity">Last seen · most recent first</option></select></label>
+    <label class="search control-field"><input v-model="search" type="search" aria-label="Search members" placeholder="Search members…"></label>
+    <label class="select-control control-field"><span class="sr-only">Sort members</span><select v-model="sort" aria-label="Sort members"><option value="tenure">Clan tenure · longest first</option><option value="name">Guardian name</option><option value="activity">Last seen · most recent first</option></select></label>
     <button class="members-export" @click="exportCsv">Export CSV</button>
   </div>
   <div class="table-caption"><span>{{ rows.length }} members shown</span><span>✓ Owned · · Not listed as owned · — Unavailable</span></div>

@@ -46,13 +46,13 @@ Activity pages use `#/seal/<id>` and `#/triumphs/<id>`. Crucible, Gambit, and Tr
 
 The cache is domain-controlled rather than driven by HTTP response cache headers. API fetches use `cache: no-store`; immutable definition downloads can still use the HTTP cache. Definitions (presentation nodes, records, objectives, collectibles, inventory item types, and sandbox perks) check every five minutes and replace a complete snapshot atomically. Existing record-only snapshots are upgraded even if the manifest version has not changed. Rosters refresh after three minutes. Profile components 100, 800, and 900 use the legacy activity/five-minute/seven-day policy, plus component coverage checks and a short cooldown after private/error responses. Missing activity timestamps use a conservative five-minute TTL.
 
-A failed fetch never changes the successful-fetch timestamp. Private responses retain any previously public data and mark it explicitly. Refresh forces a new attempt but still honors request throttling. A warm reload can display cached data without a Bungie request. Cache persistence is per origin/browser and may be evicted; the app shell is not yet a service-worker-backed offline app.
+A failed fetch never changes the successful-fetch timestamp. Private responses retain any previously public data and mark it explicitly. Refresh rechecks the manifest and roster, applies the normal activity rules to public profiles, and explicitly retries private/failed profiles while honoring request throttling. A warm reload can display cached data without a Bungie request. Cache persistence is per origin/browser and may be evicted; the app shell is not yet a service-worker-backed offline app.
 
 ## Intentional limits
 
 This slice implements **seal, badge, and full raid modes** for the ten configured raids, plus activity seal/triumph views for Crucible, Iron Banner, Gambit, Trials of Osiris, Strikes, and Weapons/Deadeye. Full raid percentages average the scored record and collection columns equally, including the badge requirement record and its individual items, following the legacy full-page weighting. Progress uses the PHP record-average calculation. Multi-objective triumphs have aligned objective subcolumns, with visible counts for partial objectives; a completed triumph collapses to one checkmark spanning its stages. Hover or keyboard focus opens a styled tooltip, and clicking pins the details below the table. Character records choose the best complete character record by aggregate progress, rather than combining objectives across characters. That is a deliberate clarification of the legacy heuristic. API character storage scope alone does not imply character-specific earning rules, so no blanket per-character label is shown. Title counts respect the completion record's own scope and recognize redemption on any character.
 
-No per-user overrides, frozen profiles, hidden-player rules, clan selector, historical-data import/UI, OAuth, or server rendering. Clan selection follows the port of most current features. Archived datasets stay untouched.
+No per-user overrides, frozen profiles, hidden-player rules, historical-data import/UI, OAuth, or server rendering. Archived datasets stay untouched.
 
 ## Verify and build
 
@@ -120,3 +120,15 @@ The members Guardians cells show the highest reported `light` (Power) for each c
 ## Seal overview
 
 Other → Seal overview (`#/triumphs/seal_overview`) shows the current clan's members as rows and seals as columns. Active seals and Legacy seals tabs are built from Bungie's title trees, without requiring a separate curated entry for each seal. Cells use each seal's completion record; gilding appears in details and does not affect completion. The Monument of Triumph's gilding remains a yes/no status.
+
+## Clan search and selection
+
+Choose clan in the sidebar opens public Bungie clan search. Search by name, clan ID, or Bungie clan URL; results support pagination. The selected clan and up to seven deduplicated recent clans are stored in this browser's visitor preferences. Suggestions identify the selected clan, previously viewed clans, and the configured default without duplicating entries. Changing clans preserves the current page; guardian filters reset for the new roster.
+
+Roster caches and last-profile-pass summaries are scoped by clan. Profiles and definitions remain reusable across clans. A late response from an earlier clan cannot overwrite the selected clan's rows or status. Clear API cache preserves the selected clan and recents.
+
+Login-dependent features remain deferred: automatically selecting your own clan, prioritizing it over recents, suggesting friends' clans, and friend/combined player lists. Public browsing does not imply clan membership.
+
+## Focus styling
+
+`src/focus.css` owns focus indicators for links, buttons, native fields, and focusable table elements. Standalone controls use an inset outline. Composite fields mark their visible wrapper with `control-field`; that wrapper owns one inset ring and suppresses the inner field's duplicate indicator. Keep focus rules here rather than adding control-specific overrides. Selection backgrounds and row highlighting remain presentation rules in `style.css`.

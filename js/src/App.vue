@@ -2,6 +2,8 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import RecordDetails from './RecordDetails.vue';
 import MembersPage from './MembersPage.vue';
+import ClanPicker from './ClanPicker.vue';
+import { ClanDirectory, readClanSelection, recentClans, type ClanChoice } from './clanSearch';
 import CharacterDetails from './CharacterDetails.vue';
 import { displayObjectives } from './displayObjectives';
 import ViewTabs from './ViewTabs.vue';
@@ -27,7 +29,14 @@ import type { Cell, Definitions, Heading, LoadResult, PageConfig, PlayerData, Pr
 
 const catalog = catalogJson as PageConfig[];
 const store = new CacheStore();
-const repository = new TrackerRepository(store, new BungieTransport(config.apiKey, diagnostic => store.recordDiagnostic(diagnostic)), config.clanId, config.language);
+const transport = new BungieTransport(config.apiKey, diagnostic => store.recordDiagnostic(diagnostic));
+const fallbackClan: ClanChoice = { id: config.clanId, name: `Clan ${config.clanId}` };
+const clanSelection = shallowRef(readClanSelection(undefined, fallbackClan));
+const clanPickerOpen = ref(false);
+const clanDirectory = new ClanDirectory(transport);
+let repository = new TrackerRepository(store, transport, config.clanId, config.language);
+let clanGeneration = 0;
+const passPreferenceKey = (id = repository.clanId) => `lastProfilePass:v2:${id}`;
 const definitions = shallowRef<Definitions>();
 const roster = shallowRef<Roster>();
 const players = shallowRef<Record<string, PlayerData>>({});
@@ -313,6 +322,7 @@ function applyProfile(member: PlayerData['member'], result: LoadResult<Profile>)
   storageWarning.value = store.warning;
 }
 async function hydrate(rosterValue: Roster) {
+  const generation = clanGeneration;
   const current = Object.values(players.value);
   if (current.length === rosterValue.members.length && rosterValue.members.every(member => {
     const old = players.value[memberKey(member)];
@@ -324,7 +334,7 @@ async function hydrate(rosterValue: Roster) {
     const entry = await store.get<Profile>(`profile:${memberKey(member)}`);
     next[memberKey(member)] = old ? { ...old, member } : entry ? { member, profile: entry.value, fetchedAt: entry.fetchedAt, error: entry.error, status: entry.private ? 'private' : profileFresh(entry, member) ? 'cached' : 'stale' } : { member, status: 'loading' };
   }));
-  players.value = next;
+  if (generation === clanGeneration) players.value = next;
 }
 let rosterHydration: Promise<void> = Promise.resolve();
 function acceptDefinitions(result: LoadResult<Definitions>) {
@@ -337,20 +347,35 @@ function acceptRoster(result: LoadResult<Roster>) {
 }
 async function load(force = false) {
   if (busy.value) return;
+  const generation = clanGeneration, repo = repository;
+  const current = () => generation === clanGeneration;
   busy.value = true; issues.value = []; profileSyncActive.value = false; profileSyncDone.value = 0; profileSyncTotal.value = 0; phase.value = 'Checking definitions and clan roster…';
   try {
-    const [d, r] = await Promise.all([repository.definitions(acceptDefinitions, force), repository.roster(acceptRoster, force)]);
+    const [d, r] = await Promise.all([
+      repo.definitions(result => { if (current()) acceptDefinitions(result); }, force),
+      repo.roster(result => { if (current()) acceptRoster(result); }, force),
+    ]);
+    if (!current()) return;
     acceptDefinitions(d);
     await rosterHydration;
+    if (!current()) return;
     if (r.entry) { roster.value = r.entry.value; clanCheckedAt.value = r.entry.fetchedAt; await hydrate(r.entry.value); }
+    if (!current()) return;
     rosterState.value = r.status;
     issues.value = [d.error, r.error].filter((v): v is string => !!v);
     if (r.entry) {
+      // Remember verified names, not just the name in a search result.
+      const selectedClan = { ...clanSelection.value.selected, name: r.entry.value.name, memberCount: r.entry.value.members.length };
+      clanSelection.value = { selected: selectedClan, recent: recentClans(clanSelection.value.recent, selectedClan) };
+      await store.setPreference('clanSelection', clanSelection.value);
+      if (!current()) return;
       phase.value = 'Checking profiles…';
       profileSyncTotal.value = r.entry.value.members.length; profileSyncDone.value = 0; profileSyncActive.value = true;
       const pass = { completedAt: 0, loaded: 0, reused: 0, private: 0, unavailable: 0 };
       await eachLimited(r.entry.value.members, async member => {
-        const result = await repository.profile(member, cached => applyProfile(member, cached), false, force);
+        if (!current()) return;
+        const result = await repo.profile(member, cached => { if (current()) applyProfile(member, cached); }, false, force);
+        if (!current()) return;
         if (result.status === 'fresh') pass.loaded++;
         else if (result.status === 'cached') pass.reused++;
         else if (result.status === 'private') pass.private++;
@@ -358,36 +383,61 @@ async function load(force = false) {
         applyProfile(member, result);
         profileSyncDone.value++;
       });
+      if (!current()) return;
       pass.completedAt = Date.now();
-      // Keep the last network pass when a reload only reuses the cache.
       if (force || pass.loaded || pass.private || pass.unavailable || !lastProfilePass.value) {
         lastProfilePass.value = pass;
-        await store.setPreference('lastProfilePass:v2', pass);
+        await store.setPreference(passPreferenceKey(repo.clanId), pass);
       }
     }
-    phase.value = 'Ready';
+    if (current()) phase.value = 'Ready';
   } catch {
-    issues.value = [...issues.value, 'The tracker could not finish loading. Retry to continue.'];
-    phase.value = 'Loading stopped';
-  } finally { profileSyncActive.value = false; busy.value = false; storageWarning.value = store.warning; }
+    if (current()) { issues.value = [...issues.value, 'The tracker could not finish loading. Retry to continue.']; phase.value = 'Loading stopped'; }
+  } finally { if (current()) { profileSyncActive.value = false; busy.value = false; storageWarning.value = store.warning; } }
+}
+async function selectClan(clan: ClanChoice) {
+  clan = { id: clan.id, name: clan.name, memberCount: clan.memberCount };
+  clanPickerOpen.value = false;
+  if (clan.id === repository.clanId) return;
+  const generation = ++clanGeneration;
+  closeTooltip(); detail.value = undefined;
+  clanSelection.value = { selected: clan, recent: recentClans(clanSelection.value.recent, clan) };
+  repository = new TrackerRepository(store, transport, clan.id, config.language);
+  roster.value = undefined; players.value = {}; rosterState.value = ''; clanCheckedAt.value = undefined;
+  lastProfilePass.value = undefined; rosterHydration = Promise.resolve();
+  issues.value = []; profileSyncActive.value = false; profileSyncDone.value = 0; profileSyncTotal.value = 0;
+  search.value = ''; filter.value = 'all';
+  busy.value = true; phase.value = 'Loading clan…';
+  await store.setPreference('clanSelection', clanSelection.value);
+  const pass = await store.preference<typeof lastProfilePass.value>(passPreferenceKey(), undefined);
+  if (generation !== clanGeneration) return;
+  lastProfilePass.value = pass; busy.value = false;
+  await load();
 }
 async function clearCache() {
   if (busy.value || !window.confirm('Clear cached Bungie data and download it again? Your filters and preferences will be kept.')) return;
+  const generation = clanGeneration, preferenceKey = passPreferenceKey();
   busy.value = true; phase.value = 'Clearing API cache…';
   try {
     await store.clearCache();
+    if (generation !== clanGeneration) return;
     lastProfilePass.value = undefined; manifestCheckedAt.value = undefined; clanCheckedAt.value = undefined;
-    await store.setPreference('lastProfilePass:v2', null);
+    await store.setPreference(preferenceKey, null);
+    if (repository.clanId === config.clanId) await store.setPreference('lastProfilePass:v2', null);
+    if (generation !== clanGeneration) return;
     definitions.value = undefined; roster.value = undefined; players.value = {}; detail.value = undefined;
-  } finally { busy.value = false; }
-  await load();
+  } finally { if (generation === clanGeneration) busy.value = false; }
+  if (generation === clanGeneration) await load();
 }
 async function retryPlayer(id: string) {
   const player = players.value[id];
   if (!player || busy.value) return;
+  const generation = clanGeneration, repo = repository;
   busy.value = true; phase.value = 'Retrying profile…';
-  try { applyProfile(player.member, await repository.profile(player.member, cached => applyProfile(player.member, cached), true)); }
-  finally { busy.value = false; phase.value = 'Ready'; }
+  try {
+    const result = await repo.profile(player.member, cached => { if (generation === clanGeneration) applyProfile(player.member, cached); }, true);
+    if (generation === clanGeneration) applyProfile(player.member, result);
+  } finally { if (generation === clanGeneration) { busy.value = false; phase.value = 'Ready'; } }
 }
 function showDetail(player: string, heading: Heading, cell: Cell) { closeTooltip(); detail.value = { player, heading, cell }; }
 watch([search, filter, sort], () => { if (preferencesReady.value) void store.setPreference('table', { search: search.value, filter: filter.value, sort: sort.value }); });
@@ -399,7 +449,9 @@ onMounted(async () => {
   window.addEventListener('scroll', closeTooltip);
   try {
     const preferences = await store.preference('table', { search: '', filter: 'all', sort: 'progress' });
-    lastProfilePass.value = await store.preference('lastProfilePass:v2', undefined);
+    clanSelection.value = readClanSelection(await store.preference('clanSelection', undefined), fallbackClan);
+    repository = new TrackerRepository(store, transport, clanSelection.value.selected.id, config.language);
+    lastProfilePass.value = await store.preference<typeof lastProfilePass.value>(passPreferenceKey(), clanSelection.value.selected.id === config.clanId ? await store.preference('lastProfilePass:v2', undefined) : undefined);
     sidebarCollapsed.value = await store.preference('sidebarCollapsed', false) === true;
     search.value = typeof preferences.search === 'string' ? preferences.search : '';
     filter.value = ['all', 'complete', 'incomplete', 'unavailable'].includes(preferences.filter) ? preferences.filter : 'all';
@@ -424,8 +476,9 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
     <aside class="sidebar" aria-label="Clan navigation">
       <button class="sidebar-toggle" :aria-label="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" :aria-expanded="!sidebarCollapsed" aria-controls="clan-menu" :title="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'" @click="sidebarCollapsed = !sidebarCollapsed"><svg viewBox="0 0 20 20" aria-hidden="true" :class="{ reversed: sidebarCollapsed }"><path d="m12 4-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
       <ClanEmblem :emblem="roster?.emblem" :name="roster?.name ?? 'Clan'" />
-      <p v-if="!sidebarCollapsed" class="eyebrow">YOUR CLAN</p>
-      <h2 class="clan-name" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }">{{ roster?.name ?? (busy ? 'Loading clan…' : 'Clan unavailable') }}</h2>
+      <p v-if="!sidebarCollapsed" class="eyebrow">CLAN</p>
+      <h2 class="clan-name" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }">{{ roster?.name ?? clanSelection.selected.name }}</h2>
+      <button class="clan-picker-button" :class="{ 'clan-picker-collapsed': sidebarCollapsed }" aria-label="Choose clan" :disabled="!preferencesReady" @click="clanPickerOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><span v-if="!sidebarCollapsed">Choose clan</span></button>
       <div id="clan-menu" v-show="!sidebarCollapsed" class="sidebar-content">
       <p class="muted small">{{ roster ? `${roster.members.length} guardians` : busy ? 'Connecting to Bungie' : 'Check the connection notice' }}</p>
       <a href="#/" class="nav-home" :class="{ active: isHome }">Overview <span>↗</span></a>
@@ -444,7 +497,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
         <section class="page-heading seal-heading"><div><p class="eyebrow">{{ breadcrumb }}</p><h1>{{ headingTitle }}<span v-if="headingKind" class="heading-kind">{{ ' ' + headingKind }}</span></h1></div><div v-if="headingKind === 'seal' || headingKind === 'badge'" class="heading-tally"><img v-if="selected?.icon" class="heading-owner-icon" :class="`heading-${headingKind}-icon`" :src="`https://www.bungie.net${selected.icon}`" alt=""><div class="title-tally"><strong>{{ headingKind === 'badge' ? badgeOwnerCount : selected ? titleCount(selected) : '—' }}</strong><span>{{ headingKind === 'badge' ? 'badge owners' : 'title holders' }}</span></div></div></section>
         <ViewTabs :label="viewLabel" :tabs="viewTabs" />
       </template>
-      <MembersPage v-if="isMembers" :players="Object.values(players)" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" :tooltip-id="tooltip?.kind === 'characters' ? 'record-tooltip' : undefined" @show-characters="showCharacterTooltip" @close-tooltip="closeTooltip" />
+      <MembersPage v-if="isMembers" :key="clanSelection.selected.id" :players="Object.values(players)" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" :tooltip-id="tooltip?.kind === 'characters' ? 'record-tooltip' : undefined" @show-characters="showCharacterTooltip" @close-tooltip="closeTooltip" />
       <template v-else-if="isHome">
         <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, plan you fireteam, and make the next run count.</p></section>
         <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => s.page.sealNodeHash && !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
@@ -467,7 +520,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
         <p v-if="selected.legacy && selected.page.sealNodeHash" class="legacy-notice">Legacy seal · Bungie lists this seal under Legacy Titles; it can no longer be earned. Archived progress remains visible, and individual rewards may still be obtainable.</p>
         <p v-if="selected.legacy && !selected.page.sealNodeHash" class="legacy-notice">Legacy triumphs · Archived by Bungie. Objective progress is likely missing; only completion status may remain. Availability of individual triumphs and rewards can differ.</p>
         <p v-if="viewDescription" class="lede view-description">{{ viewDescription }}</p>
-        <div class="table-tools"><label class="search"><svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><input v-model="search" aria-label="Search guardians" placeholder="Search guardians…" type="search"></label><label class="select-control"><span class="sr-only">Filter progress</span><select v-model="filter" aria-label="Filter progress"><option value="all">All guardians</option><option v-if="!metricView" value="incomplete">Requirements incomplete</option><option v-if="!metricView" value="complete">Requirements complete</option><option value="unavailable">No public data</option></select></label><label class="select-control"><span class="sr-only">Sort guardians</span><select v-model="sort" aria-label="Sort guardians"><option value="progress">{{ metricView ? 'Highest first' : 'Closest next · completed last' }}</option><option v-if="!metricView" value="highest">Highest progress first</option><option value="name">Guardian name</option><option value="tenure">Clan tenure · longest first</option></select></label><label v-if="routeMode !== 'seal' && badgeClasses.length" class="select-control"><span class="sr-only">Badge class</span><select v-model="badgeClass" aria-label="Badge class"><option value="best">Best class set</option><option v-for="(name, i) in badgeClasses" :key="name" :value="String(i)">{{ name }} set</option></select></label></div>
+        <div class="table-tools"><label class="search control-field"><svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><input v-model="search" aria-label="Search guardians" placeholder="Search guardians…" type="search"></label><label class="select-control control-field"><span class="sr-only">Filter progress</span><select v-model="filter" aria-label="Filter progress"><option value="all">All guardians</option><option v-if="!metricView" value="incomplete">Requirements incomplete</option><option v-if="!metricView" value="complete">Requirements complete</option><option value="unavailable">No public data</option></select></label><label class="select-control control-field"><span class="sr-only">Sort guardians</span><select v-model="sort" aria-label="Sort guardians"><option value="progress">{{ metricView ? 'Highest first' : 'Closest next · completed last' }}</option><option v-if="!metricView" value="highest">Highest progress first</option><option value="name">Guardian name</option><option value="tenure">Clan tenure · longest first</option></select></label><label v-if="routeMode !== 'seal' && badgeClasses.length" class="select-control control-field"><span class="sr-only">Badge class</span><select v-model="badgeClass" aria-label="Badge class"><option value="best">Best class set</option><option v-for="(name, i) in badgeClasses" :key="name" :value="String(i)">{{ name }} set</option></select></label></div>
         <div class="table-caption"><span>{{ rows.length }} guardians shown</span><span v-if="!metricView" class="table-legend"><span v-if="routeMode !== 'badge' && selected.page.sealNodeHash" class="legend-group-end">✦ Title earned</span><template v-else-if="routeMode === 'badge'"><span>✦ Badge collected</span><span class="earned-gold legend-group-end">✦ All 3 classes</span></template><span>✓ {{ collectionView ? 'Collected' : 'Complete' }}</span><span><span class="legend-progress">●</span> In progress</span><span><span class="legend-zero" aria-hidden="true">·</span> No progress</span></span></div>
         <div class="table-frame"><div class="table-scroll" tabindex="0" :aria-label="`Scrollable ${routeMode} progress table`" :style="{ '--group-header-height': `${groupHeaderHeight}px`, '--category-header-height': hasColumnGroups ? '32px' : '0px', '--player-column-width': `${playerColumnWidth}px` }" @scroll="closeTooltip">
           <table>
@@ -519,6 +572,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
         <p v-else class="footnote"><template v-if="routeMode === 'raid' || routeMode === 'badge'">Collection progress uses one whole class set (the most complete by default). Shared items count for every class. </template><template v-if="routeMode === 'raid' || routeMode === 'triumphs'">The percentage averages the columns included in this table<span v-if="selected.page.sealNodeHash">, separately from the in-game seal requirements</span>. </template><template v-if="selected.page.category === 'Activities'"> Gilding requirements are included in this view’s percentage.</template> Day-one triumphs and lifetime gilding counts do not affect the percentage. A missing record is shown separately from an incomplete one. Watermarks explain content locks and visibility conditions on hover. Click a cell for objective details.</p>
       </template>
       <template v-else-if="!isHome"><section :class="currentPage ? 'view-unavailable' : 'empty-state'" :role="currentPage ? 'status' : undefined"><h1 v-if="!currentPage">{{ definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions ? busy ? 'Loading definitions…' : 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section></template>
+      <Teleport to="body"><ClanPicker v-if="clanPickerOpen" :selected="clanSelection.selected" :recent="clanSelection.recent" :fallback="{ ...fallbackClan, name: clanSelection.recent.find(clan => clan.id === fallbackClan.id)?.name ?? fallbackClan.name }" :directory="clanDirectory" @select="selectClan" @close="clanPickerOpen = false" /></Teleport>
       <Teleport to="body">
         <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><CharacterDetails v-if="tooltip.kind === 'characters'" :player="tooltip.player" /><RecordDetails v-else-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" :unit="tooltip.seal.page.kind === 'seals' ? 'seal' : undefined" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><div class="sync-history">
           <h4>Latest checks</h4>

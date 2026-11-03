@@ -633,3 +633,9 @@ Pin a compressed, minimal public-definition snapshot for deterministic offline u
 ## Request failure diagnostics — 2026-11-02
 
 Attach structured transport diagnostics to cached `errorInfo`, log a console warning per failed request/attempt, and retain the latest 50 failures under `diagnostic:` keys in the existing IndexedDB entries store. Separate history preserves incidents after recovery and handles failures without a prior cached profile. Include URL, timing, attempt/retry details, HTTP status/content type, Bungie error metadata, and bounded excerpts for unreadable responses. Redact the API key, omit request headers and successful payloads, and do not copy JSON error envelopes' Response data. Cache clearing removes the history; storage failures use the existing memory fallback. Keep the existing request retry policy.
+
+### Public clan selection
+
+Public clan search and browser-owned clan selection are implemented. The configured clan is the initial default; visitors can search names, IDs, or Bungie clan links and select another clan. Keep seven deduplicated recent clans with last-viewed dates. Preserve intentional clan preferences when clearing disposable API caches. Scope sync summaries by clan and ignore late results from a previous selection.
+
+Player login remains separate: it will identify and prioritize the visitor's own clan and enable friend-clan suggestions and friend/combined lists. Do not label a publicly selected clan as the visitor's own clan.

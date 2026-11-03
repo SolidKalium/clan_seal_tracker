@@ -2,7 +2,7 @@ import { EXCERPT_LIMIT, type RequestDiagnostic } from './diagnostics';
 export class ApiError extends Error {
   constructor(message: string, public readonly code?: number, public readonly retrySeconds = 0, public readonly diagnostic?: RequestDiagnostic) { super(message); }
 }
-export interface Transport { api<T>(path: string): Promise<T>; resource<T>(path: string): Promise<T> }
+export interface Transport { api<T>(path: string, body?: unknown): Promise<T>; resource<T>(path: string): Promise<T> }
 export class BungieTransport implements Transport {
   private pauseUntil = 0;
   private disabledUntil = 0;
@@ -36,7 +36,7 @@ export class BungieTransport implements Transport {
     try { await this.saveDiagnostic?.(diagnostic); } catch { /* Diagnostics must not mask the request error. */ }
     return new ApiError(diagnostic.message, code, retrySeconds, diagnostic);
   }
-  async api<T>(path: string): Promise<T> {
+  async api<T>(path: string, requestBody?: unknown): Promise<T> {
     const url = `https://www.bungie.net/Platform${path}`;
     if (Date.now() < this.disabledUntil) throw await this.failure('Bungie API is unavailable. Cached data is retained; retry in a moment.', { url, timestamp: Date.now(), attempt: 0, durationMs: 0 }, undefined, 5);
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -45,7 +45,7 @@ export class BungieTransport implements Transport {
       const started = Date.now();
       let response: Response, text: string;
       try {
-        response = await fetch(url, { cache: 'no-store', headers: { 'X-API-Key': this.key }, signal: AbortSignal.timeout(25_000) });
+        response = await fetch(url, { cache: 'no-store', method: requestBody === undefined ? 'GET' : 'POST', headers: { 'X-API-Key': this.key, ...(requestBody === undefined ? {} : { 'Content-Type': 'application/json' }) }, body: requestBody === undefined ? undefined : JSON.stringify(requestBody), signal: AbortSignal.timeout(25_000) });
       } catch (cause) {
         throw await this.failure('Cannot reach Bungie. Check your connection and the registered browser origin. Cached data is retained.', { url, timestamp: started, attempt: attempt + 1, durationMs: Date.now() - started, cause: cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause) });
       }

@@ -3,15 +3,10 @@
 ## TODO list
 
 **Misc:**
-- Clan selection
-  - List of clans, with reasons why they are suggested. Don't duplicate entries
-    - Your clan (always top if logged in. Skip recent and friends as labels for this one)
-    - Recently viewed (up to 5? 10? Show last viewed date in faded text?)
-    - Your friends' clans (maybe suggest up to 3 friends in a single clan)
-  - If a player is logged in: your clan, your friend's clans
-  - Recent clans
-  - Search
-- Player login
+- Clan suggestions after player login
+  - Your clan always first; skip recent/friends labels for it
+  - Friends' clans, with up to three friends shown as the reason for suggesting one
+- Player login. Sets the active clan on login.
 - Support multiple player lists. Switch in the side bar.
   - Clan view
   - Friend list (when logged in. Show player's emblem and name)

@@ -1879,3 +1879,133 @@ test('seal overview in Other has clan member rows and active/legacy seal columns
   await page.getByRole('link', { name: 'Active seals', exact: true }).click();
   await expect(page.getByRole('columnheader', { name: 'Rivensbane', exact: true })).toBeVisible();
 });
+
+async function setupClanPicker(page: Page, state: { offline: boolean; calls: number; profileGate?: Promise<void> }) {
+  await setup(page, state);
+  const newMember = { destinyUserInfo: { membershipType: 3, membershipId: '4611686018485645599', displayName: 'New Guardian' }, isOnline: false, lastOnlineStatusChange: '1' };
+  await page.route('**/Platform/GroupV2/Search/', route => {
+    const body = route.request().postDataJSON();
+    expect(route.request().method()).toBe('POST');
+    expect(body.groupType).toBe(1);
+    if (body.name === 'error') return route.fulfill({ status: 500, json: { ErrorCode: 99, ErrorStatus: 'SearchUnavailable' } });
+    const first = { groupId: '4242', name: 'Beacon', groupType: 1, memberCount: 1 };
+    const second = { groupId: '4343', name: 'Coast', groupType: 1, memberCount: 2 };
+    return route.fulfill({ json: envelope({ results: body.name === 'nothing' ? [] : body.currentPage === 1 ? [first] : [first, second], hasMore: body.name !== 'nothing' && body.currentPage === 1, replacementContinuationToken: 'next' }) });
+  });
+  await page.route('**/Platform/GroupV2/4242/**', route => route.fulfill({ json: envelope(new URL(route.request().url()).pathname.includes('/Members/') ? { results: [newMember], hasMore: false } : { detail: { groupId: '4242', name: 'Beacon', groupType: 1, memberCount: 1 } }) }));
+  await page.route('**/Platform/Destiny2/3/Profile/4611686018485645599/*', route => route.fulfill({ json: envelope({ profile: { data: { userInfo: newMember.destinyUserInfo } }, profileRecords: { data: { records: {} } } }) }));
+}
+
+test('clan selection persists, keeps deduplicated recents, survives cache clearing, and works collapsed', async ({ page }) => {
+  await setupClanPicker(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await page.getByRole('button', { name: 'Choose clan', exact: true }).click();
+  await page.getByLabel('Clan name or ID').fill('Beacon');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.locator('.clan-choices button').filter({ hasText: 'Beacon' }).click(); await ready(page);
+  await expect(page.locator('.clan-name')).toHaveText('Beacon');
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Guardian details: New Guardian', exact: true })).toBeVisible();
+  await page.reload(); await ready(page);
+  await expect(page.locator('.clan-name')).toHaveText('Beacon');
+  await expect(page.locator('.notice')).toHaveCount(0);
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Clear API cache' }).click(); await ready(page);
+  await expect(page.locator('.clan-name')).toHaveText('Beacon');
+  await page.getByRole('button', { name: 'Choose clan', exact: true }).click();
+  await expect(page.locator('.clan-choices li').filter({ hasText: 'Test Clan' })).toHaveCount(1);
+  await expect(page.locator('.clan-choices li').filter({ hasText: 'Test Clan' })).toContainText('Recently viewed');
+  await page.locator('.clan-choices button').filter({ hasText: 'Test Clan' }).click(); await ready(page);
+  await expect(page.locator('.clan-name')).toHaveText('Test Clan');
+  await expect(page.locator('tbody tr')).toHaveCount(3);
+  await page.getByRole('button', { name: 'Collapse side menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Choose clan', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('clan search supports pagination, empty/error results, and direct ID lookup without changing the current clan', async ({ page }) => {
+  await setupClanPicker(page, { offline: false, calls: 0 });
+  await page.goto('#/'); await ready(page);
+  await page.getByRole('button', { name: 'Choose clan', exact: true }).click();
+  await page.getByLabel('Clan name or ID').fill('clan');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.getByRole('button', { name: 'More clans', exact: true }).click();
+  await expect(page.locator('.clan-choices li')).toHaveCount(2);
+  await page.getByLabel('Clan name or ID').fill('nothing');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('No clans found');
+  await page.getByLabel('Clan name or ID').fill('error');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('HTTP 500');
+  await expect(page.locator('.clan-name')).toHaveText('Test Clan');
+  await page.getByLabel('Clan name or ID').fill('4242');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.locator('.clan-choices li')).toHaveCount(1);
+  await expect(page.locator('.clan-choices li')).toContainText('Beacon');
+  await expect(page.locator('.clan-name')).toHaveText('Test Clan');
+});
+
+test('switching clans during profile refresh ignores late results from the old clan', async ({ page }) => {
+  let finish!: () => void;
+  const state = { offline: false, calls: 0, profileGate: new Promise<void>(resolve => { finish = resolve; }) };
+  let oldFinished = 0;
+  page.on('requestfinished', request => { if (members.some(member => request.url().includes(`/Profile/${member.destinyUserInfo.membershipId}/`))) oldFinished++; });
+  await setupClanPicker(page, state);
+  await page.goto('#/seal/last_wish');
+  await expect(page.locator('.status-counts')).toContainText('Checking profiles…');
+  await page.getByRole('button', { name: 'Choose clan', exact: true }).click();
+  await page.getByLabel('Clan name or ID').fill('4242');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.locator('.clan-choices button').filter({ hasText: 'Beacon' }).click(); await ready(page);
+  await expect(page.locator('.clan-name')).toHaveText('Beacon');
+  finish();
+  await expect.poll(() => oldFinished).toBe(3);
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Guardian details: New Guardian', exact: true })).toBeVisible();
+  await expect(page.locator('.status-counts')).toContainText('1 / 1 profiles');
+});
+
+test('focus indicators stay inside shared controls across tables, tabs, and clan search', async ({ page }) => {
+  await setupClanPicker(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await page.keyboard.press('Tab');
+  async function insetFocus(control: import('@playwright/test').Locator) {
+    await page.keyboard.press('Tab');
+    const before = await control.boundingBox();
+    await control.focus();
+    await expect(control).toHaveCSS('outline-width', '2px');
+    await expect(control).toHaveCSS('outline-offset', '-2px');
+    const after = await control.boundingBox();
+    expect(after?.width).toBe(before?.width);
+    expect(after?.height).toBe(before?.height);
+  }
+  await insetFocus(page.getByRole('button', { name: 'Refresh data', exact: true }));
+  await insetFocus(page.getByRole('button', { name: 'Choose clan', exact: true }));
+  await insetFocus(page.getByRole('link', { name: 'Seal', exact: true }));
+  await insetFocus(page.locator('.summary-cell').first());
+  for (const control of [page.getByLabel('Search guardians'), page.getByLabel('Sort guardians')]) {
+    const before = await control.boundingBox();
+    await control.focus();
+    await expect(control).toHaveCSS('outline-style', 'none');
+    await expect(control.locator('..')).toHaveCSS('box-shadow', 'rgb(155, 185, 118) 0px 0px 0px 2px inset');
+    const after = await control.boundingBox();
+    expect(after?.width).toBe(before?.width); expect(after?.height).toBe(before?.height);
+  }
+  await page.getByRole('button', { name: 'Choose clan', exact: true }).click();
+  await insetFocus(page.getByLabel('Clan name or ID'));
+  await insetFocus(page.getByRole('button', { name: 'Search', exact: true }));
+  await page.getByLabel('Clan name or ID').fill('Beacon');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.locator('.clan-choices button')).toHaveCount(1);
+  await page.keyboard.press('Tab');
+  await insetFocus(page.locator('.clan-choices button').first());
+  await insetFocus(page.getByRole('button', { name: 'Close clan search', exact: true }));
+  await page.keyboard.press('Escape');
+  await page.goto('#/members'); await ready(page);
+  await page.keyboard.press('Tab');
+  await insetFocus(page.getByRole('button', { name: 'Export CSV', exact: true }));
+  await page.getByLabel('Search members').focus();
+  await expect(page.getByLabel('Search members')).toHaveCSS('outline-style', 'none');
+});
