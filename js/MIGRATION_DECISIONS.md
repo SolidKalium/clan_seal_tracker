@@ -639,3 +639,11 @@ Attach structured transport diagnostics to cached `errorInfo`, log a console war
 Public clan search and browser-owned clan selection are implemented. The configured clan is the initial default; visitors can search names, IDs, or Bungie clan links and select another clan. Keep seven deduplicated recent clans with last-viewed dates. Preserve intentional clan preferences when clearing disposable API caches. Scope sync summaries by clan and ignore late results from a previous selection.
 
 Player login remains separate: it will identify and prioritize the visitor's own clan and enable friend-clan suggestions and friend/combined lists. Do not label a publicly selected clan as the visitor's own clan.
+
+### Player login — 2026-11-03
+
+Use Bungie's Public OAuth client from the browser, without a client secret or server proxy. Select the primary-save clan on a new login and prioritize it in clan suggestions. Friends' clan suggestions and alternative player lists remain separate work.
+
+Keep the access token in tab session storage and authenticated profile payloads in a separate memory-only cache. Attach Bearer credentials only to account verification and the signed-in player's verified profile IDs. All other players use public requests and the existing public cache; clan membership or friendship grants no additional progression/activity access. No inventory components are added. Logout and expiry invalidate pending UI updates, discard private values, and return to public data. Public-client tokens have no refresh token; require reauthentication at expiry.
+
+Local OAuth requires HTTPS. Vite enables a self-signed development certificate when the configured redirect uses HTTPS; the redirect URL and registered browser origin must both use the HTTPS address. Plain HTTP on the development port redirects to the configured HTTPS origin while preserving the requested route; the listener also retains native HTTPS and Vite HMR. Never export client secrets through the settings compiler.

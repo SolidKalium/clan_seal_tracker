@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onBeforeUnmount, ref } from 'vue';
 import { clanSuggestions, type ClanChoice, type ClanDirectory, type RecentClan } from './clanSearch';
-const props = defineProps<{ selected: ClanChoice; recent: RecentClan[]; fallback: ClanChoice; directory: ClanDirectory }>();
+const props = defineProps<{ selected: ClanChoice; recent: RecentClan[]; fallback: ClanChoice; own?: ClanChoice; directory: ClanDirectory }>();
 const emit = defineEmits<{ select: [clan: ClanChoice]; close: [] }>();
 const dialog = ref<HTMLDialogElement>(), input = ref<HTMLInputElement>();
 const query = ref(''), submitted = ref(''), loading = ref(false), error = ref('');
 const results = ref<ClanChoice[]>(), hasMore = ref(false), page = ref(1);
 let continuation: string | undefined, generation = 0;
-const suggestions = computed(() => clanSuggestions(props.selected, props.recent, props.fallback));
+const suggestions = computed(() => clanSuggestions(props.selected, props.recent, props.fallback, props.own));
 const choices = computed(() => results.value ?? suggestions.value.map(entry => entry.clan));
 function reason(clan: ClanChoice) { return suggestions.value.find(entry => entry.clan.id === clan.id); }
 onMounted(async () => { dialog.value!.showModal(); await nextTick(); input.value?.focus(); });

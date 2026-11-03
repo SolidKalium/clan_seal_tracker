@@ -148,3 +148,12 @@ it('places Lifetime first in Other with the complete current tree and section ta
   expect(catalog.find(p => p.category === 'Other' && !p.parentPageId)).toMatchObject({ id: 'lifetime', otherNodeHashes: ['2956802394'], groupByNode: true });
   expect(catalog.filter(p => p.parentPageId === 'lifetime').map(p => p.tabLabel)).toEqual(['New Light', 'Titan', 'Hunter', 'Warlock', 'Social', 'Cooperative', 'Competitive']);
 });
+
+it('exports only public OAuth configuration, never a client secret', () => {
+  const pages = [{ id: 'test', name: 'Test', sealNodeHash: 1 }];
+  const settings = { secret_key: 'key', group_id: 1, oauth_client_id: 36319, oauth_redirect_uri: 'https://localhost:5173/js/', oauth_client_secret: 'never-export' };
+  expect(compile(settings, pages).config).toEqual({ apiKey: 'key', clanId: '1', language: 'en', oauthClientId: '36319', oauthRedirectUri: 'https://localhost:5173/js/' });
+  expect(JSON.stringify(compile(settings, pages))).not.toContain('never-export');
+  expect(() => compile({ ...settings, oauth_client_id: 'invalid' }, pages)).toThrow('numeric');
+  expect(() => compile({ ...settings, oauth_redirect_uri: 'https://localhost:5173/js/#callback' }, pages)).toThrow('redirect');
+});

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+import { PlayerLogin, type PlayerAccount } from './auth';
 import RecordDetails from './RecordDetails.vue';
 import MembersPage from './MembersPage.vue';
 import ClanPicker from './ClanPicker.vue';
@@ -30,11 +31,16 @@ import type { Cell, Definitions, Heading, LoadResult, PageConfig, PlayerData, Pr
 const catalog = catalogJson as PageConfig[];
 const store = new CacheStore();
 const transport = new BungieTransport(config.apiKey, diagnostic => store.recordDiagnostic(diagnostic));
+const account = shallowRef<PlayerAccount>();
+const ownClan = shallowRef<ClanChoice>();
+const loginNotice = ref('');
+const login = new PlayerLogin(config as { apiKey: string; oauthClientId?: string; oauthRedirectUri?: string }, undefined, message => { if (account.value) void signOut(message); else loginNotice.value = message; });
+let loginExpiryTimer: ReturnType<typeof setTimeout> | undefined;
 const fallbackClan: ClanChoice = { id: config.clanId, name: `Clan ${config.clanId}` };
 const clanSelection = shallowRef(readClanSelection(undefined, fallbackClan));
 const clanPickerOpen = ref(false);
 const clanDirectory = new ClanDirectory(transport);
-let repository = new TrackerRepository(store, transport, config.clanId, config.language);
+let repository = new TrackerRepository(store, transport, config.clanId, config.language, login);
 let clanGeneration = 0;
 const passPreferenceKey = (id = repository.clanId) => `lastProfilePass:v2:${id}`;
 const definitions = shallowRef<Definitions>();
@@ -331,7 +337,7 @@ async function hydrate(rosterValue: Roster) {
   const next: Record<string, PlayerData> = {};
   await Promise.all(rosterValue.members.map(async member => {
     const old = players.value[memberKey(member)];
-    const entry = await store.get<Profile>(`profile:${memberKey(member)}`);
+    const entry = await repository.cachedProfile(member);
     next[memberKey(member)] = old ? { ...old, member } : entry ? { member, profile: entry.value, fetchedAt: entry.fetchedAt, error: entry.error, status: entry.private ? 'private' : profileFresh(entry, member) ? 'cached' : 'stale' } : { member, status: 'loading' };
   }));
   if (generation === clanGeneration) players.value = next;
@@ -395,6 +401,21 @@ async function load(force = false) {
     if (current()) { issues.value = [...issues.value, 'The tracker could not finish loading. Retry to continue.']; phase.value = 'Loading stopped'; }
   } finally { if (current()) { profileSyncActive.value = false; busy.value = false; storageWarning.value = store.warning; } }
 }
+function signIn() {
+  loginNotice.value = '';
+  try { window.location.assign(login.begin()); }
+  catch (error) { loginNotice.value = error instanceof Error ? error.message : 'Cannot start login.'; }
+}
+async function signOut(message = '') {
+  clearTimeout(loginExpiryTimer);
+  login.end(); account.value = undefined; ownClan.value = undefined; loginNotice.value = message;
+  // Invalidate pending callbacks and remove every private value from the UI immediately.
+  ++clanGeneration; closeTooltip(); detail.value = undefined; players.value = {};
+  repository = new TrackerRepository(store, transport, clanSelection.value.selected.id, config.language, login);
+  rosterHydration = Promise.resolve(); busy.value = false; profileSyncActive.value = false;
+  await load();
+}
+function checkLoginExpiry() { if (account.value && (!login.expiresAt || login.expiresAt <= Date.now())) void signOut('Your login expired. Sign in again to access your private progression.'); }
 async function selectClan(clan: ClanChoice) {
   clan = { id: clan.id, name: clan.name, memberCount: clan.memberCount };
   clanPickerOpen.value = false;
@@ -402,7 +423,7 @@ async function selectClan(clan: ClanChoice) {
   const generation = ++clanGeneration;
   closeTooltip(); detail.value = undefined;
   clanSelection.value = { selected: clan, recent: recentClans(clanSelection.value.recent, clan) };
-  repository = new TrackerRepository(store, transport, clan.id, config.language);
+  repository = new TrackerRepository(store, transport, clan.id, config.language, login);
   roster.value = undefined; players.value = {}; rosterState.value = ''; clanCheckedAt.value = undefined;
   lastProfilePass.value = undefined; rosterHydration = Promise.resolve();
   issues.value = []; profileSyncActive.value = false; profileSyncDone.value = 0; profileSyncTotal.value = 0;
@@ -420,6 +441,7 @@ async function clearCache() {
   busy.value = true; phase.value = 'Clearing API cache…';
   try {
     await store.clearCache();
+    await login.store.clearCache();
     if (generation !== clanGeneration) return;
     lastProfilePass.value = undefined; manifestCheckedAt.value = undefined; clanCheckedAt.value = undefined;
     await store.setPreference(preferenceKey, null);
@@ -445,12 +467,26 @@ watch(sidebarCollapsed, value => { closeTooltip(); if (preferencesReady.value) v
 watch([selected, isMembers], ([seal, members]) => { document.title = members ? 'Members · Clan Seal Tracker' : seal ? `${seal.title} · Clan Seal Tracker` : 'Clan Seal Tracker'; });
 onMounted(async () => {
   window.addEventListener('hashchange', changedHash);
+  window.addEventListener('focus', checkLoginExpiry);
+  document.addEventListener('visibilitychange', checkLoginExpiry);
   window.addEventListener('resize', closeTooltip);
   window.addEventListener('scroll', closeTooltip);
   try {
+    let signedInNow = false;
+    try { signedInNow = await login.initialize(); account.value = login.account; }
+    catch (error) { loginNotice.value = error instanceof Error ? error.message : 'Login could not finish.'; }
+    hash.value = locationHash();
+    if (account.value) {
+      loginExpiryTimer = setTimeout(checkLoginExpiry, Math.min(2_147_483_647, Math.max(0, (login.expiresAt ?? 0) - Date.now())));
+      try { ownClan.value = await login.clan(transport); } catch { loginNotice.value = 'Signed in, but your clan could not be found. You can choose a clan below.'; }
+    }
     const preferences = await store.preference('table', { search: '', filter: 'all', sort: 'progress' });
     clanSelection.value = readClanSelection(await store.preference('clanSelection', undefined), fallbackClan);
-    repository = new TrackerRepository(store, transport, clanSelection.value.selected.id, config.language);
+    if (signedInNow && ownClan.value) {
+      clanSelection.value = { selected: ownClan.value, recent: recentClans(clanSelection.value.recent, ownClan.value) };
+      await store.setPreference('clanSelection', clanSelection.value);
+    }
+    repository = new TrackerRepository(store, transport, clanSelection.value.selected.id, config.language, login);
     lastProfilePass.value = await store.preference<typeof lastProfilePass.value>(passPreferenceKey(), clanSelection.value.selected.id === config.clanId ? await store.preference('lastProfilePass:v2', undefined) : undefined);
     sidebarCollapsed.value = await store.preference('sidebarCollapsed', false) === true;
     search.value = typeof preferences.search === 'string' ? preferences.search : '';
@@ -458,7 +494,7 @@ onMounted(async () => {
     sort.value = ['progress', 'highest', 'name', 'tenure'].includes(preferences.sort) ? preferences.sort : 'progress';
   } finally { preferencesReady.value = true; busy.value = false; void load(); }
 });
-onUnmounted(() => { window.removeEventListener('hashchange', changedHash); window.removeEventListener('resize', closeTooltip); window.removeEventListener('scroll', closeTooltip); headerObserver?.disconnect(); topbarObserver?.disconnect(); closeTooltip(); });
+onUnmounted(() => { clearTimeout(loginExpiryTimer); window.removeEventListener('focus', checkLoginExpiry); document.removeEventListener('visibilitychange', checkLoginExpiry); window.removeEventListener('hashchange', changedHash); window.removeEventListener('resize', closeTooltip); window.removeEventListener('scroll', closeTooltip); headerObserver?.disconnect(); topbarObserver?.disconnect(); closeTooltip(); });
 </script>
 
 <template>
@@ -478,7 +514,14 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
       <ClanEmblem :emblem="roster?.emblem" :name="roster?.name ?? 'Clan'" />
       <p v-if="!sidebarCollapsed" class="eyebrow">CLAN</p>
       <h2 class="clan-name" :class="{ 'clan-name-short': (roster?.name.length ?? 0) <= 16 }">{{ roster?.name ?? clanSelection.selected.name }}</h2>
+      <div class="sidebar-actions">
       <button class="clan-picker-button" :class="{ 'clan-picker-collapsed': sidebarCollapsed }" aria-label="Choose clan" :disabled="!preferencesReady" @click="clanPickerOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><span v-if="!sidebarCollapsed">Choose clan</span></button>
+      <div class="login-controls" :class="{ 'login-collapsed': sidebarCollapsed }">
+        <template v-if="account"><span v-if="!sidebarCollapsed" class="login-name">{{ account.name }}</span><button type="button" aria-label="Sign out" @click="signOut()"><span aria-hidden="true">↪</span><span v-if="!sidebarCollapsed">Sign out</span></button></template>
+        <button v-else type="button" aria-label="Sign in with Bungie" :disabled="!preferencesReady" @click="signIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span v-if="!sidebarCollapsed">Sign in with Bungie</span></button>
+      </div>
+      </div>
+      <p v-if="loginNotice" class="login-notice" role="status">{{ loginNotice }}</p>
       <div id="clan-menu" v-show="!sidebarCollapsed" class="sidebar-content">
       <p class="muted small">{{ roster ? `${roster.members.length} guardians` : busy ? 'Connecting to Bungie' : 'Check the connection notice' }}</p>
       <a href="#/" class="nav-home" :class="{ active: isHome }">Overview <span>↗</span></a>
@@ -572,7 +615,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
         <p v-else class="footnote"><template v-if="routeMode === 'raid' || routeMode === 'badge'">Collection progress uses one whole class set (the most complete by default). Shared items count for every class. </template><template v-if="routeMode === 'raid' || routeMode === 'triumphs'">The percentage averages the columns included in this table<span v-if="selected.page.sealNodeHash">, separately from the in-game seal requirements</span>. </template><template v-if="selected.page.category === 'Activities'"> Gilding requirements are included in this view’s percentage.</template> Day-one triumphs and lifetime gilding counts do not affect the percentage. A missing record is shown separately from an incomplete one. Watermarks explain content locks and visibility conditions on hover. Click a cell for objective details.</p>
       </template>
       <template v-else-if="!isHome"><section :class="currentPage ? 'view-unavailable' : 'empty-state'" :role="currentPage ? 'status' : undefined"><h1 v-if="!currentPage">{{ definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions ? busy ? 'Loading definitions…' : 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section></template>
-      <Teleport to="body"><ClanPicker v-if="clanPickerOpen" :selected="clanSelection.selected" :recent="clanSelection.recent" :fallback="{ ...fallbackClan, name: clanSelection.recent.find(clan => clan.id === fallbackClan.id)?.name ?? fallbackClan.name }" :directory="clanDirectory" @select="selectClan" @close="clanPickerOpen = false" /></Teleport>
+      <Teleport to="body"><ClanPicker v-if="clanPickerOpen" :selected="clanSelection.selected" :recent="clanSelection.recent" :fallback="{ ...fallbackClan, name: clanSelection.recent.find(clan => clan.id === fallbackClan.id)?.name ?? fallbackClan.name }" :own="ownClan" :directory="clanDirectory" @select="selectClan" @close="clanPickerOpen = false" /></Teleport>
       <Teleport to="body">
         <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><CharacterDetails v-if="tooltip.kind === 'characters'" :player="tooltip.player" /><RecordDetails v-else-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" :unit="tooltip.seal.page.kind === 'seals' ? 'seal' : undefined" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><div class="sync-history">
           <h4>Latest checks</h4>

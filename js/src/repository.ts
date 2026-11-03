@@ -1,3 +1,4 @@
+import type { SelfAccess } from './auth';
 import { ApiError, type Transport } from './api';
 import { composeClanEmblem, type ClanBannerData, type ClanBannerSource } from './clanBanner';
 import { CacheStore } from './storage';
@@ -8,7 +9,7 @@ type CachedCallback<T> = (result: LoadResult<T>) => void;
 const message = (e: unknown) => e instanceof Error ? e.message : 'Request failed';
 export class TrackerRepository {
   private pending = new Map<string, Promise<unknown>>();
-  constructor(readonly store: CacheStore, private transport: Transport, readonly clanId: string, private language = 'en') {}
+  constructor(readonly store: CacheStore, private transport: Transport, readonly clanId: string, private language = 'en', private self?: SelfAccess) {}
   private once<T>(key: string, operation: () => Promise<T>): Promise<T> {
     const existing = this.pending.get(key);
     if (existing) return existing as Promise<T>;
@@ -110,18 +111,24 @@ export class TrackerRepository {
       } catch { return cached?.value; }
     });
   }
+  cachedProfile(member: Member): Promise<Cached<Profile> | undefined> {
+    const user = member.destinyUserInfo;
+    return (this.self?.primary(user) ? this.self.store : this.store).get<Profile>(`profile:${user.membershipType}_${user.membershipId}`);
+  }
   profile(member: Member, onCached: CachedCallback<Profile>, force = false, retryFailures = false): Promise<LoadResult<Profile>> {
     const user = member.destinyUserInfo;
     const identity = `${user.membershipType}_${user.membershipId}`;
-    return this.once(`profile:${identity}`, async () => {
-      const key = `profile:${identity}`, cached = await this.store.get<Profile>(key);
+    const ownPrimary = this.self?.primary(user);
+    const profileStore = ownPrimary ? this.self!.store : this.store;
+    return this.once(`profile:${ownPrimary ? "self:" : ""}${identity}`, async () => {
+      const key = `profile:${identity}`, cached = await profileStore.get<Profile>(key);
       if (cached) onCached({ entry: cached, status: cached.private ? 'private' : profileFresh(cached, member) ? 'cached' : 'stale', error: cached.error });
       if (!force && profileFresh(cached, member)) return { entry: cached, status: 'cached' };
       // Avoid repeatedly refetching private/error profiles on every page navigation.
       if (!force && !retryFailures && cached?.lastAttemptAt && (cached.private || cached.error) && Date.now() - cached.lastAttemptAt < MINUTE) return { entry: cached, status: cached.private ? 'private' : 'stale', error: cached.error };
       try {
-        let primary: UserInfo = user;
-        if (user.crossSaveOverride && user.crossSaveOverride !== user.membershipType) {
+        let primary: UserInfo = ownPrimary ?? user;
+        if (!ownPrimary && user.crossSaveOverride && user.crossSaveOverride !== user.membershipType) {
           const resolutionKey = `membership:${identity}`;
           let resolution = await this.store.get<UserInfo>(resolutionKey);
           if (!fresh(resolution, 24 * 60 * MINUTE)) {
@@ -133,20 +140,21 @@ export class TrackerRepository {
           }
           primary = resolution!.value;
         }
-        const value = await this.transport.api<Profile>(`/Destiny2/${primary.membershipType}/Profile/${primary.membershipId}/?components=${PROFILE_COMPONENTS.join(',')}`);
+        const value = await (ownPrimary ? this.self! : this.transport).api<Profile>(`/Destiny2/${primary.membershipType}/Profile/${primary.membershipId}/?components=${PROFILE_COMPONENTS.join(',')}`);
+        if (ownPrimary && !this.self?.primary(user)) return { status: 'unavailable', error: 'Login ended.' };
         if (!value || typeof value !== 'object' || !value.profileRecords || !value.profile) throw new Error('Incomplete profile response.');
         if (!value.profileRecords.data?.records) {
           if (value.profileRecords.privacy !== 2 && value.profile?.privacy !== 2) throw new Error('Profile records are unavailable.');
           const entry: Cached<Profile> = { key, value: cached?.value ?? value, fetchedAt: cached?.fetchedAt ?? 0, components: cached?.components, private: true, lastAttemptAt: Date.now() };
-          await this.store.put(entry);
+          await profileStore.put(entry);
           return { entry, status: 'private', error: cached?.value.profileRecords?.data ? 'Profile is now private; showing previously public data.' : 'Profile records are private.' };
         }
         const entry: Cached<Profile> = { key, value, fetchedAt: Date.now(), lastAttemptAt: Date.now(), components: PROFILE_COMPONENTS };
-        await this.store.put(entry);
+        await profileStore.put(entry);
         return { entry, status: 'fresh' };
       } catch (e) {
         const error = message(e);
-        if (cached) await this.store.put({ ...cached, lastAttemptAt: Date.now(), error, errorInfo: e instanceof ApiError ? e.diagnostic : undefined });
+        if (cached && (!ownPrimary || this.self?.primary(user))) await profileStore.put({ ...cached, lastAttemptAt: Date.now(), error, errorInfo: e instanceof ApiError ? e.diagnostic : undefined });
         return { entry: cached, status: cached ? 'stale' : 'unavailable', error };
       }
     });

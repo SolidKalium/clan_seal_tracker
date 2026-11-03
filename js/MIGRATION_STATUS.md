@@ -3,10 +3,7 @@
 ## TODO list
 
 **Misc:**
-- Clan suggestions after player login
-  - Your clan always first; skip recent/friends labels for it
-  - Friends' clans, with up to three friends shown as the reason for suggesting one
-- Player login. Sets the active clan on login.
+- Friends' clan suggestions after player login, with up to three friends shown as the reason for suggesting one
 - Support multiple player lists. Switch in the side bar.
   - Clan view
   - Friend list (when logged in. Show player's emblem and name)

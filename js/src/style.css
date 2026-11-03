@@ -186,3 +186,8 @@ tbody tr:hover>td.commendation-section,tbody tr:focus-within>td.commendation-sec
 .table-scroll tbody tr:last-child th:first-child{border-bottom-left-radius:5px}
 .table-scroll tbody tr:last-child td:last-child{border-bottom-right-radius:5px}
 .clan-picker-button{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin:1px 0 13px;padding:5px 0;border:0;background:none;color:#62765b;font-size:11px}.clan-picker-button:hover{color:var(--ink)}.clan-picker-button svg{width:14px;height:14px}.clan-picker-collapsed{align-self:center;margin-top:14px;padding:5px}
+
+.login-controls{display:flex;flex-direction:column;gap:4px;margin:0 0 14px;font-size:11px;color:#62765b;min-width:0}.login-controls button{display:inline-flex;align-items:center;align-self:flex-start;gap:6px;border:0;background:none;color:inherit;padding:5px 0}.login-controls button:hover{color:var(--ink)}.login-controls svg{width:14px;height:14px}.login-name{overflow-wrap:anywhere;font-weight:600}.login-controls.login-collapsed{align-items:center;margin-top:0}.login-collapsed button{align-self:center;padding:5px}.login-notice{font-size:11px;line-height:1.5;overflow-wrap:anywhere;color:#795c28;margin:0 0 14px}.sidebar-collapsed .login-notice{writing-mode:horizontal-tb;font-size:10px}
+
+.sidebar-actions{display:contents}
+@media(max-width:700px){.shell:not(.sidebar-collapsed) .sidebar-actions{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;margin-bottom:13px}.shell:not(.sidebar-collapsed) .sidebar-actions .clan-picker-button,.shell:not(.sidebar-collapsed) .sidebar-actions .login-controls{margin:0}.shell:not(.sidebar-collapsed) .login-controls{flex-direction:row;align-items:center;gap:8px}.shell:not(.sidebar-collapsed) .login-name{max-width:140px}}

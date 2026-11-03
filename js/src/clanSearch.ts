@@ -7,9 +7,9 @@ export const validClanId = (value: unknown): value is string => typeof value ===
 export function recentClans(recent: RecentClan[], clan: ClanChoice, now = Date.now()): RecentClan[] {
   return [{ ...clan, viewedAt: now }, ...recent.filter(entry => entry.id !== clan.id)].slice(0, RECENT_CLAN_LIMIT);
 }
-export function clanSuggestions(selected: ClanChoice, recent: RecentClan[], fallback: ClanChoice) {
+export function clanSuggestions(selected: ClanChoice, recent: RecentClan[], fallback: ClanChoice, own?: ClanChoice) {
   const seen = new Set<string>();
-  return [{ clan: selected, reason: 'Selected clan', viewedAt: undefined },
+  return [...(own ? [{ clan: own, reason: 'Your clan', viewedAt: undefined }] : []), { clan: selected, reason: 'Selected clan', viewedAt: undefined },
     ...recent.map(clan => ({ clan, reason: 'Recently viewed', viewedAt: clan.viewedAt })),
     { clan: fallback, reason: 'Suggested default', viewedAt: undefined },
   ].filter(entry => !seen.has(entry.clan.id) && !!seen.add(entry.clan.id));

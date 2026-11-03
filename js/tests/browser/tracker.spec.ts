@@ -112,7 +112,7 @@ test('clear cache preserves preferences but downloads fresh API data', async ({ 
 test('origin rejection is actionable and unknown content is recoverable', async ({ page }) => {
   await setup(page, { offline: false, calls: 0, originError: true });
   await page.goto(''); await ready(page);
-  await expect(page.locator('.notice')).toContainText('Register http://localhost:5173');
+  await expect(page.locator('.notice')).toContainText(`Register ${new URL(page.url()).origin}`);
   await page.goto('#/seal/not-a-page');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
 });
@@ -1392,7 +1392,7 @@ test('Other groups individual ranks, commendations, and chronological checklist 
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto(''); await ready(page);
   const section = page.getByRole('region', { name: 'Other', exact: true });
-  await expect(section.locator('.seal-card')).toHaveCount(8);
+  await expect(section.locator('.seal-card')).toHaveCount(9);
   await section.getByRole('link').filter({ hasText: 'Guardian ranks' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Guardian ranks');
   await expect(page.locator('.view-description')).toContainText('does not expose a season-by-season');
@@ -1446,7 +1446,7 @@ test('Other collection pages use native groups, pattern objectives, and collecte
   await page.route('**/records.json', route => route.fulfill({ json: { ...records, '43': { ...records['43'], recordTypeName: 'Weapon Pattern' } } }));
   await page.goto(''); await ready(page);
   const section = page.getByRole('region', { name: 'Other', exact: true });
-  await expect(section.locator('.seal-card')).toHaveCount(8);
+  await expect(section.locator('.seal-card')).toHaveCount(9);
   await expect(section.locator('a[href="#/triumphs/exotic_weapons"]')).toContainText('2 items');
   for (const [id, name, group] of [['catalysts', 'Catalysts', 'Kinetic Weapons'], ['patterns', 'Patterns', 'Auto Rifles'], ['exotic_weapons', 'Exotic weapons', 'Kinetic'], ['exotic_armor', 'Exotic armor', 'Titan'], ['mods', 'Mods', 'Head']]) {
     await page.goto(`#/triumphs/${id}`);
@@ -2008,4 +2008,77 @@ test('focus indicators stay inside shared controls across tables, tabs, and clan
   await insetFocus(page.getByRole('button', { name: 'Export CSV', exact: true }));
   await page.getByLabel('Search members').focus();
   await expect(page.getByLabel('Search members')).toHaveCSS('outline-style', 'none');
+});
+
+async function setupLogin(page: Page, state: { hold?: Promise<void> } = {}) {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/.generated/config.json*', route => route.fulfill({ contentType: 'application/javascript', body: `export default ${JSON.stringify({ apiKey: 'browser-test-key', clanId: '1', language: 'en', oauthClientId: '36319', oauthRedirectUri: `${new URL(test.info().project.use.baseURL!).origin}/js/` })}` }));
+  await page.route('https://www.bungie.net/**', async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname === '/en/oauth/authorize') return route.fulfill({ contentType: 'text/html', body: '<p>Fixture Bungie authorization</p>' });
+    if (url.pathname === '/platform/app/oauth/token/') return route.fulfill({ json: { access_token: 'fixture-private-token', token_type: 'Bearer', expires_in: 3600, membership_id: '7' } });
+    if (url.pathname === '/Platform/User/GetMembershipsForCurrentUser/') return route.fulfill({ json: envelope({ destinyMemberships: [members[2]!.destinyUserInfo], bungieNetUser: { membershipId: '7', displayName: 'Signed-in Crow' } }) });
+    if (url.pathname.startsWith('/Platform/GroupV2/User/')) return route.fulfill({ json: envelope({ results: [{ group: { groupId: '4242', name: 'Test Clan' } }] }) });
+    if (url.pathname.includes('/Profile/') && route.request().headers().authorization) {
+      expect(url.pathname).toContain(members[2]!.destinyUserInfo.membershipId);
+      if (state.hold) await state.hold;
+      return route.fulfill({ json: envelope({ profile: { data: { userInfo: members[2]!.destinyUserInfo } }, profileRecords: { data: { records: { '99': { state: 1 }, '42': { state: 1 }, '43': { state: 1 } } } } }) });
+    }
+    expect(route.request().headers().authorization).toBeUndefined();
+    return route.fallback();
+  });
+}
+async function completeLogin(page: Page) {
+  await page.getByRole('button', { name: 'Sign in with Bungie', exact: true }).click();
+  await page.waitForURL('https://www.bungie.net/en/oauth/authorize?**');
+  const authorize = new URL(page.url());
+  expect(authorize.searchParams.has('scope')).toBe(false);
+  await page.goto(`${authorize.searchParams.get('redirect_uri')}?code=fixture-code&state=${authorize.searchParams.get('state')}`);
+}
+test('player login selects their clan, isolates private progression, and signs out to public data', async ({ page }) => {
+  await setupLogin(page);
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  await expect(page.getByRole('button', { name: 'Retry profile: Crow' })).toBeVisible();
+  await completeLogin(page); await ready(page);
+  await expect(page.locator('.login-name')).toHaveText('Signed-in Crow');
+  expect(page.url()).toMatch(/\/js\/#\/seal\/last_wish$/);
+  await expect(page.getByRole('button', { name: 'Retry profile: Crow' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Choose clan' }).click();
+  await expect(page.getByRole('dialog')).toContainText('Your clan');
+  await page.keyboard.press('Escape');
+  const publicCache = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => { const request = indexedDB.open('clan-seal-tracker-v1'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+    const entries = await new Promise<unknown[]>((resolve, reject) => { const request = db.transaction('entries').objectStore('entries').getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); db.close(); return JSON.stringify(entries);
+  });
+  expect(publicCache).not.toContain('fixture-private-token');
+  const crowEntry = JSON.parse(publicCache).find((entry: { key: string }) => entry.key === `profile:3_${members[2]!.destinyUserInfo.membershipId}`);
+  expect(crowEntry.private).toBe(true);
+  expect(crowEntry.value.profileRecords.data).toBeUndefined();
+  await page.reload(); await ready(page);
+  await expect(page.locator('.login-name')).toHaveText('Signed-in Crow');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await ready(page);
+  await expect(page.getByRole('button', { name: 'Retry profile: Crow' })).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem('bungie-login:v1'))).toBeNull();
+  expect(errors).toEqual([]);
+});
+test('signing out during an authenticated profile request cannot restore private rows', async ({ page }) => {
+  const state: { hold?: Promise<void> } = {}; await setupLogin(page, state);
+  await page.goto('#/seal/last_wish'); await ready(page);
+  let release!: () => void; state.hold = new Promise(resolve => { release = resolve; });
+  await completeLogin(page);
+  await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await ready(page);
+  release();
+  await expect(page.getByRole('button', { name: 'Retry profile: Crow' })).toBeVisible();
+  await expect(page.locator('.login-name')).toHaveCount(0);
+});
+
+
+test('plain HTTP redirects to HTTPS on the same port and preserves the page and query', async ({ page }) => {
+  test.skip(new URL(test.info().project.use.baseURL!).protocol !== 'https:', 'HTTPS is not configured');
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('http://localhost:5173/js/?example=one%20two#/seal/last_wish'); await ready(page);
+  expect(page.url()).toBe('https://localhost:5173/js/?example=one%20two#/seal/last_wish');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Rivensbane seal');
 });

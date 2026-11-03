@@ -1,8 +1,10 @@
+import { devHttps } from './vite.config';
 import { defineConfig, devices } from '@playwright/test';
+const baseURL = `${devHttps ? 'https' : 'http'}://localhost:5173/js/`;
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: false,
-  use: { baseURL: 'http://localhost:5173/js/', trace: 'retain-on-failure' },
+  use: { baseURL, ignoreHTTPSErrors: devHttps, trace: 'retain-on-failure' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: { command: 'npm run dev', url: 'http://localhost:5173/js/', reuseExistingServer: !process.env.CI, timeout: 30_000 },
+  webServer: { ignoreHTTPSErrors: devHttps, command: 'npm run dev', url: baseURL, reuseExistingServer: !process.env.CI, timeout: 30_000 },
 });

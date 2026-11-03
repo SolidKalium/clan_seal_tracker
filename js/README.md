@@ -11,13 +11,13 @@ npm --prefix js ci
 npm --prefix js run dev
 ```
 
-Open **http://localhost:5173/js/** through the dev container's forwarded port 5173. The server binds to `0.0.0.0` and requires port 5173 rather than silently selecting a different origin. If VS Code accepts connections but never forwards them, reload the VS Code window.
+Open **https://localhost:5173/js/** when OAuth is configured (otherwise **http://localhost:5173/js/**) through the dev container's forwarded port 5173. The server binds to `0.0.0.0` and requires port 5173 rather than silently selecting a different origin. If VS Code accepts connections but never forwards them, reload the VS Code window.
 
-Copy `js/settings.example.json` to the ignored `js/settings.json` and fill in `secret_key` and `group_id`. It is independent of `php/settings.json`. `predev` and `prebuild` compile those two values, the default language, and the page catalog from `js/pages.jsonc` into ignored `.generated/*.json`. Restart dev after changing source settings/content. No PHP settings or caches are read. No JSONC parser is shipped to the browser.
+Copy `js/settings.example.json` to the ignored `js/settings.json` and fill in `secret_key` and `group_id`. It is independent of `php/settings.json`. `predev` and `prebuild` compile those values, optional public OAuth configuration, the default language, and the page catalog from `js/pages.jsonc` into ignored `.generated/*.json`. Restart dev after changing source settings/content. No PHP settings or caches are read. No JSONC parser is shipped to the browser.
 
 **The Bungie API key is intentionally client-visible** in the dev app and built JavaScript. Keep `js/settings.json` limited to browser-safe values. Do not use this mechanism for OAuth client secrets or other confidential credentials. A production host must serve only `dist/` under `/js/`, not the repository or generated/source directories.
 
-Bungie must allow the browser's exact origin in the application registration. For normal local use that is `http://localhost:5173`; `http://127.0.0.1:5173` is a different origin. If using a different forwarded address, register that origin instead. Manifest downloads can succeed even while clan/profile endpoints reject the origin. The app displays the registration error and current origin. There is no development proxy masking this requirement.
+Bungie must allow the browser's exact origin in the application registration. For OAuth-enabled local use that is `https://localhost:5173`; HTTP and `127.0.0.1` are different origins. If using a different forwarded address, register that origin instead. Manifest downloads can succeed even while clan/profile endpoints reject the origin. The app displays the registration error and current origin. There is no development proxy masking this requirement.
 
 ## Page catalog
 
@@ -52,7 +52,7 @@ A failed fetch never changes the successful-fetch timestamp. Private responses r
 
 This slice implements **seal, badge, and full raid modes** for the ten configured raids, plus activity seal/triumph views for Crucible, Iron Banner, Gambit, Trials of Osiris, Strikes, and Weapons/Deadeye. Full raid percentages average the scored record and collection columns equally, including the badge requirement record and its individual items, following the legacy full-page weighting. Progress uses the PHP record-average calculation. Multi-objective triumphs have aligned objective subcolumns, with visible counts for partial objectives; a completed triumph collapses to one checkmark spanning its stages. Hover or keyboard focus opens a styled tooltip, and clicking pins the details below the table. Character records choose the best complete character record by aggregate progress, rather than combining objectives across characters. That is a deliberate clarification of the legacy heuristic. API character storage scope alone does not imply character-specific earning rules, so no blanket per-character label is shown. Title counts respect the completion record's own scope and recognize redemption on any character.
 
-No per-user overrides, frozen profiles, hidden-player rules, historical-data import/UI, OAuth, or server rendering. Archived datasets stay untouched.
+No per-user overrides, frozen profiles, hidden-player rules, historical-data import/UI, or server rendering. Archived datasets stay untouched.
 
 ## Verify and build
 
@@ -127,8 +127,20 @@ Choose clan in the sidebar opens public Bungie clan search. Search by name, clan
 
 Roster caches and last-profile-pass summaries are scoped by clan. Profiles and definitions remain reusable across clans. A late response from an earlier clan cannot overwrite the selected clan's rows or status. Clear API cache preserves the selected clan and recents.
 
-Login-dependent features remain deferred: automatically selecting your own clan, prioritizing it over recents, suggesting friends' clans, and friend/combined player lists. Public browsing does not imply clan membership.
+Login automatically selects your own clan and prioritizes it over recents. Friends' clan suggestions and friend/combined player lists remain deferred. Public browsing does not imply clan membership.
 
 ## Focus styling
 
 `src/focus.css` owns focus indicators for links, buttons, native fields, and focusable table elements. Standalone controls use an inset outline. Composite fields mark their visible wrapper with `control-field`; that wrapper owns one inset ring and suppresses the inner field's duplicate indicator. Keep focus rules here rather than adding control-specific overrides. Selection backgrounds and row highlighting remain presentation rules in `style.css`.
+
+## Player login
+
+Sign in with Bungie in the sidebar uses the Public OAuth authorization-code flow. Login selects the signed-in player's primary-save clan; subsequent browsing can still select any clan. Your clan stays first in clan suggestions.
+
+Configure the same Bungie application's API key and `oauth_client_id` in the ignored `js/settings.json`. Set `oauth_redirect_uri` to the exact registered redirect, locally `https://localhost:5173/js/`. Register the browser origin as `https://localhost:5173` (without a path). Enable **ReadBasicUserProfile** and **ReadDestinyInventoryAndVault**; despite that permission's inventory-oriented name, Bungie uses it for private Destiny 2 progression too. No inventory components are requested. Do not configure a client secret. See [Bungie's OAuth documentation](https://github.com/Bungie-net/api/wiki/OAuth-Documentation).
+
+An HTTPS redirect automatically enables Vite's basic SSL plugin for development and preview. Plain HTTP on the same port redirects to the configured HTTPS origin, preserving the path, query and browser fragment. Accept its self-signed local certificate once; in VS Code's Ports panel choose HTTPS for port 5173 if its generated link still uses HTTP. HTTP and HTTPS have separate browser storage, so switching to HTTPS starts a fresh cache and visitor preferences. Production should use its host's trusted HTTPS certificate.
+
+The random, one-use OAuth state expires after ten minutes. Callback parameters are removed from browser history before the exchange. The access token is held in this tab's session storage; private profiles are held only in memory and never written to public IndexedDB entries. Reloading a signed-in tab verifies the account and refetches its private profile. Closing the tab ends its session. Public clients receive no refresh token, so access-token expiry requires signing in again.
+
+Bearer requests are restricted to account verification and profile IDs returned by Bungie for the signed-in user. Cross-save is resolved within those verified memberships. Clanmates and friends remain unauthenticated public requests: being in the same clan does not grant extra access. Signing out or session expiry immediately removes private rows/tooltips and clears the private memory cache; late requests cannot put those values back. Authenticated error bodies and token responses are excluded from persistent diagnostics and console logging. A CSV explicitly exported while signed in can include the user's own visible private values.

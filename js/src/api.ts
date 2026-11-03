@@ -6,7 +6,7 @@ export interface Transport { api<T>(path: string, body?: unknown): Promise<T>; r
 export class BungieTransport implements Transport {
   private pauseUntil = 0;
   private disabledUntil = 0;
-  constructor(private key: string, private saveDiagnostic?: (diagnostic: RequestDiagnostic) => Promise<void>) {}
+  constructor(private key: string, private saveDiagnostic?: (diagnostic: RequestDiagnostic) => Promise<void>, private authorization?: (path: string) => string, private unauthorized?: () => void) {}
   private async failure(message: string, details: Omit<RequestDiagnostic, 'message'>, text?: string, code?: number, retrySeconds = 0) {
     const redact = (value: string) => this.key ? value.replaceAll(this.key, '[redacted]') : value;
     const diagnostic: RequestDiagnostic = { ...details, message: redact(message), cause: details.cause ? redact(details.cause) : undefined };
@@ -37,8 +37,26 @@ export class BungieTransport implements Transport {
     return new ApiError(diagnostic.message, code, retrySeconds, diagnostic);
   }
   async api<T>(path: string, requestBody?: unknown): Promise<T> {
+    const token = this.authorization?.(path);
     const url = `https://www.bungie.net/Platform${path}`;
     if (Date.now() < this.disabledUntil) throw await this.failure('Bungie API is unavailable. Cached data is retained; retry in a moment.', { url, timestamp: Date.now(), attempt: 0, durationMs: 0 }, undefined, 5);
+    if (token) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (this.authorization?.(path) !== token) throw new ApiError('Login changed. Please retry.');
+        let response: Response;
+        try { response = await fetch(url, { cache: 'no-store', credentials: 'omit', headers: { 'X-API-Key': this.key, Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(25_000) }); }
+        catch { throw new ApiError('Cannot reach Bungie for your signed-in profile.'); }
+        if (response.status === 401) { this.unauthorized?.(); throw new ApiError('Your login expired. Please sign in again.', 401); }
+        const retry = Math.min(60, Math.max(2, Number(response.headers.get('Retry-After')) || 0));
+        if (response.status === 429 && attempt === 0) { await new Promise(resolve => setTimeout(resolve, retry * 1000)); continue; }
+        let value: { ErrorCode?: number; ThrottleSeconds?: number; Response?: T };
+        try { value = await response.json(); } catch { throw new ApiError('Bungie returned an unreadable signed-in response.'); }
+        if (value.ThrottleSeconds && attempt === 0) { await new Promise(resolve => setTimeout(resolve, Math.min(60, value.ThrottleSeconds!) * 1000)); continue; }
+        if (!response.ok || value.ErrorCode !== 1 || value.Response === undefined) throw new ApiError('Bungie could not load your signed-in data. Check the app’s read permissions or retry.', value.ErrorCode ?? response.status);
+        return value.Response;
+      }
+      throw new ApiError('Bungie is temporarily throttling requests.');
+    }
     for (let attempt = 0; attempt < 2; attempt++) {
       const wait = this.pauseUntil - Date.now();
       if (wait > 0) await new Promise(resolve => setTimeout(resolve, Math.min(wait, 60_000)));

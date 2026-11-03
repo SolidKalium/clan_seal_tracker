@@ -1,4 +1,6 @@
 {
   "secret_key": "",
-  "group_id": ""
+  "group_id": "",
+  "oauth_client_id": "",
+  "oauth_redirect_uri": "https://localhost:5173/js/"
 }

@@ -50,7 +50,12 @@ export function compile(settings, pages) {
       otherNodeHashes: (p.otherNodeHashes ?? []).map(h => hash(h, p.id)),
       collectibles: rules(p.collectibles, 'collectible'), records: rules(p.records, 'record') };
   });
-  return { config: { apiKey: settings.secret_key, clanId, language: 'en' }, catalog };
+  if (settings.oauth_client_id && !/^\d+$/.test(String(settings.oauth_client_id))) throw new Error('oauth_client_id must be numeric');
+  if (settings.oauth_redirect_uri) {
+    const redirect = new URL(settings.oauth_redirect_uri);
+    if (!['http:', 'https:'].includes(redirect.protocol) || redirect.hash || redirect.search || redirect.username || redirect.password) throw new Error('Invalid OAuth redirect URL');
+  }
+  return { config: { apiKey: settings.secret_key, clanId, language: 'en', ...(settings.oauth_client_id ? { oauthClientId: String(settings.oauth_client_id) } : {}), ...(settings.oauth_redirect_uri ? { oauthRedirectUri: settings.oauth_redirect_uri } : {}) }, catalog };
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const settings = readJsonc(await readFile(new URL('../settings.json', import.meta.url), 'utf8'), 'js/settings.json');

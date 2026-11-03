@@ -16,7 +16,7 @@ export class CacheStore {
   private memory = new Map<string, Cached<unknown>>();
   private persistent = true;
   private diagnosticQueue = Promise.resolve();
-  constructor(name?: string) { this.db = new TrackerDatabase(name); }
+  constructor(name?: string, persistent = true) { this.db = new TrackerDatabase(name); this.persistent = persistent; }
   private failed() { this.persistent = false; this.warning = 'Browser storage is unavailable or full. This session is using memory; cached data may not survive a reload.'; }
   async get<T>(key: string): Promise<Cached<T> | undefined> {
     if (this.memory.has(key)) return this.memory.get(key) as Cached<T>;
