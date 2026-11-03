@@ -21,6 +21,8 @@ const description = computed(() => {
   <div class="record-details">
     <p v-if="player" class="eyebrow">{{ player }}</p>
     <h3>{{ heading.name }}</h3>
+    <p v-if="heading.sealSummary?.legacy" class="record-scoring">Legacy seal.</p>
+    <p v-if="heading.sealSummary?.gildingHash && cell" class="record-scoring">{{ cell.sealGildings === undefined ? 'Gilding status unavailable.' : heading.sealSummary.gildingBoolean ? cell.sealGildings ? 'Gilded' : 'Not gilded' : `${cell.sealGildings} ${cell.sealGildings === 1 ? 'gilding' : 'gildings'}` }} · Excluded from completion.</p>
     <p v-if="heading.gilding" class="record-scoring">Gilding requirement.</p>
     <p v-if="heading.skip && (!heading.metric || heading.metric === 'gildingCount' || heading.metric === 'gilded')" class="record-scoring">Excluded from this table's completion column.</p>
     <p v-if="heading.group?.startsWith('Armor · ')" class="item-type">{{ heading.armorSetName }}</p>

@@ -116,3 +116,7 @@ Open `/js/#/members` (or `/js/members`) for the PHP-style clan members table. It
 It reuses cached roster/profile data. Linked memberships and the additional season definitions are requested only when this view is opened and cached for 24 hours. Unknown ownership remains distinct from unowned; stale/private profiles can retain previous public values.
 
 The members Guardians cells show the highest reported `light` (Power) for each class; CSV retains every character's value. Its shared tooltip shows the actual characters and their last-played dates; no character-count assumption is made. Profiles now request Characters component 200, so a cache without that component is refreshed once under the component-coverage rule.
+
+## Seal overview
+
+Other → Seal overview (`#/triumphs/seal_overview`) shows the current clan's members as rows and seals as columns. Active seals and Legacy seals tabs are built from Bungie's title trees, without requiring a separate curated entry for each seal. Cells use each seal's completion record; gilding appears in details and does not affect completion. The Monument of Triumph's gilding remains a yes/no status.

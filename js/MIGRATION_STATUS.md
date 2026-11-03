@@ -3,10 +3,19 @@
 ## TODO list
 
 **Misc:**
-- A seal overview page (would probably show player progress on all seals, which would be more calculations than at present). Split earnable and legacy.
 - Clan selection
+  - List of clans, with reasons why they are suggested. Don't duplicate entries
+    - Your clan (always top if logged in. Skip recent and friends as labels for this one)
+    - Recently viewed (up to 5? 10? Show last viewed date in faded text?)
+    - Your friends' clans (maybe suggest up to 3 friends in a single clan)
+  - If a player is logged in: your clan, your friend's clans
+  - Recent clans
+  - Search
 - Player login
-  - Friend list views instead of clan-based. Probably switch in the sidebar, then it can show the player's icon and name instead of the clan's.
+- Support multiple player lists. Switch in the side bar.
+  - Clan view
+  - Friend list (when logged in. Show player's emblem and name)
+  - Clan + friends (when logged in) (Show clan and player emblems. Show clan name.)
 
 **Cleanup pass:**
 - Review page high-level structure
@@ -28,6 +37,9 @@ Deferred polish and interaction design; these are not for immediate implementati
   - [ ] Could also support searching for a triumph
 - [ ] Allow finding a page via multiple interaction paths (e.g. from a list of all badges vs the tab for a badge on raid or expansion) (Might be part of a larger reorganization, such as allowing viewing triumphs / medals in the hierarchy the game natively uses as a second view.)
 - [ ] Is a hash (`/#/foo/bar) really the right approach instead of using normal paths?
+- [ ] What is the "homepage"/overview? Especially if the visitor is logged out and hasn't selected a clan
+- [ ] Is the seals overview privileged on the homepage or in the sidebar?
+  - [ ] Can it link out to the specific pages for the seals? If so, how do we avoid doing that in a weird way where cells can be tapped for a tooltip or as a jump?
 
 ### Planning Usability
 - [ ] Allow pinning guardians to the top?

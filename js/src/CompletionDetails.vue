@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Seal } from './types';
 import type { CompletionCounts, RequirementCount } from './completion';
-defineProps<{ seal: Seal; label: string; player?: string; counts?: CompletionCounts; badge?: boolean; broader?: boolean }>();
-const triumphs = (n: number) => `${n} ${n === 1 ? 'triumph' : 'triumphs'}`;
+const props = defineProps<{ seal: Seal; label: string; player?: string; counts?: CompletionCounts; badge?: boolean; broader?: boolean; unit?: 'seal' }>();
+const triumphs = (n: number) => `${n} ${props.unit === 'seal' ? n === 1 ? 'seal' : 'seals' : n === 1 ? 'triumph' : 'triumphs'}`;
 const collectionColumns = (n: number) => `${n} ${n === 1 ? 'item' : 'items'}`;
 const requirementText = (count: RequirementCount) => count.required === undefined
   ? 'The required count is unavailable in this manifest.'

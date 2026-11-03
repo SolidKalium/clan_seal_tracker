@@ -2208,6 +2208,23 @@
     "records": {}
   },
   {
+    "id": "seal_overview",
+    "name": "Seal overview",
+    "category": "Other",
+    "kind": "seals",
+    "tabLabel": "Active seals",
+    "records": {}
+  },
+  {
+    "id": "seal_overview_legacy",
+    "name": "Seal overview: Legacy",
+    "category": "Other",
+    "kind": "seals",
+    "parentPageId": "seal_overview",
+    "tabLabel": "Legacy seals",
+    "records": {}
+  },
+  {
     "id": "guardian_ranks",
     "name": "Guardian ranks",
     "category": "Other",

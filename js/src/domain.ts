@@ -281,7 +281,16 @@ export function bestBadgeClass(profile: Profile | undefined, headings: Heading[]
 export function headingCell(profile: Profile | undefined, heading: Heading, classIndex = 0, badgeHeadings: Heading[] = [heading], classSelection: 'best' | 'selected' = 'selected'): Cell {
   const other = otherCell(profile, heading, badgeHeadings);
   if (other) return other;
-  if (!heading.collectibleHashes) return recordCell(profile ? selectRecord(profile, heading) : undefined, heading);
+  if (!heading.collectibleHashes) {
+    const cell = recordCell(profile ? selectRecord(profile, heading) : undefined, heading);
+    if (profile && heading.sealSummary?.gildingHash) {
+      const tracking = selectRecord(profile, { hash: heading.sealSummary.gildingHash, scope: heading.sealSummary.gildingScope ?? 0, metric: 'gildingCount' });
+      const count = tracking?.completedCount;
+      if (heading.sealSummary.gildingBoolean && tracking) cell.sealGildings = Number((count ?? 0) > 0 || recordFraction(tracking) >= 1);
+      else if (typeof count === 'number' && Number.isInteger(count) && count >= 0) cell.sealGildings = count;
+    }
+    return cell;
+  }
   const patternRecord = profile && heading.pattern ? selectRecord(profile, heading.pattern) : undefined;
   const patternUnlocked = patternRecord ? recordFraction(patternRecord) >= 1 : undefined;
   if (heading.alternativeCollectibleHashes) {

@@ -111,7 +111,7 @@ it('groups ranks and chronological checklists alongside the other Other pages', 
   const pages = readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'catalog');
   const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
   const other = catalog.filter(p => p.category === 'Other');
-  expect(other.filter(p => !p.parentPageId).map(p => p.id)).toEqual(['lifetime', 'guardian_ranks', 'checklists', 'catalysts', 'patterns', 'exotic_weapons', 'exotic_armor', 'mods']);
+  expect(other.filter(p => !p.parentPageId).map(p => p.id)).toEqual(['lifetime', 'seal_overview', 'guardian_ranks', 'checklists', 'catalysts', 'patterns', 'exotic_weapons', 'exotic_armor', 'mods']);
   expect(other.filter(p => p.guardianRank).map(p => p.guardianRank)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   expect(other.find(p => p.kind === 'commendations').parentPageId).toBe('guardian_ranks');
   const checklists = other.filter(p => p.checklistHash);

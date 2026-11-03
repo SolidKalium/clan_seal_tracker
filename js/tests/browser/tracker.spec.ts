@@ -1853,3 +1853,29 @@ test('members Guardians share a tooltip across class subcolumns and retain dupli
   await page.getByRole('columnheader', { name: 'Hunter', exact: true }).getByRole('button').hover();
   expect(await tip.boundingBox()).toEqual(before);
 });
+
+test('seal overview in Other has clan member rows and active/legacy seal columns', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/nodes.json', route => route.fulfill({ json: {
+    ...nodes,
+    '616318467': { hash: 616318467, displayProperties: { name: 'Titles' }, children: { presentationNodes: [{ presentationNodeHash: Number(nodeHash) }] } },
+    '1881970629': { hash: 1881970629, displayProperties: { name: 'Legacy Titles' }, children: { presentationNodes: [{ presentationNodeHash: 700 }] } },
+    '700': { hash: 700, displayProperties: { name: 'Old raid' }, completionRecordHash: 701, children: {} },
+  } }));
+  await page.route('**/records.json', route => route.fulfill({ json: {
+    ...records, '99': { ...records['99'], titleInfo: { titlesByGender: { Male: 'Rivensbane' } }, objectiveHashes: [101] },
+    '701': record(701, 'Old seal', { titleInfo: { titlesByGender: { Male: 'Old Raider' } } }),
+  } }));
+  await page.goto('#/triumphs/seal_overview'); await ready(page);
+  await expect(page.getByRole('navigation', { name: 'Other', exact: true }).getByRole('link', { name: 'Seal overview', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Seal overview', exact: true })).toBeVisible();
+  await expect(page.locator('tbody tr')).toHaveCount(3);
+  await expect(page.getByRole('columnheader', { name: 'Rivensbane', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /^Banshee: Rivensbane:/ }).hover();
+  await expect(page.getByRole('tooltip').getByRole('heading', { name: 'Rivensbane', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Legacy seals', exact: true }).click();
+  await expect(page.getByRole('columnheader', { name: 'Old Raider', exact: true })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Rivensbane', exact: true })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Active seals', exact: true }).click();
+  await expect(page.getByRole('columnheader', { name: 'Rivensbane', exact: true })).toBeVisible();
+});

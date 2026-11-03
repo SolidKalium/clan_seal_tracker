@@ -38,7 +38,7 @@ export function compile(settings, pages) {
     if (p.category !== undefined && !['Raid seals', 'Activities', 'Expansions', 'Seasons & Episodes', 'Destinations', 'Events', 'Dungeons', 'Exotic missions', 'Other', 'Other badges', 'Other seals'].includes(p.category)) throw new Error(`Invalid page category ${p.id}`);
     if (p.category === 'Other badges' && p.badgeNodeHash === undefined) throw new Error(`Missing badge hash ${p.id}`);
     if (p.groupByNode !== undefined && (typeof p.groupByNode !== 'boolean' || p.category !== 'Other')) throw new Error(`Invalid node grouping ${p.id}`);
-    if (p.kind !== undefined && (!['ranks', 'commendations'].includes(p.kind) || p.category !== 'Other')) throw new Error(`Invalid Other view ${p.id}`);
+    if (p.kind !== undefined && (!['ranks', 'commendations', 'seals'].includes(p.kind) || p.category !== 'Other')) throw new Error(`Invalid Other view ${p.id}`);
     if (p.guardianRank !== undefined && (p.category !== 'Other' || !Number.isInteger(p.guardianRank) || p.guardianRank < 1 || p.guardianRank > 11)) throw new Error(`Invalid Guardian Rank ${p.id}`);
     if (p.seasonNumber !== undefined && (!Number.isInteger(p.seasonNumber) || p.seasonNumber < 1)) throw new Error(`Invalid season number ${p.id}`);
     if (p.sealNodeHash === undefined && !['Destinations', 'Events', 'Dungeons', 'Exotic missions', 'Other', 'Other badges', 'Activities', 'Raid seals'].includes(p.category)) throw new Error(`Missing seal hash ${p.id}`);

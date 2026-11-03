@@ -1,8 +1,10 @@
+import { buildSealOverview } from './sealOverview';
 import type { Cell, Definitions, Heading, PageConfig, Profile, Seal } from './types';
 
 const baseHeading = (hash: string, name: string, description = ''): Heading => ({ hash, name, label: name, description, scope: 0, gilding: false, skip: false, order: 0, objectives: [], intervals: [] });
 export function buildOtherPage(page: PageConfig, defs: Definitions): Seal | undefined {
   if (!page.kind && !page.checklistHash) return;
+  if (page.kind === 'seals') return buildSealOverview(page, defs);
   const base: Seal = { page, title: page.name, description: '', completionHash: '', headings: [] };
   if (page.kind === 'ranks') {
     base.description = 'Current, renewed, and lifetime-highest Guardian Ranks. Bungie does not expose a season-by-season rank history in the profile response.';
