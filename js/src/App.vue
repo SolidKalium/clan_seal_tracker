@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import RecordDetails from './RecordDetails.vue';
+import MembersPage from './MembersPage.vue';
 import { displayObjectives } from './displayObjectives';
 import ViewTabs from './ViewTabs.vue';
 import CompletionDetails from './CompletionDetails.vue';
@@ -34,7 +35,9 @@ const rosterState = ref(''), definitionsState = ref('');
 const profileSyncActive = ref(false), profileSyncDone = ref(0), profileSyncTotal = ref(0);
 const manifestCheckedAt = ref<number>(), clanCheckedAt = ref<number>();
 const lastProfilePass = ref<{ completedAt: number; loaded: number; reused: number; private: number; unavailable: number }>();
-const hash = ref(window.location.hash);
+const locationHash = () => window.location.hash || (/\/members\/?$/.test(window.location.pathname) ? '#/members' : '');
+const hash = ref(locationHash());
+const isMembers = computed(() => /^#\/members\/?$/.test(hash.value));
 const search = ref(''), filter = ref('all'), sort = ref('progress');
 const badgeClass = ref('best');
 const badgeClasses = computed(() => selected.value?.headings.find(h => new Set(h.collectibleHashes).size > 1)?.classNames ?? []);
@@ -283,7 +286,7 @@ const rows = computed(() => {
       return b.fraction - a.fraction || b.gildings - a.gildings || (b.badge?.completeClasses.length ?? 0) - (a.badge?.completeClasses.length ?? 0) || a.name.localeCompare(b.name);
     });
 });
-const changedHash = () => { hash.value = window.location.hash; detail.value = undefined; closeTooltip(); };
+const changedHash = () => { hash.value = locationHash(); detail.value = undefined; closeTooltip(); };
 const age = (time?: number) => {
   if (!time) return 'Not cached';
   const minutes = Math.max(0, Math.floor((Date.now() - time) / 60_000));
@@ -376,7 +379,7 @@ async function retryPlayer(id: string) {
 function showDetail(player: string, heading: Heading, cell: Cell) { closeTooltip(); detail.value = { player, heading, cell }; }
 watch([search, filter, sort], () => { if (preferencesReady.value) void store.setPreference('table', { search: search.value, filter: filter.value, sort: sort.value }); });
 watch(sidebarCollapsed, value => { closeTooltip(); if (preferencesReady.value) void store.setPreference('sidebarCollapsed', value); });
-watch(selected, seal => { document.title = seal ? `${seal.title} · Clan Seal Tracker` : 'Clan Seal Tracker'; });
+watch([selected, isMembers], ([seal, members]) => { document.title = members ? 'Members · Clan Seal Tracker' : seal ? `${seal.title} · Clan Seal Tracker` : 'Clan Seal Tracker'; });
 onMounted(async () => {
   window.addEventListener('hashchange', changedHash);
   window.addEventListener('resize', closeTooltip);
@@ -428,7 +431,8 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
         <section class="page-heading seal-heading"><div><p class="eyebrow">{{ breadcrumb }}</p><h1>{{ headingTitle }}<span v-if="headingKind" class="heading-kind">{{ ' ' + headingKind }}</span></h1></div><div v-if="headingKind === 'seal' || headingKind === 'badge'" class="heading-tally"><img v-if="selected?.icon" class="heading-owner-icon" :class="`heading-${headingKind}-icon`" :src="`https://www.bungie.net${selected.icon}`" alt=""><div class="title-tally"><strong>{{ headingKind === 'badge' ? badgeOwnerCount : selected ? titleCount(selected) : '—' }}</strong><span>{{ headingKind === 'badge' ? 'badge owners' : 'title holders' }}</span></div></div></section>
         <ViewTabs :label="viewLabel" :tabs="viewTabs" />
       </template>
-      <template v-if="isHome">
+      <MembersPage v-if="isMembers" :players="Object.values(players)" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" />
+      <template v-else-if="isHome">
         <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, find a fireteam, and make the next run count.</p></section>
         <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => s.page.sealNodeHash && !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
         <section v-for="group in catalogGroups" :key="group.name" class="catalog-section" :aria-label="group.title">

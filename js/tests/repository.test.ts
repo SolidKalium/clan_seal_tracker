@@ -179,3 +179,17 @@ it('retains a bounded diagnostic history even without an existing profile cache'
     expect(await store.db.entries.where('key').startsWith('diagnostic:').count()).toBe(0);
   } finally { vi.unstubAllGlobals(); warn.mockRestore(); }
 });
+
+it('loads member entitlement definitions only on demand and reuses their cached tables', async () => {
+  const value = { seasons: { '10': { seasonNumber: 10, displayProperties: { name: 'Worthy' } } } };
+  const t: Transport = {
+    api: vi.fn().mockResolvedValue({ jsonWorldComponentContentPaths: { en: { DestinySeasonDefinition: 'seasons' } } }),
+    resource: vi.fn().mockImplementation(async path => value[path as keyof typeof value]),
+  };
+  const repo = new TrackerRepository(store, t, '1');
+  expect(t.api).not.toHaveBeenCalled();
+  expect(await repo.memberEntitlements()).toEqual(value);
+  expect(await repo.memberEntitlements()).toEqual(value);
+  expect(t.api).toHaveBeenCalledTimes(1);
+  expect(t.resource).toHaveBeenCalledTimes(1);
+});

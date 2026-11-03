@@ -108,3 +108,9 @@ The latest 50 failures are saved as `diagnostic:…` entries, including failures
 Record descriptions, perk descriptions, and objective tooltips replace recognized bracketed icon tokens with the bundled Destiny Symbols font. Icons have accessible text labels; unknown tokens and known literal bracketed names remain readable text. Champion tokens use the Anti-Barrier (`Shield-Piercing`), Overload (`Disruption`), and Unstoppable (`Stagger`) glyphs. `[Finisher]` remains plain text. The `Back` input prompt reads `Mission summary`, without assuming a visitor's key binding. Font provenance is in `src/assets/README.md`.
 
 The separate manifest audit reports unknown bracketed tokens and their definition fields (see the audit commands above). Known literal text (for example `[REDACTED]`) has an explicit allowlist in `src/inlineSymbols.ts`. Neither the normal tests nor the offline audit fetches or updates the fixture.
+
+## Hidden members view
+
+Open `/js/#/members` (or `/js/members`) for the PHP-style clan members table. It is intentionally absent from the sidebar and overview. The view includes linked platform names, primary save and last platform, clan rank/join date/activity, profile freshness, and reported expansion and season/episode ownership. Search and sorting apply to both the table and CSV export; longest clan tenure is the default order.
+
+It reuses cached roster/profile data. Linked memberships and the additional season definitions are requested only when this view is opened and cached for 24 hours. Unknown ownership remains distinct from unowned; stale/private profiles can retain previous public values.

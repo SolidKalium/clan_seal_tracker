@@ -25,8 +25,8 @@ export interface Definitions {
 }
 export interface ObjectiveProgress { objectiveHash: number; progress: number; completionValue: number; complete: boolean }
 export interface RecordProgress { completedCount?: number | null; state: number; objectives?: ObjectiveProgress[]; intervalObjectives?: ObjectiveProgress[]; intervalsRedeemedCount?: number }
-export interface UserInfo { membershipType: number; membershipId: string; displayName: string; bungieGlobalDisplayName?: string; bungieGlobalDisplayNameCode?: number; crossSaveOverride?: number }
-export interface Member { joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
+export interface UserInfo { membershipType: number; membershipId: string; displayName: string; bungieGlobalDisplayName?: string; bungieGlobalDisplayNameCode?: number; crossSaveOverride?: number; LastSeenDisplayNameType?: number }
+export interface Member { bungieNetUserInfo?: UserInfo; joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
 export interface Roster { name: string; members: Member[]; emblem?: import('./clanBanner').ClanEmblemData; emblemChecked?: boolean }
 export interface Profile {
   profileProgression?: { data?: { checklists?: Record<string, Record<string, boolean>> }; privacy?: number };
@@ -36,7 +36,7 @@ export interface Profile {
   characterStringVariables?: { data?: Record<string, { integerValuesByHash?: Record<string, number> }>; privacy?: number };
   profileCollectibles?: { data?: { collectibles: Record<string, { state: number }> }; privacy?: number };
   characterCollectibles?: { data?: Record<string, { collectibles: Record<string, { state: number }> }>; privacy?: number };
-  profile?: { data?: { userInfo: UserInfo; dateLastPlayed?: string; currentGuardianRank?: number; renewedGuardianRank?: number; lifetimeHighestGuardianRank?: number }; privacy?: number };
+  profile?: { data?: { userInfo: UserInfo; versionsOwned?: number; seasonHashes?: number[]; eventCardHashesOwned?: number[]; dateLastPlayed?: string; currentGuardianRank?: number; renewedGuardianRank?: number; lifetimeHighestGuardianRank?: number }; privacy?: number };
   profileRecords?: { data?: { records: Record<string, RecordProgress> }; privacy?: number };
   characterRecords?: { data?: Record<string, { records: Record<string, RecordProgress> }>; privacy?: number };
 }

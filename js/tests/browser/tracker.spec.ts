@@ -1729,3 +1729,48 @@ test('objective tooltips render Destiny symbols, keep unknown tokens, and load t
     return document.fonts.check('16px DestinySymbols', '\ue103\ue142');
   })).toBe(true);
 });
+
+test('hidden members route shows tenure, linked platforms, ownership, and CSV export', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/Platform/Destiny2/Manifest/', route => route.fulfill({ json: envelope({ version: 'test-manifest', jsonWorldComponentContentPaths: { en: {
+    DestinyPresentationNodeDefinition: root + 'nodes.json', DestinyRecordDefinition: root + 'records.json', DestinyObjectiveDefinition: root + 'objectives.json', DestinyCollectibleDefinition: root + 'collectibles.json', DestinyInventoryItemLiteDefinition: root + 'items.json', DestinySandboxPerkDefinition: root + 'perks.json', DestinySeasonDefinition: root + 'seasons.json',
+  } } }) }));
+  await page.route('**/seasons.json', route => route.fulfill({ json: { '10': { seasonNumber: 10, displayProperties: { name: 'Season of the Worthy' } } } }));
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    const member = members.find(m => route.request().url().includes(m.destinyUserInfo.membershipId))!;
+    return route.fulfill({ json: envelope(member === members[2] ? { profile: { privacy: 2 }, profileRecords: { privacy: 2 } } : { profile: { data: { userInfo: member.destinyUserInfo, versionsOwned: 1025, seasonHashes: [10], eventCardHashesOwned: [3841872876] } }, profileRecords: { data: { records: {} } } }) });
+  });
+  await page.goto('members'); await ready(page);
+  await expect(page.getByRole('heading', { name: 'Test Clan members', exact: true })).toBeVisible();
+  await expect(page.locator('.members-table tbody tr')).toHaveCount(3);
+  await expect(page.locator('.members-table tbody th')).toHaveText(['Crow', 'Ada', 'Banshee']);
+  const ada = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: 'Ada', exact: true }) });
+  await expect(ada.getByLabel('The Final Shape: owned', { exact: true })).toHaveText('✓');
+  await expect(ada.getByLabel('Season of the Worthy (10): owned', { exact: true })).toHaveText('✓');
+  await expect(page.getByRole('columnheader', { name: 'Event cards', exact: true })).toHaveCount(0);
+  await expect(ada).toContainText('Steam Guardian');
+  await expect(page.locator('.seal-nav a[href="#/members"]')).toHaveCount(0);
+  const groupBorders = await page.locator('.members-table .category-header-row th').evaluateAll(cells => cells.map(cell => getComputedStyle(cell).borderRightWidth));
+  expect(groupBorders.every(width => width === '2px')).toBe(true);
+  const columnBorders = await page.locator('.members-table .record-header-row th').evaluateAll(cells => cells.map(cell => ({ width: getComputedStyle(cell).borderRightWidth, grouped: cell.classList.contains('group-end') })));
+  expect(columnBorders.every(cell => cell.width === (cell.grouped ? '2px' : '1px'))).toBe(true);
+  const bodyBorders = await ada.locator('td').evaluateAll(cells => cells.map(cell => ({ width: getComputedStyle(cell).borderRightWidth, grouped: cell.classList.contains('group-end') })));
+  expect(bodyBorders.every(cell => cell.width === (cell.grouped ? '2px' : '1px'))).toBe(true);
+  await expect(page.locator('.members-table .record-header-row .group-end')).toHaveCount(4);
+  await expect(ada.locator('.group-end')).toHaveCount(4);
+  await page.getByLabel('Search members').fill('Ada');
+  await expect(page.locator('.members-table tbody tr')).toHaveCount(1);
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export CSV' }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe('members.csv');
+  const { readFile } = await import('node:fs/promises');
+  const csv = await readFile((await file.path())!, 'utf8');
+  expect(csv).toContain('Bungie name');
+  expect(csv).toContain('Ada');
+  expect(csv).not.toContain('Banshee');
+  expect(csv).not.toContain('Solstice');
+  await page.goto('#/'); await ready(page);
+  await page.goto('#/members'); await ready(page);
+  await expect(page.getByRole('heading', { name: 'Test Clan members', exact: true })).toBeVisible();
+});

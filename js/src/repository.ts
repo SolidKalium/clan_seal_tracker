@@ -151,6 +151,22 @@ export class TrackerRepository {
       }
     });
   }
+  memberEntitlements(): Promise<import('./members').MemberEntitlements> {
+    return this.once('member-entitlements', async () => {
+      const key = `member-entitlements:${this.language}`;
+      const cached = await this.store.get<import('./members').MemberEntitlements>(key);
+      if (fresh(cached, 24 * 60 * MINUTE)) return cached!.value;
+      try {
+        const manifest = await this.transport.api<Manifest>('/Destiny2/Manifest/');
+        const paths = manifest.jsonWorldComponentContentPaths[this.language];
+        if (!paths?.DestinySeasonDefinition) throw new Error('Season definitions are unavailable.');
+        const seasons = await this.transport.resource<import('./members').MemberEntitlements['seasons']>(paths.DestinySeasonDefinition);
+        const value = { seasons };
+        await this.store.put({ key, value, fetchedAt: Date.now() });
+        return value;
+      } catch (error) { if (cached) return cached.value; throw error; }
+    });
+  }
   memberships(user: UserInfo): Promise<UserInfo[]> {
     const key = `memberships:${user.membershipType}_${user.membershipId}`;
     return this.once(key, async () => {
