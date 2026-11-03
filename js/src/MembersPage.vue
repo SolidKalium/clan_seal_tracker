@@ -1,10 +1,26 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, shallowRef, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import type { PlayerData, UserInfo } from './types';
 import { clanRankLabel, compareClanTenure } from './clan';
 import { eachLimited } from './repository';
-import { gameVersions, memberName, membersCsv, ownership, platformName, platforms, primarySave, type MemberEntitlements } from './members';
-const props = defineProps<{ players: PlayerData[]; clanName?: string; memberships: (user: UserInfo) => Promise<UserInfo[]>; entitlements: () => Promise<MemberEntitlements> }>();
+import { gameVersions, guardianClasses, guardianPower, memberName, membersCsv, ownership, platformName, platforms, primarySave, type MemberEntitlements } from './members';
+const props = defineProps<{ players: PlayerData[]; clanName?: string; tooltipId?: string; memberships: (user: UserInfo) => Promise<UserInfo[]>; entitlements: () => Promise<MemberEntitlements> }>();
+const emit = defineEmits<{ 'show-characters': [event: Event, player?: PlayerData]; 'close-tooltip': [] }>();
+const headingRow = ref<HTMLTableRowElement>();
+const headingHeight = ref(60);
+let headingObserver: ResizeObserver | undefined;
+onMounted(() => {
+  if (headingRow.value) {
+    headingObserver = new ResizeObserver(() => { headingHeight.value = headingRow.value!.getBoundingClientRect().height; });
+    headingObserver.observe(headingRow.value);
+  }
+});
+onUnmounted(() => headingObserver?.disconnect());
+function leaveCharacters(event: MouseEvent | FocusEvent) {
+  const current = (event.currentTarget as HTMLElement).dataset.characterGroup;
+  const next = event.relatedTarget instanceof Element ? event.relatedTarget.closest<HTMLElement>('[data-character-group]')?.dataset.characterGroup : undefined;
+  if (!current || next !== current) emit('close-tooltip');
+}
 const search = ref(''), sort = ref('tenure');
 const linked = shallowRef<Record<string, UserInfo[]>>({});
 const platformErrors = ref<Record<string, string>>({});
@@ -50,8 +66,8 @@ const groups = computed<{ name: string; columns: OwnershipColumn[] }[]>(() => {
 const columns = computed(() => groups.value.flatMap(g => g.columns.map((column, i) => ({ ...column, groupEnd: i === g.columns.length - 1 }))));
 const profileStatus = (p: PlayerData) => p.status === 'loading' ? 'Loading' : p.status === 'private' ? 'Private' : p.status === 'unavailable' ? 'Unavailable' : p.status === 'stale' ? 'Stale' : 'Up to date';
 function exportCsv() {
-  const header = ['Bungie name', ...platformColumns.value.map(type => platforms[type]!), 'Primary save', 'Last platform', 'Clan rank', 'Joined clan', 'Last seen', 'Profile status', 'Profile fetched', ...columns.value.map(c => c.name)];
-  const data = rows.value.map(p => [memberName(p), ...platformColumns.value.map(type => platformName(namesFor(p), type)), primarySave(p), platforms[p.member.destinyUserInfo.LastSeenDisplayNameType ?? 0] ?? '', clanRankLabel(p.member.memberType), date(p.member.joinDate), p.member.isOnline ? 'Online' : date(lastSeen(p)), profileStatus(p), date(p.fetchedAt), ...columns.value.map(c => { const owned = ownership(p, c.kind, c.id); return owned === undefined ? 'Unknown' : owned ? 'Yes' : 'No'; })]);
+  const header = ['Bungie name', ...platformColumns.value.map(type => platforms[type]!), 'Primary save', 'Last platform', 'Clan rank', 'Joined clan', 'Last seen', ...guardianClasses.map(c => `${c.name} Power`), 'Profile status', 'Profile fetched', ...columns.value.map(c => c.name)];
+  const data = rows.value.map(p => [memberName(p), ...platformColumns.value.map(type => platformName(namesFor(p), type)), primarySave(p), platforms[p.member.destinyUserInfo.LastSeenDisplayNameType ?? 0] ?? '', clanRankLabel(p.member.memberType), date(p.member.joinDate), p.member.isOnline ? 'Online' : date(lastSeen(p)), ...guardianClasses.map(c => guardianPower(p.profile, c.type, 'all')), profileStatus(p), date(p.fetchedAt), ...columns.value.map(c => { const owned = ownership(p, c.kind, c.id); return owned === undefined ? 'Unknown' : owned ? 'Yes' : 'No'; })]);
   const url = URL.createObjectURL(new Blob(['\ufeff', membersCsv([header, ...data])], { type: 'text/csv;charset=utf-8' }));
   const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'members.csv'; anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -66,15 +82,16 @@ function exportCsv() {
     <button class="members-export" @click="exportCsv">Export CSV</button>
   </div>
   <div class="table-caption"><span>{{ rows.length }} members shown</span><span>✓ Owned · · Not listed as owned · — Unavailable</span></div>
-  <div class="table-frame"><div class="table-scroll members-scroll" tabindex="0" aria-label="Scrollable clan members table">
+  <div class="table-frame"><div class="table-scroll members-scroll" tabindex="0" aria-label="Scrollable clan members table" :style="{ '--group-header-height': `${headingHeight}px` }" @scroll="emit('close-tooltip')">
     <table class="members-table">
-      <thead><tr class="category-header-row"><th rowspan="2" scope="col" class="player-column">Bungie name</th><th :colspan="platformColumns.length" scope="colgroup"><span class="category-title">Platforms</span></th><th colspan="7" scope="colgroup"><span class="category-title">Account &amp; clan</span></th><th v-for="group in groups" :key="group.name" :colspan="group.columns.length" scope="colgroup"><span class="category-title">{{ group.name }}</span></th></tr>
-        <tr class="record-header-row"><th v-for="(type, index) in platformColumns" :key="type" scope="col" :class="{ 'group-end': index === platformColumns.length - 1 }">{{ platforms[type] }}</th><th scope="col">Primary save</th><th scope="col">Last platform</th><th scope="col">Clan rank</th><th scope="col">Joined clan</th><th scope="col">Last seen</th><th scope="col">Profile status</th><th scope="col" class="group-end">Profile fetched</th><th v-for="col in columns" :key="`${col.kind}:${col.id}`" scope="col" :class="{ 'group-end': col.groupEnd }">{{ col.name }}</th></tr>
+      <thead><tr class="category-header-row"><th rowspan="3" scope="col" class="player-column">Bungie name</th><th :colspan="platformColumns.length" scope="colgroup"><span class="category-title">Platforms</span></th><th colspan="10" scope="colgroup"><span class="category-title">Account &amp; clan</span></th><th v-for="group in groups" :key="group.name" :colspan="group.columns.length" scope="colgroup"><span class="category-title">{{ group.name }}</span></th></tr>
+        <tr ref="headingRow" class="record-header-row"><th v-for="(type, index) in platformColumns" :key="type" scope="col" rowspan="2" :class="{ 'group-end': index === platformColumns.length - 1 }">{{ platforms[type] }}</th><th scope="col" rowspan="2">Primary save</th><th scope="col" rowspan="2">Last platform</th><th scope="col" rowspan="2">Clan rank</th><th scope="col" rowspan="2">Joined clan</th><th scope="col" rowspan="2">Last seen</th><th colspan="3" scope="colgroup" data-character-group="header" @mouseenter="emit('show-characters', $event)" @mouseleave="leaveCharacters" @focusin="emit('show-characters', $event)" @focusout="leaveCharacters"><button class="heading-button" :aria-describedby="tooltipId" @keydown.esc="emit('close-tooltip')">Guardians</button></th><th scope="col" rowspan="2">Profile status</th><th scope="col" rowspan="2" class="group-end">Profile fetched</th><th v-for="col in columns" :key="`${col.kind}:${col.id}`" scope="col" rowspan="2" :class="{ 'group-end': col.groupEnd }">{{ col.name }}</th></tr>
+        <tr class="objective-header-row"><th v-for="guardianClass in guardianClasses" :key="guardianClass.type" class="guardian-power-heading" scope="col" data-character-group="header" @mouseenter="emit('show-characters', $event)" @mouseleave="leaveCharacters" @focusin="emit('show-characters', $event)" @focusout="leaveCharacters"><button class="heading-button" :aria-describedby="tooltipId" @keydown.esc="emit('close-tooltip')">{{ guardianClass.name }}</button></th></tr>
       </thead>
       <tbody><tr v-for="player in rows" :key="idOf(player)" :data-membership-id="player.member.destinyUserInfo.membershipId">
         <th scope="row" class="player-column"><a :href="`https://www.bungie.net/7/en/User/Profile/${(player.member.bungieNetUserInfo ?? player.member.destinyUserInfo).membershipType}/${(player.member.bungieNetUserInfo ?? player.member.destinyUserInfo).membershipId}`" target="_blank" rel="noopener noreferrer">{{ memberName(player) }}</a></th>
         <td v-for="(type, index) in platformColumns" :key="type" :class="{ 'group-end': index === platformColumns.length - 1 }">{{ platformName(namesFor(player), type) || '—' }}</td>
-        <td>{{ primarySave(player) }}</td><td>{{ platforms[player.member.destinyUserInfo.LastSeenDisplayNameType ?? 0] || '—' }}</td><td>{{ clanRankLabel(player.member.memberType) }}</td><td>{{ date(player.member.joinDate) }}</td><td>{{ player.member.isOnline ? 'Online' : date(lastSeen(player)) }}</td><td>{{ profileStatus(player) }}<small v-if="player.error || platformErrors[idOf(player)]" class="member-error">{{ player.error || platformErrors[idOf(player)] }}</small></td><td class="group-end">{{ date(player.fetchedAt) }}</td>
+        <td>{{ primarySave(player) }}</td><td>{{ platforms[player.member.destinyUserInfo.LastSeenDisplayNameType ?? 0] || '—' }}</td><td>{{ clanRankLabel(player.member.memberType) }}</td><td>{{ date(player.member.joinDate) }}</td><td>{{ player.member.isOnline ? 'Online' : date(lastSeen(player)) }}</td><td v-for="guardianClass in guardianClasses" :key="guardianClass.type" class="guardian-power" :data-character-group="idOf(player)" @mouseenter="emit('show-characters', $event, player)" @mouseleave="leaveCharacters" @focusin="emit('show-characters', $event, player)" @focusout="leaveCharacters"><button class="cell-button" :aria-label="`${memberName(player)}: ${guardianClass.name} guardians: ${guardianPower(player.profile, guardianClass.type)}`" :aria-describedby="tooltipId" @keydown.esc="emit('close-tooltip')">{{ guardianPower(player.profile, guardianClass.type) }}</button></td><td>{{ profileStatus(player) }}<small v-if="player.error || platformErrors[idOf(player)]" class="member-error">{{ player.error || platformErrors[idOf(player)] }}</small></td><td class="group-end">{{ date(player.fetchedAt) }}</td>
         <td v-for="col in columns" :key="`${col.kind}:${col.id}`" :class="{ 'member-owned': ownership(player, col.kind, col.id), 'group-end': col.groupEnd }" :aria-label="`${col.name}: ${ownership(player, col.kind, col.id) === undefined ? 'unavailable' : ownership(player, col.kind, col.id) ? 'owned' : 'not listed as owned'}`">{{ ownership(player, col.kind, col.id) === undefined ? '—' : ownership(player, col.kind, col.id) ? '✓' : '·' }}</td>
       </tr></tbody>
     </table>
@@ -83,5 +100,6 @@ function exportCsv() {
 </template>
 <style scoped>
 .members-scroll{border-radius:6px;--category-header-height:32px;--player-column-width:206px}.members-table th,.members-table td{border-right:1px solid #d3ddcc}.members-table .group-end,.members-table .player-column,.members-table .category-header-row th{border-right:2px solid #b7c6af}.members-table .category-header-row th{height:32px;padding:5px 12px}.members-table .category-header-row .player-column{z-index:5}
+.members-table .guardian-power,.members-table .guardian-power-heading{min-width:70px;max-width:140px;padding:0 5px}.guardian-power .cell-button{white-space:nowrap}.members-table .heading-button{padding:3px}
 .members-export{background:#edf1e8;border:1px solid var(--line);border-radius:5px;padding:10px 16px}.members-table{width:max-content;min-width:100%}.members-table th,.members-table td{padding:10px 14px;height:auto;min-width:110px}.members-table thead th{font-size:12px;max-width:160px;white-space:normal;text-align:center}.members-table .player-column{min-width:206px;text-align:left}.members-table tbody td{white-space:nowrap;font-size:12px}.members-table tbody th{font-weight:500}.members-table .member-owned{background:#e7efdc;color:#436335;text-align:center}.members-table tbody tr:hover td{box-shadow:inset 0 0 0 999px #294e3606}.member-error{display:block;max-width:240px;white-space:normal;color:#8b5547}.members-table a{text-decoration:none}.members-table a:hover{text-decoration:underline}
 </style>

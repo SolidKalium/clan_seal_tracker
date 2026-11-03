@@ -13,3 +13,20 @@ it('uses roster primary save and keeps unknown entitlements distinct from unowne
 it('quotes CSV fields and neutralizes formula-like account names', () => {
   expect(membersCsv([['Name', 'Platform'], ['A,"B', '=1+1']])).toBe('"Name","Platform"\r\n"A,""B","\'=1+1"\r\n');
 });
+
+it('keeps duplicate-class guardians and distinguishes missing classes from unavailable information', async () => {
+  const { accountGuardians, guardianPower } = await import('../src/members');
+  const profile = { characters: { data: {
+    'titan-2': { classType: 0, light: 1980 },
+    'titan-1': { classType: 0, light: 2005 },
+    'hunter': { classType: 1, light: 0 },
+  } } };
+  expect(accountGuardians(profile)?.map(c => c.id)).toEqual(['titan-1', 'titan-2', 'hunter']);
+  expect(guardianPower(profile, 0)).toBe('2005');
+  expect(guardianPower(profile, 0, 'all')).toBe('2005 / 1980');
+  expect(guardianPower(profile, 1)).toBe('0');
+  expect(guardianPower(profile, 2)).toBe('·');
+  expect(accountGuardians({ characters: { data: {} } })).toEqual([]);
+  expect(accountGuardians({ characters: { privacy: 2 } })).toBeUndefined();
+  expect(guardianPower(undefined, 0)).toBe('—');
+});

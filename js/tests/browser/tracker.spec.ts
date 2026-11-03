@@ -1816,3 +1816,40 @@ test('seal summary columns have normal dividers and the table clips rounded corn
     expect(cornerClipped).toBe(true);
   }
 });
+
+test('members Guardians share a tooltip across class subcolumns and retain duplicate and missing classes', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => {
+    expect(new URL(route.request().url()).searchParams.get('components')?.split(',')).toContain('200');
+    const member = members.find(m => route.request().url().includes(m.destinyUserInfo.membershipId))!;
+    const characters = member === members[0] ? { data: {
+      'titan-1': { classType: 0, light: 2005, dateLastPlayed: '2026-10-30T12:00:00Z' },
+      'titan-2': { classType: 0, light: 1980, dateLastPlayed: '2026-10-29T12:00:00Z' },
+    } } : member === members[1] ? { data: { hunter: { classType: 1, light: 1999 } } } : { privacy: 2 };
+    return route.fulfill({ json: envelope({ profile: { data: { userInfo: member.destinyUserInfo } }, profileRecords: { data: { records: {} } }, characters }) });
+  });
+  await page.goto('#/members'); await ready(page);
+  const ada = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: 'Ada', exact: true }) });
+  await expect(ada.locator('.guardian-power')).toHaveText(['2005', '·', '·']);
+  const crow = page.locator('.members-table tbody tr').filter({ has: page.getByRole('link', { name: 'Crow', exact: true }) });
+  await expect(crow.locator('.guardian-power')).toHaveText(['—', '—', '—']);
+  const tip = page.getByRole('tooltip');
+  const titan = ada.locator('.guardian-power').nth(0);
+  await titan.evaluate(element => element.scrollIntoView({ inline: 'center', block: 'nearest' }));
+  await titan.hover();
+  await expect(tip.getByRole('table', { name: 'Guardians on this account' }).locator('tbody tr')).toHaveCount(2);
+  await expect(tip.locator('tbody th')).toHaveText(['Titan', 'Titan']);
+  await expect(tip).toContainText('2005'); await expect(tip).toContainText('1980');
+  const position = await tip.boundingBox();
+  await ada.locator('.guardian-power').nth(1).hover();
+  expect(await tip.boundingBox()).toEqual(position);
+  await ada.locator('.guardian-power').nth(2).getByRole('button').focus();
+  await expect(tip.locator('tbody tr')).toHaveCount(2);
+  await crow.locator('.guardian-power').first().hover();
+  await expect(tip).toContainText('Guardian information is private.');
+  await page.getByRole('columnheader', { name: 'Titan', exact: true }).getByRole('button').hover();
+  await expect(tip).toContainText('Multiple guardians of the same class are listed separately.');
+  const before = await tip.boundingBox();
+  await page.getByRole('columnheader', { name: 'Hunter', exact: true }).getByRole('button').hover();
+  expect(await tip.boundingBox()).toEqual(before);
+});

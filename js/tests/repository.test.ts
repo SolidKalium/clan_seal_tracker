@@ -38,7 +38,7 @@ it('deduplicates concurrent profile refreshes', async () => {
 it('manual sync reuses inactive profiles, refreshes changed activity, and retries private or failed profiles', async () => {
   const key = 'profile:3_4611686018485645582';
   const inactive = { ...member, isOnline: false, lastOnlineStatusChange: '1' };
-  const cached = { key, value: good, fetchedAt: Date.now(), components: [100, 104, 202, 800, 900, 1200, 1400], lastAttemptAt: Date.now() };
+  const cached = { key, value: good, fetchedAt: Date.now(), components: [100, 104, 200, 202, 800, 900, 1200, 1400], lastAttemptAt: Date.now() };
   await store.put(cached);
   const t = transport(good), repo = new TrackerRepository(store, t, '1');
   expect((await repo.profile(inactive, noop, false, true)).status).toBe('cached');

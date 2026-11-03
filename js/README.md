@@ -111,6 +111,8 @@ The separate manifest audit reports unknown bracketed tokens and their definitio
 
 ## Hidden members view
 
-Open `/js/#/members` (or `/js/members`) for the PHP-style clan members table. It is intentionally absent from the sidebar and overview. The view includes linked platform names, primary save and last platform, clan rank/join date/activity, profile freshness, and reported expansion and season/episode ownership. Search and sorting apply to both the table and CSV export; longest clan tenure is the default order.
+Open `/js/#/members` (or `/js/members`) for the PHP-style clan members table. It is intentionally absent from the sidebar and overview. The view includes linked platform names, primary save and last platform, clan rank/join date/activity, profile freshness, guardian Power by class, and reported expansion and season/episode ownership. Search and sorting apply to both the table and CSV export; longest clan tenure is the default order.
 
 It reuses cached roster/profile data. Linked memberships and the additional season definitions are requested only when this view is opened and cached for 24 hours. Unknown ownership remains distinct from unowned; stale/private profiles can retain previous public values.
+
+The members Guardians cells show the highest reported `light` (Power) for each class; CSV retains every character's value. Its shared tooltip shows the actual characters and their last-played dates; no character-count assumption is made. Profiles now request Characters component 200, so a cache without that component is refreshed once under the component-coverage rule.

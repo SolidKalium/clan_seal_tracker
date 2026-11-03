@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import RecordDetails from './RecordDetails.vue';
 import MembersPage from './MembersPage.vue';
+import CharacterDetails from './CharacterDetails.vue';
 import { displayObjectives } from './displayObjectives';
 import ViewTabs from './ViewTabs.vue';
 import CompletionDetails from './CompletionDetails.vue';
@@ -44,7 +45,7 @@ const badgeClasses = computed(() => selected.value?.headings.find(h => new Set(h
 const preferencesReady = ref(false);
 const sidebarCollapsed = ref(false);
 const detail = shallowRef<{ player: string; heading: Heading; cell: Cell }>();
-type TooltipContent = { kind: 'record'; player?: string; heading: Heading; cell?: Cell; groupKey?: string; objectiveHash?: string } | { kind: 'guardian'; guardian: PlayerData; earnedTitle?: string; earnedBadge?: BadgeOwnership & { name: string }; memberships?: UserInfo[]; loading: boolean; error?: string } | { kind: 'summary'; seal: Seal; label: string; player?: string; counts?: CompletionCounts; badge: boolean; broader: boolean } | { kind: 'sync' } | { kind: 'note'; text: string };
+type TooltipContent = { kind: 'characters'; player?: PlayerData; groupKey: string } | { kind: 'record'; player?: string; heading: Heading; cell?: Cell; groupKey?: string; objectiveHash?: string } | { kind: 'guardian'; guardian: PlayerData; earnedTitle?: string; earnedBadge?: BadgeOwnership & { name: string }; memberships?: UserInfo[]; loading: boolean; error?: string } | { kind: 'summary'; seal: Seal; label: string; player?: string; counts?: CompletionCounts; badge: boolean; broader: boolean } | { kind: 'sync' } | { kind: 'note'; text: string };
 const tooltip = shallowRef<TooltipContent & { id: number; anchor: DOMRect; style: Record<string, string> }>();
 const tooltipElement = ref<HTMLElement>();
 const groupHeader = ref<HTMLElement>();
@@ -96,6 +97,18 @@ async function openTooltip(event: Event, content: TooltipContent) {
   tooltip.value = { ...content, id, anchor, style: { left: '0px', top: '0px', visibility: 'hidden' } };
   await positionTooltip(id);
   return id;
+}
+function showCharacterTooltip(event: Event, player?: PlayerData) {
+  const element = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-character-group]')!;
+  const groupKey = element.dataset.characterGroup!;
+  if (tooltip.value?.kind === 'characters' && tooltip.value.groupKey === groupKey) return;
+  const parts = [...element.closest('table')!.querySelectorAll<HTMLElement>('[data-character-group]')].filter(part => part.dataset.characterGroup === groupKey);
+  const bounds = parts.map(part => part.getBoundingClientRect());
+  const left = Math.min(...bounds.map(r => r.left)), top = Math.min(...bounds.map(r => r.top));
+  const right = Math.max(...bounds.map(r => r.right)), bottom = Math.max(...bounds.map(r => r.bottom));
+  const id = ++tooltipSerial;
+  tooltip.value = { kind: 'characters', player, groupKey, id, anchor: new DOMRect(left, top, right - left, bottom - top), style: { left: '0px', top: '0px', visibility: 'hidden' } };
+  void positionTooltip(id);
 }
 function showTooltip(event: Event, heading: Heading, cell?: Cell, player?: string, objectiveHash?: string) {
   const element = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-record-tooltip]');
@@ -431,7 +444,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
         <section class="page-heading seal-heading"><div><p class="eyebrow">{{ breadcrumb }}</p><h1>{{ headingTitle }}<span v-if="headingKind" class="heading-kind">{{ ' ' + headingKind }}</span></h1></div><div v-if="headingKind === 'seal' || headingKind === 'badge'" class="heading-tally"><img v-if="selected?.icon" class="heading-owner-icon" :class="`heading-${headingKind}-icon`" :src="`https://www.bungie.net${selected.icon}`" alt=""><div class="title-tally"><strong>{{ headingKind === 'badge' ? badgeOwnerCount : selected ? titleCount(selected) : '—' }}</strong><span>{{ headingKind === 'badge' ? 'badge owners' : 'title holders' }}</span></div></div></section>
         <ViewTabs :label="viewLabel" :tabs="viewTabs" />
       </template>
-      <MembersPage v-if="isMembers" :players="Object.values(players)" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" />
+      <MembersPage v-if="isMembers" :players="Object.values(players)" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" :tooltip-id="tooltip?.kind === 'characters' ? 'record-tooltip' : undefined" @show-characters="showCharacterTooltip" @close-tooltip="closeTooltip" />
       <template v-else-if="isHome">
         <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, plan you fireteam, and make the next run count.</p></section>
         <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => s.page.sealNodeHash && !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
@@ -507,7 +520,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
       </template>
       <template v-else-if="!isHome"><section :class="currentPage ? 'view-unavailable' : 'empty-state'" :role="currentPage ? 'status' : undefined"><h1 v-if="!currentPage">{{ definitions ? 'Page not found' : 'Loading seal definitions…' }}</h1><p>{{ selected?.unavailable || (!definitions ? busy ? 'Loading definitions…' : 'Definitions could not be loaded. Check the connection and retry.' : '') }}</p><a href="#/">Back to overview</a></section></template>
       <Teleport to="body">
-        <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><RecordDetails v-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><div class="sync-history">
+        <div v-if="tooltip" id="record-tooltip" ref="tooltipElement" class="record-tooltip" :class="{ 'compact-tooltip': tooltip.kind === 'note' }" role="tooltip" :style="tooltip.style"><CharacterDetails v-if="tooltip.kind === 'characters'" :player="tooltip.player" /><RecordDetails v-else-if="tooltip.kind === 'record'" :heading="tooltip.heading" :cell="tooltip.cell" :player="tooltip.player" :active-objective-hash="tooltip.objectiveHash" /><CompletionDetails v-else-if="tooltip.kind === 'summary'" :seal="tooltip.seal" :label="tooltip.label" :player="tooltip.player" :counts="tooltip.counts" :badge="tooltip.badge" :broader="tooltip.broader" /><GuardianDetails v-else-if="tooltip.kind === 'guardian'" :guardian="tooltip.guardian" :earned-title="tooltip.earnedTitle" :earned-badge="tooltip.earnedBadge" :name="nameOf(tooltip.guardian)" :memberships="tooltip.memberships" :loading="tooltip.loading" :error="tooltip.error" :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`" /><p v-else-if="tooltip.kind === 'note'" class="tooltip-note">{{ tooltip.text }}</p><div v-else class="record-details sync-details"><h3>Sync status</h3><div class="sync-history">
           <h4>Latest checks</h4>
           <p>Game definitions: <strong>{{ manifestCheckedAt ? age(manifestCheckedAt) : 'not yet checked' }}</strong></p>
           <p>Clan roster: <strong>{{ clanCheckedAt ? age(clanCheckedAt) : 'not yet checked' }}</strong><span v-if="roster && clanCheckedAt" class="sync-detail-line">{{ roster.members.filter(member => member.isOnline).length }} members online</span></p>

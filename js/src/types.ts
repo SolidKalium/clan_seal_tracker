@@ -28,7 +28,9 @@ export interface RecordProgress { completedCount?: number | null; state: number;
 export interface UserInfo { membershipType: number; membershipId: string; displayName: string; bungieGlobalDisplayName?: string; bungieGlobalDisplayNameCode?: number; crossSaveOverride?: number; LastSeenDisplayNameType?: number }
 export interface Member { bungieNetUserInfo?: UserInfo; joinDate?: string; memberType?: number; destinyUserInfo: UserInfo; isOnline?: boolean; lastOnlineStatusChange?: string }
 export interface Roster { name: string; members: Member[]; emblem?: import('./clanBanner').ClanEmblemData; emblemChecked?: boolean }
+export interface Character { characterId?: string; classType: number; light?: number; dateLastPlayed?: string; minutesPlayedTotal?: string }
 export interface Profile {
+  characters?: { data?: Record<string, Character>; privacy?: number };
   profileProgression?: { data?: { checklists?: Record<string, Record<string, boolean>> }; privacy?: number };
   characterProgressions?: { data?: Record<string, { checklists?: Record<string, Record<string, boolean>> }>; privacy?: number };
   profileCommendations?: { data?: Commendations; privacy?: number };
