@@ -2,13 +2,28 @@
 
 ## TODO list
 
-**Cleanup pass:**
-- Review page high-level structure
-- CSS
-- Tree shake
-- Check resource usage and for any hot points
+**Code review pass:**
+- Decide on lint/format tooling
+- Review page high-level structure (e.g. split App.vue)
+- Remove dead code: unused exports, files, dependencies, styles, pages.json entries
+  - Things that look like unused features, such as something in pages.json, should be flagged and not immediately deleted.
+- Types and consistency: `any`s/casts, duplicated helpers, error/empty states
+- Accessibility: keyboard, focus, contrast, labels
+- Dependency updates and audit
+- Tests and docs touch-up
+  - For the docs, flag issues so that the choice of docs vs code being right can be reviewed.
+
+**Layout cleanup:**
+- Review top-level page layout/element-nesting to reduce any unneeded complexity
+  - See tall sidebar in MIGRATION_DECISIONS as an example.
+- Review other parts of the layout, such as the tables
+- CSS (after components settle)
+
+**Performance (after cleanup):**
+- Check resource usage and for any hot spots
   - Page responsiveness can be lower than ideal. For instance the "All lifetime" tab takes maybe 0.3-0.6s to load. It is about 200 columns wide. It's responsive once loaded.
   - During a refresh, the app can stop responding for a couple seconds. Updates have made this much less common because it now avoids unnecessary work when the data hasn't changed.
+  - Bundle size check
 
 ## Revisit list
 
