@@ -138,7 +138,7 @@ test('objective stages, rich tooltips, and full-width controls stay aligned', as
   await expect(page.getByRole('tooltip')).toBeVisible();
   await expect(page.getByRole('tooltip').getByRole('heading', { level: 3 })).toHaveText('First challenge');
   await expect(page.getByRole('tooltip').locator('.objective-count').first()).toHaveText(/5\s*\/\s*10/);
-  const heights = await page.locator('.search, .select-control').evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
+  const heights = await page.locator('.table-tools .search, .table-tools .select-control').evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
   expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1);
   await page.getByLabel('Search guardians').focus();
   expect(await page.locator('.search').evaluate(e => getComputedStyle(e).outlineStyle)).toBe('none');
@@ -151,7 +151,7 @@ test('objective stages, rich tooltips, and full-width controls stay aligned', as
     await page.getByLabel(name).focus();
     expect(await page.getByLabel(name).evaluate(e => getComputedStyle(e).outlineStyle)).toBe('none');
     expect(await page.getByLabel(name).evaluate(e => getComputedStyle(e.parentElement!).boxShadow)).toContain('inset');
-    expect(await page.getByLabel(name).evaluate(e => parseFloat(getComputedStyle(e.parentElement!).paddingRight))).toBeGreaterThanOrEqual(10);
+    expect(await page.getByLabel(name).evaluate(e => parseFloat(getComputedStyle(e).borderRightWidth))).toBeGreaterThanOrEqual(10);
   }
   await page.screenshot({ path: 'test-results/desktop-objective-stages.png', fullPage: true });
 });
@@ -2215,6 +2215,12 @@ test('player list selector keeps selected clan, friends, and own clan plus frien
   await page.route('https://www.bungie.net/Platform/GroupV2/777/Members/**', route => route.fulfill({ json: envelope({ results: [{ destinyUserInfo: outsider, isOnline: false, lastOnlineStatusChange: '1' }], hasMore: false }) }));
   await page.goto('#/seal/last_wish'); await ready(page);
   await expect(page.getByLabel('Players to show').locator('option[value="friends"]')).toHaveJSProperty('disabled', true);
+  for (const label of ['Players to show', 'Filter progress', 'Sort guardians']) {
+    await expect(page.getByLabel(label)).toHaveCSS('border-right-width', '10px');
+    expect(await page.getByLabel(label).evaluate(element => element.getBoundingClientRect().width / element.parentElement!.getBoundingClientRect().width)).toBeGreaterThan(.98);
+  }
+  await page.locator('.player-list-control').screenshot({ path: 'test-results/player-list-caret.png' });
+  await page.locator('.table-tools').screenshot({ path: 'test-results/table-select-carets.png' });
   await completeLogin(page); await ready(page);
   await page.getByRole('button', { name: 'Choose clan' }).click();
   await page.getByLabel('Clan name or ID').fill('777'); await page.getByRole('button', { name: 'Search', exact: true }).click();

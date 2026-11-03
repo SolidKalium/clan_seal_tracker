@@ -45,9 +45,9 @@ html:root,body{background-color:#f6f7f2;background-image:none}#app{background:#f
 @media(max-width:700px){.shell::before{display:none}.sidebar{background:#edf1e8;min-height:0}.shell.sidebar-collapsed{--rail-width:58px;grid-template-columns:var(--rail-width) minmax(0,1fr)}.sidebar-collapsed::before{display:block}.sidebar-collapsed .sidebar{background:transparent;min-height:calc(100vh - var(--header-height,64px))}.header-status .sync-strip{max-width:none;width:auto;margin-left:14px}.sync-indicator{left:-14px}.sync-indicator.is-updating{left:auto}.status-primary{gap:3px}}
 
 /* Focus belongs inside the visible control, including its icon/caret padding. */
-.table-tools .search{align-items:center}.search-icon{display:block;width:18px;height:18px;flex-shrink:0;color:#7b8b79}.table-tools .select-control{height:42px;border:1px solid var(--line);border-radius:5px;background:#fff;padding-right:10px}.table-tools .select-control select{height:40px;border:0;background:transparent;min-width:0;flex:1}
+.table-tools .search{align-items:center}.search-icon{display:block;width:18px;height:18px;flex-shrink:0;color:#7b8b79}.table-tools .select-control{height:42px;border:1px solid var(--line);border-radius:5px;background:#fff;padding-right:0}.table-tools .select-control select{height:40px;border:0;background:transparent;min-width:0;flex:1}
 
-.safari .table-tools .select-control{padding-right:4px}
+
 
 .page-modes{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.page-modes a{display:inline-grid;place-items:center;padding:7px 15px;border-radius:5px;color:var(--muted);text-decoration:none}.page-modes a[aria-current="page"]{background:#e4ebde;color:#264b36;font-weight:700}
 
@@ -212,3 +212,7 @@ tbody tr:hover>td.commendation-section,tbody tr:focus-within>td.commendation-sec
 
 /* Explicitly mark informational hover targets; click actions keep the pointer. */
 .tooltip-only{cursor:help}
+
+/* Native carets use the same inset in every select. A transparent border keeps
+   that inset inside the native hit area, including the floating Players label. */
+.select-control{--select-caret-inset:10px}.safari .select-control{--select-caret-inset:4px}.select-control.control-field>select{border-right:var(--select-caret-inset) solid transparent}
