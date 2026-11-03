@@ -58,6 +58,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const output = new URL('../.generated/', import.meta.url);
   await mkdir(output, { recursive: true });
   const result = compile(settings, pages);
-  await Promise.all(Object.entries(result).map(([name, value]) => writeFile(new URL(`${name}.json`, output), JSON.stringify(value))));
+  await Promise.all(Object.entries(result).map(async ([name, value]) => {
+    const path = new URL(`${name}.json`, output);
+    const contents = JSON.stringify(value);
+    let previous;
+    try { previous = await readFile(path, 'utf8'); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    if (previous !== contents) await writeFile(path, contents);
+  }));
   console.log(`Compiled browser configuration and ${result.catalog.length} tracker pages (values omitted).`);
 }
