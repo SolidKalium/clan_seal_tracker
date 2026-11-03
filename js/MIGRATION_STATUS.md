@@ -23,7 +23,8 @@
 - CSS
 - Tree shake
 - Check resource usage and for any hot points
-  - Page has been freezing up during automated dev work recently, to the point Chrome calls it unresponsive, even twice back to back. That's a potential sign that dependencies are excessive, but it could just be based on the json updating and forcing everything cached to be evicted in case it actually changed; in that case, trying to cache parts of the json to limit dev refreshed might be excessive for the final build, unless it can be easily optimized out for that and is simple to implement.
+  - Page has been freezing up during automated dev work recently, to the point Chrome calls it unresponsive, even twice back to back. That's a potential sign that calcualtion dependencies are excessive, but it could just be based on the json updating and forcing everything cached to be evicted in case it actually changed; in that case, trying to cache parts of the json to limit dev refreshed might be excessive for the final build, unless it can be easily optimized out for that and is simple to implement. This happened even when the database storage for error requests was being added.
+- For "Linear Fusion Rifle Aptitude" triumph on the lifetime page, is the [] text supposed to show an icon?
 
 ## Revisit list
 
@@ -63,7 +64,7 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 
 ## Known quirks
 
-Recorded 2026-11-01. Observations and uncertainties to retain; no immediate implementation is planned.
+Observations and uncertainties to retain; no immediate implementation is planned.
 
 - **Character-scoped triumphs show the best whole record.** For each triumph, the site selects the character record with the highest aggregate progress; it does not merge objectives across characters. The user recalls that the game may display this best-record result across all characters, but that recollection is unverified. This can matter for requirements such as collecting feathers x/9 when all feathers must be collected on one character: the summary does not show how the other characters differ. Low priority: consider an indication of differing character records or a per-character breakdown when such differences exist, without implying that progress can be combined. Some separate options: "debug" alert in html or console when this is noticed, possibly for noting in the page json; automatically showing on the cell for the affected player; labelling the column automatically or from the json.
 - Catalysts with "Insert the catalyst" objective typically or always require a count of 2. Why? The measured value might actually be "bool acquire catalyst" + "int insert count" or something like that.

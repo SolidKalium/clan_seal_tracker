@@ -87,3 +87,9 @@ Lore books and the current Medals branch are siblings of Triumphs, not part of t
 - `npm --prefix js run update:coverage`: refresh the pinned fixture; review catalog coverage against it before committing.
 
 The generated `tests/fixtures/catalog-manifest.json.gz` contains only static definition fields needed to build and audit the views. It is independent of PHP's definition cache, contains no API key or player data, and is not loaded by the site. Refresh it when updating the manifest baseline; changes to curated pages are checked offline on every test run.
+
+### Request error diagnostics
+
+Failed Bungie requests log a `[Clan Seal Tracker] Request failed` warning and save structured diagnostics in the browser's `clan-seal-tracker-v1` IndexedDB database, `entries` store. Cached failures also have an `errorInfo` field alongside the existing `error` string. HTTP status, content type, request URL, attempt/timing, retry headers, and available Bungie error code/status/message are retained. Unreadable/non-JSON failures include a response excerpt capped at 2,048 characters. API keys and request headers are not logged; successful profile payloads and JSON error envelopes' `Response` data are not retained in diagnostics.
+
+The latest 50 failures are saved as `diagnostic:…` entries, including failures without an older cached profile and failed attempts that later succeed. That bounded history survives retries and page reloads; a successful request clears the current cached `errorInfo`, while Clear API cache removes the diagnostic history as well. Storage-unavailable sessions retain only an in-memory history. No diagnostics are sent to a server. Logging does not depend on DevTools being open, but browser console retention is separate from this persistent history.

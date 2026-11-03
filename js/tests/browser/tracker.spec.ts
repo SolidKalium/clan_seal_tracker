@@ -1638,3 +1638,43 @@ test('Lifetime is first in Other and exposes the current section tabs with neste
   await page.reload(); await ready(page);
   await expect(tabs.getByRole('link', { name: 'Titan', exact: true })).toHaveAttribute('aria-current', 'page');
 });
+
+test('unreadable profile diagnostics are logged and persist after retry and reload', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  let fail = false;
+  const warnings: string[] = [];
+  page.on('console', message => { if (message.type() === 'warning') warnings.push(message.text()); });
+  await page.route('**/Platform/Destiny2/3/Profile/*/*', route => fail && route.request().url().includes(members[1]!.destinyUserInfo.membershipId)
+    ? route.fulfill({ status: 502, contentType: 'text/html', body: '<html>Temporary gateway failure</html>' })
+    : route.fallback());
+  const diagnostics = () => page.evaluate(() => new Promise<{ history: { status: number; bodyExcerpt: string }[]; errorInfo?: { status: number }; error?: string }>((resolve, reject) => {
+    const open = indexedDB.open('clan-seal-tracker-v1');
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const db = open.result, request = db.transaction('entries', 'readonly').objectStore('entries').getAll();
+      request.onerror = () => { db.close(); reject(request.error); };
+      request.onsuccess = () => {
+        const rows = request.result;
+        const profile = rows.find(e => e.key === 'profile:3_4611686018485645581');
+        const result = { history: rows.filter(e => e.key.startsWith('diagnostic:')).map(e => e.value), errorInfo: profile?.errorInfo, error: profile?.error };
+        db.close(); resolve(result);
+      };
+    };
+  }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  fail = true;
+  await page.getByRole('button', { name: 'Refresh data', exact: true }).click(); await ready(page);
+  const failed = await diagnostics();
+  expect(failed.error).toBe('Bungie returned an unreadable response.');
+  expect(failed.errorInfo?.status).toBe(502);
+  expect(failed.history).toHaveLength(1);
+  expect(failed.history[0]?.bodyExcerpt).toContain('Temporary gateway failure');
+  expect(warnings.some(message => message.includes('[Clan Seal Tracker] Request failed'))).toBe(true);
+  fail = false;
+  await page.getByRole('button', { name: 'Retry profile: Banshee', exact: true }).click(); await ready(page);
+  const recovered = await diagnostics();
+  expect(recovered.errorInfo).toBeUndefined();
+  expect(recovered.history).toHaveLength(1);
+  await page.reload(); await ready(page);
+  expect((await diagnostics()).history).toHaveLength(1);
+});

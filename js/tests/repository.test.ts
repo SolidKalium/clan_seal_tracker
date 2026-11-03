@@ -105,3 +105,39 @@ it('upgrades a complete pre-Other cache at the same manifest version and rejects
   expect((await repo.definitions(noop, true)).status).toBe('stale');
   expect((await store.get<Definitions>('definitions:en'))?.value).toMatchObject({ version: 'old', checklists: { '1': { hash: 1 } } });
 });
+
+it('saves API diagnostics with cached errors and retains history after successful retry', async () => {
+  const { BungieTransport } = await import('../src/api');
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const key = 'profile:3_4611686018485645582';
+  await store.put({ key, value: good, fetchedAt: 123 });
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response('<html>Gateway error</html>', { status: 502, headers: { 'Content-Type': 'text/html' } })).mockResolvedValueOnce(Response.json({ ErrorCode: 1, Response: good })));
+  try {
+    const repo = new TrackerRepository(store, new BungieTransport('test-key', d => store.recordDiagnostic(d)), '1');
+    expect((await repo.profile(member, noop, true)).status).toBe('stale');
+    expect(await store.get(key)).toMatchObject({ fetchedAt: 123, value: good, errorInfo: { status: 502, contentType: 'text/html', bodyExcerpt: '<html>Gateway error</html>' } });
+    expect((await repo.profile(member, noop, true)).status).toBe('fresh');
+    expect((await store.get(key))?.errorInfo).toBeUndefined();
+    const reopened = new CacheStore(store.db.name);
+    const history = await reopened.db.entries.where('key').startsWith('diagnostic:').toArray();
+    expect(history).toHaveLength(1);
+    expect(history[0]?.value).toMatchObject({ status: 502 });
+    reopened.db.close();
+  } finally { vi.unstubAllGlobals(); warn.mockRestore(); }
+});
+it('retains a bounded diagnostic history even without an existing profile cache', async () => {
+  const { BungieTransport } = await import('../src/api');
+  const { DIAGNOSTIC_LIMIT } = await import('../src/diagnostics');
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Unreadable', { status: 503 })));
+  try {
+    const repo = new TrackerRepository(store, new BungieTransport('test-key', d => store.recordDiagnostic(d)), '1');
+    expect((await repo.profile(member, noop, true)).status).toBe('unavailable');
+    expect(await store.get('profile:3_4611686018485645582')).toBeUndefined();
+    expect(await store.db.entries.where('key').startsWith('diagnostic:').count()).toBe(1);
+    await Promise.all(Array.from({ length: DIAGNOSTIC_LIMIT + 2 }, (_, i) => store.recordDiagnostic({ timestamp: Date.now() + i, attempt: 1, durationMs: 1, message: `Failure ${i}`, url: '/test' })));
+    expect(await store.db.entries.where('key').startsWith('diagnostic:').count()).toBe(DIAGNOSTIC_LIMIT);
+    await store.clearCache();
+    expect(await store.db.entries.where('key').startsWith('diagnostic:').count()).toBe(0);
+  } finally { vi.unstubAllGlobals(); warn.mockRestore(); }
+});

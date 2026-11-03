@@ -25,7 +25,7 @@ import type { Cell, Definitions, Heading, LoadResult, PageConfig, PlayerData, Pr
 
 const catalog = catalogJson as PageConfig[];
 const store = new CacheStore();
-const repository = new TrackerRepository(store, new BungieTransport(config.apiKey), config.clanId, config.language);
+const repository = new TrackerRepository(store, new BungieTransport(config.apiKey, diagnostic => store.recordDiagnostic(diagnostic)), config.clanId, config.language);
 const definitions = shallowRef<Definitions>();
 const roster = shallowRef<Roster>();
 const players = shallowRef<Record<string, PlayerData>>({});

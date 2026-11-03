@@ -1,4 +1,4 @@
-import type { Transport } from './api';
+import { ApiError, type Transport } from './api';
 import { composeClanEmblem, type ClanBannerData, type ClanBannerSource } from './clanBanner';
 import { CacheStore } from './storage';
 import { fresh, MINUTE, profileFresh, PROFILE_COMPONENTS } from './policy';
@@ -141,7 +141,7 @@ export class TrackerRepository {
         return { entry, status: 'fresh' };
       } catch (e) {
         const error = message(e);
-        if (cached) await this.store.put({ ...cached, lastAttemptAt: Date.now(), error });
+        if (cached) await this.store.put({ ...cached, lastAttemptAt: Date.now(), error, errorInfo: e instanceof ApiError ? e.diagnostic : undefined });
         return { entry: cached, status: cached ? 'stale' : 'unavailable', error };
       }
     });
@@ -161,7 +161,7 @@ export class TrackerRepository {
   }
   private async failed<T>(cached: Cached<T> | undefined, e: unknown): Promise<LoadResult<T>> {
     const error = message(e);
-    if (cached) await this.store.put({ ...cached, lastAttemptAt: Date.now(), error });
+    if (cached) await this.store.put({ ...cached, lastAttemptAt: Date.now(), error, errorInfo: e instanceof ApiError ? e.diagnostic : undefined });
     return { entry: cached, status: cached ? 'stale' : 'unavailable', error };
   }
 }
