@@ -1,23 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { expect, it } from 'vitest';
-import { compile, readJsonc } from '../scripts/compile-data.mjs';
 import { catalogCoverage } from '../src/catalogCoverage';
 import type { Definitions, PageConfig } from '../src/types';
 
-const snapshot = process.env.TRACKER_COVERAGE_SNAPSHOT ?? new URL('./fixtures/catalog-manifest.json.gz', import.meta.url);
-const defs: Definitions = JSON.parse(gunzipSync(readFileSync(snapshot)).toString('utf8'));
-const catalog = compile({ secret_key: 'coverage-test', group_id: 1 }, readJsonc(readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'), 'pages.jsonc')).catalog;
-it(`represents every triumph, badge, and named seal in manifest ${defs.version}`, () => {
-  const report = catalogCoverage(defs, catalog);
-  for (const key of ['missingTriumphs', 'missingBadges', 'missingSeals', 'unavailable'] as const) {
-    expect(report[key], `${key} (${report[key].length}); first 50 entries:\n${JSON.stringify(report[key].slice(0, 50), null, 2)}`).toEqual([]);
-  }
-  expect(report.totals.triumphs).toBeGreaterThan(0);
-  expect(report.totals.badges).toBeGreaterThan(0);
-  expect(report.totals.seals).toBeGreaterThan(0);
-});
-
+// Detector regressions use tiny synthetic definitions. Real manifest content
+// checks live separately in audits/manifest.audit.ts.
 const node = (hash: number, name: string, children: object, completionRecordHash = 0) => ({ hash, displayProperties: { name }, children, completionRecordHash });
 const tiny: Definitions = { version: 'test', language: 'en', nodes: {
   '1': node(1, 'Triumphs', { records: [{ recordHash: 10 }] }),

@@ -1700,3 +1700,32 @@ test('status text and pip share check times and the previous profile pass summar
   await expect(tip).toContainText('1 profile is private');
   await expect(tip).toContainText('Sync status');
 });
+
+test('objective tooltips render Destiny symbols, keep unknown tokens, and load the symbol font', async ({ page }) => {
+  await setup(page, { offline: false, calls: 0 });
+  const label = '[Hand Cannon][Headshot] Precision [Future Weapon] [Disruption][Shield-Piercing][Stagger]';
+  await page.route('**/records.json', route => route.fulfill({ json: {
+    ...records, '42': { ...records['42'], displayProperties: { ...records['42'].displayProperties, description: 'Use [Finisher]. Press [Back] to open the mission summary.' } },
+  } }));
+  await page.route('**/objectives.json', route => route.fulfill({ json: {
+    ...objectives, '101': { ...objectives['101'], progressDescription: label },
+  } }));
+  await page.goto('#/seal/last_wish'); await ready(page);
+  const tip = page.getByRole('tooltip');
+  for (const target of [page.getByRole('columnheader', { name: `Stage 1: ${label}`, exact: true }), page.getByRole('button', { name: `Banshee: First challenge: ${label}: 5/10`, exact: true })]) {
+    await target.hover();
+    await expect(tip.getByRole('img', { name: 'Hand Cannon', exact: true })).toBeVisible();
+    await expect(tip.getByRole('img', { name: 'Headshot', exact: true })).toBeVisible();
+    for (const name of ['Disruption', 'Shield-Piercing', 'Stagger']) await expect(tip.getByRole('img', { name, exact: true })).toBeVisible();
+    await expect(tip.getByRole('img', { name: 'Finisher', exact: true })).toHaveCount(0);
+    await expect(tip).toContainText('Use [Finisher].');
+    await expect(tip.locator('.destiny-action')).toHaveText(['Mission summary']);
+    await expect(tip).toContainText('[Future Weapon]');
+    await expect(tip).not.toContainText('[Headshot]');
+    await expect(tip).not.toContainText('[Hand Cannon]');
+  }
+  expect(await page.evaluate(async () => {
+    await document.fonts.load('16px DestinySymbols', '\ue103\ue142');
+    return document.fonts.check('16px DestinySymbols', '\ue103\ue142');
+  })).toBe(true);
+});

@@ -10,9 +10,9 @@
     "prebuild": "npm run prepare:data",
     "build": "vue-tsc --noEmit && vite build",
     "test": "vitest run",
-    "test:coverage": "vitest run tests/catalogCoverage.test.ts",
-    "test:coverage:live": "node scripts/refresh-coverage.mjs --check",
-    "update:coverage": "node scripts/refresh-coverage.mjs",
+    "audit": "vitest run --config vitest.audit.config.ts",
+    "audit:live": "node scripts/manifest-audit.mjs --check",
+    "audit:update": "node scripts/manifest-audit.mjs --update",
     "pretest:browser": "npm run prepare:data",
     "test:browser": "playwright test",
     "preview": "vite preview --host 0.0.0.0"

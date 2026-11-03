@@ -76,20 +76,35 @@ The second command may require root. Chromium is the automated target; real Safa
 
 `npm run build` writes an ignored static bundle to `js/dist/`, configured for `/js/`. `npm run preview` serves it locally on port 5173 when the dev server is stopped. No publication is performed.
 
-### Curated catalog coverage
+### Tests and manifest audits
 
-`npm --prefix js test` includes a strict manifest-coverage test. It builds the actual seal, badge, full-raid/dungeon, and triumph views and verifies that every record reachable through the current/legacy **Triumphs**, weapon patterns/catalysts, Guardian Ranks, and active/legacy seal trees is represented. Every badge under the Badges root and every named seal under the active/legacy title roots must also have a usable curated view. A configured node whose view fails to build does not count. Failures report missing hashes, names, and tree paths, or the unavailable page/mode.
+Application tests (`npm --prefix js test`) check behavior, including regression tests for the audit detectors using small synthetic definitions. Manifest audits run separately: an audit failure means content or curation needs review, rather than necessarily indicating an application bug.
+
+The catalog audit builds the actual seal, badge, full-raid/dungeon, and triumph views and verifies that every record reachable through the current/legacy **Triumphs**, weapon patterns/catalysts, Guardian Ranks, and active/legacy seal trees is represented. Every badge under the Badges root and every named seal under the active/legacy title roots must also have a usable curated view. A configured node whose view fails to build does not count. Failures report missing hashes, names, and tree paths, or the unavailable page/mode.
 
 Lore books and the current Medals branch are siblings of Triumphs, not part of this assertion. Orphan/internal definitions outside these trees and unnamed/redacted titles are also outside its scope. Historical pages explicitly marked `unavailableReason` do not count toward coverage of records that remain in the manifest. There is no missing-record allowlist.
 
-- `npm --prefix js run test:coverage`: run against the pinned, compressed public-definition fixture (also included in the normal unit suite).
-- `npm --prefix js run test:coverage:live`: download the current English manifest and check it without changing the fixture. This detects content added after the pinned snapshot.
-- `npm --prefix js run update:coverage`: refresh the pinned fixture; review catalog coverage against it before committing.
+| Command | Purpose | Network / fixture changes |
+| --- | --- | --- |
+| `npm --prefix js test` | Application behavior and audit-detector regressions | None |
+| `npm --prefix js run audit` | Catalog coverage and unknown-token checks against the pinned manifest | None |
+| `npm --prefix js run audit:live` | The same audits against current English Bungie definitions | Downloads public definitions; never updates the fixture |
+| `npm --prefix js run audit:update` | Explicitly replace the pinned manifest baseline | Downloads and writes the fixture; review the diff and run `audit` afterward |
 
-The generated `tests/fixtures/catalog-manifest.json.gz` contains only static definition fields needed to build and audit the views. It is independent of PHP's definition cache, contains no API key or player data, and is not loaded by the site. Refresh it when updating the manifest baseline; changes to curated pages are checked offline on every test run.
+Audits use Vitest with `vitest.audit.config.ts` and live in `tests/audits/*.audit.ts`. They do not run as part of `test`. Run both `test` and `audit` when changing curated pages or symbol handling. These commands replace the older `test:coverage`, `test:coverage:live`, and `update:coverage` names, which could be confused with code coverage.
+
+The compressed `tests/fixtures/catalog-manifest.json.gz` contains static definition fields needed to build and audit the views. It is independent of PHP's cache, contains no API key or player data, and is not loaded by the site. Neither tests nor audits silently approve exceptions or refresh the baseline.
+
+Live token auditing collects bracketed tokens and their definition paths **before compaction**, including descriptions that the small coverage fixture otherwise discards. Item and perk token text are excluded for now; inventory item definitions are still downloaded for catalog coverage. Explicit fixture updates retain these token samples for offline audits. The existing pinned fixture is unchanged and predates these samples, so its offline token audit covers only the text already retained in it.
 
 ### Request error diagnostics
 
 Failed Bungie requests log a `[Clan Seal Tracker] Request failed` warning and save structured diagnostics in the browser's `clan-seal-tracker-v1` IndexedDB database, `entries` store. Cached failures also have an `errorInfo` field alongside the existing `error` string. HTTP status, content type, request URL, attempt/timing, retry headers, and available Bungie error code/status/message are retained. Unreadable/non-JSON failures include a response excerpt capped at 2,048 characters. API keys and request headers are not logged; successful profile payloads and JSON error envelopes' `Response` data are not retained in diagnostics.
 
 The latest 50 failures are saved as `diagnostic:…` entries, including failures without an older cached profile and failed attempts that later succeed. That bounded history survives retries and page reloads; a successful request clears the current cached `errorInfo`, while Clear API cache removes the diagnostic history as well. Storage-unavailable sessions retain only an in-memory history. No diagnostics are sent to a server. Logging does not depend on DevTools being open, but browser console retention is separate from this persistent history.
+
+## Inline Destiny symbols
+
+Record descriptions, perk descriptions, and objective tooltips replace recognized bracketed icon tokens with the bundled Destiny Symbols font. Icons have accessible text labels; unknown tokens and known literal bracketed names remain readable text. Champion tokens use the Anti-Barrier (`Shield-Piercing`), Overload (`Disruption`), and Unstoppable (`Stagger`) glyphs. `[Finisher]` remains plain text. The `Back` input prompt reads `Mission summary`, without assuming a visitor's key binding. Font provenance is in `src/assets/README.md`.
+
+The separate manifest audit reports unknown bracketed tokens and their definition fields (see the audit commands above). Known literal text (for example `[REDACTED]`) has an explicit allowlist in `src/inlineSymbols.ts`. Neither the normal tests nor the offline audit fetches or updates the fixture.

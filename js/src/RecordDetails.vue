@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import ClassIcon from './ClassIcon.vue';
+import InlineDestinyText from './InlineDestinyText.vue';
 import ConditionIcon from './ConditionIcon.vue';
 import { objectiveGoal, objectiveUnit } from './domain';
 import type { Cell, Heading } from './types';
@@ -24,8 +25,8 @@ const description = computed(() => {
     <p v-if="heading.skip && (!heading.metric || heading.metric === 'gildingCount' || heading.metric === 'gilded')" class="record-scoring">Excluded from this table's completion column.</p>
     <p v-if="heading.group?.startsWith('Armor · ')" class="item-type">{{ heading.armorSetName }}</p>
     <p v-if="heading.itemType" class="item-type">{{ heading.itemType }}</p>
-    <ul v-if="heading.perks?.length" class="item-perks"><li v-for="(perk, i) in heading.perks" :key="i"><strong>{{ perk.name }}</strong><p v-if="perk.description">{{ perk.description }}</p></li></ul>
-    <p v-if="description && description !== heading.name" class="record-description" :class="{ 'collection-description': heading.collectibleHashes }">{{ description }}</p>
+    <ul v-if="heading.perks?.length" class="item-perks"><li v-for="(perk, i) in heading.perks" :key="i"><strong>{{ perk.name }}</strong><p v-if="perk.description"><InlineDestinyText :text="perk.description" /></p></li></ul>
+    <p v-if="description && description !== heading.name" class="record-description" :class="{ 'collection-description': heading.collectibleHashes }"><InlineDestinyText :text="description" /></p>
     <p v-if="heading.seals?.length" class="seal-memberships">This triumph is part of the <template v-for="(part, i) in membershipParts" :key="i"><strong v-if="part.type === 'element'" class="seal-membership">{{ heading.seals[Number(part.value)]!.name }}<span v-if="heading.seals[Number(part.value)]!.title !== heading.seals[Number(part.value)]!.name" class="seal-membership-title"> ({{ heading.seals[Number(part.value)]!.title }})</span></strong><template v-else>{{ part.value }}</template></template> {{ heading.seals.length === 1 ? 'seal' : 'seals' }}.</p>
     <p v-if="heading.pattern" class="pattern-status">{{ !cell ? 'This weapon has a crafting pattern.' : cell.patternUnlocked === undefined ? 'Craftable version: pattern status unavailable.' : cell.patternUnlocked ? 'Craftable version unlocked — pattern acquired.' : 'Craftable version not unlocked — pattern not acquired.' }}</p>
     <p v-if="cell?.unclaimed" class="claim-status">Completed, but not claimed in game.</p>
@@ -50,7 +51,7 @@ const description = computed(() => {
       <p v-else-if="heading.badgeRequirement" class="objective-state">Objective: Acquire badge<span class="badge-acquisition"> · {{ cell.complete ? 'Acquired' : 'Not acquired' }}</span></p>
       <ul v-else-if="cell.objectives.length" class="objective-details">
         <li v-for="(objective, stage) in cell.objectives" :key="objective.hash" :class="{ 'objective-done': objective.complete, 'objective-active': activeObjectiveHash === objective.hash }">
-          <span v-if="!hideObjectiveLabel(objective.name, cell.objectives.length)" class="objective-name"><span v-if="cell.objectives.length > 1" class="stage-number">{{ stage + 1 }}</span>{{ objective.name === heading.name ? 'Progress' : objective.name }}</span>
+          <span v-if="!hideObjectiveLabel(objective.name, cell.objectives.length)" class="objective-name"><span v-if="cell.objectives.length > 1" class="stage-number">{{ stage + 1 }}</span><InlineDestinyText :text="objective.name === heading.name ? 'Progress' : objective.name" /></span>
           <span class="objective-count">{{ objective.progress }}<span class="objective-target"> / {{ objective.target }}{{ objectiveUnit(heading, objective.name, objective.target) ? ' ' + objectiveUnit(heading, objective.name, objective.target) : '' }}</span></span>
           <span class="objective-state">{{ objective.complete ? 'Complete' : 'Incomplete' }}</span>
         </li>
@@ -61,7 +62,7 @@ const description = computed(() => {
     <p v-else-if="heading.collectibleHashes || heading.checklist" class="objective-state">Objective: Acquire</p>
     <ul v-else-if="!heading.metric" class="objective-details">
       <li v-for="(objective, stage) in headerObjectives" :key="objective.hash" :class="{ 'objective-active': activeObjectiveHash === String(objective.hash) }">
-        <span v-if="!hideObjectiveLabel(objective.progressDescription || objective.displayProperties?.description || 'Progress', headerObjectives.length)" class="objective-name"><span v-if="heading.objectives.length > 1" class="stage-number">{{ stage + 1 }}</span>{{ objective.progressDescription || objective.displayProperties?.description || 'Progress' }}</span><span class="objective-count"><span class="objective-target">Objective: </span>{{ objectiveGoal(heading, objective) }}</span>
+        <span v-if="!hideObjectiveLabel(objective.progressDescription || objective.displayProperties?.description || 'Progress', headerObjectives.length)" class="objective-name"><span v-if="heading.objectives.length > 1" class="stage-number">{{ stage + 1 }}</span><InlineDestinyText :text="objective.progressDescription || objective.displayProperties?.description || 'Progress'" /></span><span class="objective-count"><span class="objective-target">Objective: </span>{{ objectiveGoal(heading, objective) }}</span>
       </li>
     </ul>
   </div>
