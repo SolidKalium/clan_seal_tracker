@@ -3,7 +3,6 @@
 ## TODO list
 
 **Code review pass:**
-- Decide on lint/format tooling
 - Review page high-level structure (e.g. split App.vue)
 - Remove dead code: unused exports, files, dependencies, styles, pages.json entries
   - Things that look like unused features, such as something in pages.json, should be flagged and not immediately deleted.
@@ -24,6 +23,9 @@
   - Page responsiveness can be lower than ideal. For instance the "All lifetime" tab takes maybe 0.3-0.6s to load. It is about 200 columns wide. It's responsive once loaded.
   - During a refresh, the app can stop responding for a couple seconds. Updates have made this much less common because it now avoids unnecessary work when the data hasn't changed.
   - Bundle size check
+
+**Misc:**
+- Keep account logged-in by auto-refreshing when appropriate.
 
 ## Revisit list
 

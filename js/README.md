@@ -76,6 +76,8 @@ The second command may require root. Chromium is the automated target; real Safa
 
 `npm run build` writes an ignored static bundle to `js/dist/`, configured for `/js/`. `npm run preview` serves it locally on port 5173 when the dev server is stopped. No publication is performed.
 
+`npm run lint` runs ESLint. `npm run format` applies Prettier, and `npm run format:check` reports files that need it.
+
 ### Tests and manifest audits
 
 Application tests (`npm --prefix js test`) check behavior, including regression tests for the audit detectors using small synthetic definitions. Manifest audits run separately: an audit failure means content or curation needs review, rather than necessarily indicating an application bug.

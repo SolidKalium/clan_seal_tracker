@@ -72,7 +72,7 @@ export interface InlinePart {
 }
 export function inlineSymbols(text: string): InlinePart[] {
   return text
-    .split(/(\[[^\[\]\n]+\])/g)
+    .split(/(\[[^[\]\n]+\])/g)
     .filter(Boolean)
     .map((text) => {
       const symbol = text.startsWith('[')
@@ -93,7 +93,7 @@ export function unknownManifestTokens(
   path = '',
 ): { token: string; path: string }[] {
   if (typeof value === 'string')
-    return [...value.matchAll(/\[([^\[\]\n]+)\]/g)]
+    return [...value.matchAll(/\[([^[\]\n]+)\]/g)]
       .filter(
         (match) =>
           !symbols.has(normalize(match[1]!)) &&

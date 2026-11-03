@@ -2408,7 +2408,8 @@ test('gilding counts show lifetime totals and zero without affecting percentage 
   await page
     .getByLabel('Filter progress', { exact: true })
     .selectOption('complete');
-  await expect(page.locator('tbody .player-name')).toHaveText(['Ada ✦']);
+  await expect(page.locator('tbody .player-name')).toHaveText(['Ada (Steam)']);
+  await expect(page.locator('tbody .earned')).toHaveCount(1);
 });
 
 test('summary tooltips distinguish site completion from seal thresholds and list exclusions without diamonds', async ({
@@ -2586,13 +2587,25 @@ test('progress sorting breaks percentage ties by gildings before name', async ({
   await page.goto('#/seal/last_wish');
   await ready(page);
   const names = page.locator('tbody .player-name');
-  await expect(names).toHaveText(['Crow', 'Banshee', 'Ada']);
+  await expect(names).toHaveText([
+    'Crow (Steam)',
+    'Banshee (Steam)',
+    'Ada (Steam)',
+  ]);
   await page
     .getByLabel('Sort guardians', { exact: true })
     .selectOption('highest');
-  await expect(names).toHaveText(['Crow', 'Banshee', 'Ada']);
+  await expect(names).toHaveText([
+    'Crow (Steam)',
+    'Banshee (Steam)',
+    'Ada (Steam)',
+  ]);
   await page.getByLabel('Sort guardians', { exact: true }).selectOption('name');
-  await expect(names).toHaveText(['Ada', 'Banshee', 'Crow']);
+  await expect(names).toHaveText([
+    'Ada (Steam)',
+    'Banshee (Steam)',
+    'Crow (Steam)',
+  ]);
 });
 
 test('the guardian star is explained as title ownership in the legend and guardian tooltip', async ({
@@ -2716,24 +2729,25 @@ test('badge ownership markers are gold only for all three classes and ignore the
     'aria-label',
     'Last Wish badge collected on Titan',
   );
+  await expect(page.locator('tbody .earned')).toHaveCount(3);
   await expect(page.locator('tbody .player-name')).toHaveText([
-    'Ada ✦',
-    'Crow ✦',
-    'Banshee ✦',
+    'Ada (Steam)',
+    'Crow (Steam)',
+    'Banshee (Steam)',
   ]);
   await page
     .getByLabel('Sort guardians', { exact: true })
     .selectOption('highest');
   await expect(page.locator('tbody .player-name')).toHaveText([
-    'Ada ✦',
-    'Crow ✦',
-    'Banshee ✦',
+    'Ada (Steam)',
+    'Crow (Steam)',
+    'Banshee (Steam)',
   ]);
   await page.getByLabel('Sort guardians', { exact: true }).selectOption('name');
   await expect(page.locator('tbody .player-name')).toHaveText([
-    'Ada ✦',
-    'Banshee ✦',
-    'Crow ✦',
+    'Ada (Steam)',
+    'Banshee (Steam)',
+    'Crow (Steam)',
   ]);
   await expect(
     page.getByRole('button', { name: 'Collected', exact: true }),

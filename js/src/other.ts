@@ -203,8 +203,7 @@ export function otherCell(
     unowned: false,
   });
   if (heading.metric === 'guardianRank' || heading.metric === 'commendation') {
-    let value: number | undefined,
-      detail = '';
+    let value: number | undefined, detail: string;
     if (heading.metric === 'guardianRank') {
       const key = heading.metricKey as
         | 'currentGuardianRank'

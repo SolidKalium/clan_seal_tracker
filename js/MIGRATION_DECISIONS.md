@@ -671,3 +671,11 @@ Combine roster rows sharing a Bungie account ID and the same nonzero cross-save 
 Add Selected clan, My friends, and My clan and friends to the sidebar. The combined mode always uses the signed-in player’s own clan, without overwriting the separately saved selected clan. Deduplicate friends overlapping the same clan save while retaining clan membership metadata; preserve independent saves. Resolve friend profiles publicly, with authenticated requests still restricted to the signed-in player. Keep list assembly and social metadata in memory, scope pass summaries to list/account, and return to Selected clan immediately on logout or expiry. Store only the mode preference.
 
 Load the friend list independently of friend-clan suggestions to avoid waiting for those lookups. Use cached public membership resolution and bounded concurrency. No public Destiny membership means an unavailable row, not a guessed profile request. Presence without a Destiny 2 flag does not establish current game activity; unknown activity retains the five-minute profile policy.
+
+### Lint and format tooling — 2026-11-03
+
+Use Prettier defaults plus `singleQuote`, pinned to an exact version because formatting can change between releases. Markdown and test fixtures are excluded. ESLint uses the recommended JS, TypeScript, and Vue configs, with `eslint-config-prettier` to avoid rule conflicts. Type-aware rules are left off for now. There are no pre-commit hooks.
+
+Prettier treats a line break between inline elements as equal to a space, but Vue's compiler removes whitespace that contains a line break. A space that must render between two inline elements should be written as `{{ ' ' }}`.
+
+The rank in the guardian tooltip says "Clan Admin" only in the combined list, where friends are also shown. The clan-only list says "Admin".

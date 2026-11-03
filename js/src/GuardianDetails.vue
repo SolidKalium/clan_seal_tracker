@@ -13,6 +13,8 @@ const props = defineProps<{
   loading: boolean;
   error?: string;
   freshness: string;
+  /** Names the rank as a clan rank when the list also holds friends. */
+  combinedList?: boolean;
 }>();
 const joined = computed(() => {
   const time = clanJoinedAt(props.guardian.member);
@@ -91,7 +93,8 @@ const bungieName = computed(
     </p>
     <p v-if="guardian.member.listSource !== 'friend'" class="clan-member-info">
       <strong class="clan-rank"
-        >Clan {{ clanRankLabel(guardian.member.memberType) }}</strong
+        >{{ combinedList ? 'Clan ' : ''
+        }}{{ clanRankLabel(guardian.member.memberType) }}</strong
       ><span class="clan-joined">{{
         joined ? `Joined ${joined}` : 'Join date unavailable'
       }}</span>

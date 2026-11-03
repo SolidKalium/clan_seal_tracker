@@ -1861,7 +1861,7 @@ onUnmounted(() => {
       <p v-if="loginNotice" class="login-notice" role="status">
         {{ loginNotice }}
       </p>
-      <div id="clan-menu" v-show="!sidebarCollapsed" class="sidebar-content">
+      <div v-show="!sidebarCollapsed" id="clan-menu" class="sidebar-content">
         <p class="muted small">
           {{
             roster
@@ -2804,8 +2804,8 @@ onUnmounted(() => {
           :friends="friendClans"
           :friends-loading="friendsLoading"
           :friends-error="friendsError"
-          @retry-friends="loadFriends(true)"
           :directory="clanDirectory"
+          @retry-friends="loadFriends(true)"
           @select="selectClan"
           @close="clanPickerOpen = false"
       /></Teleport>
@@ -2844,6 +2844,7 @@ onUnmounted(() => {
             :earned-badge="tooltip.earnedBadge"
             :name="nameOf(tooltip.guardian)"
             :memberships="tooltip.memberships"
+            :combined-list="playerList === 'combined'"
             :loading="tooltip.loading"
             :error="tooltip.error"
             :freshness="`${statusLabel(tooltip.guardian)} · ${age(tooltip.guardian.fetchedAt)}`"

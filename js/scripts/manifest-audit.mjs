@@ -62,7 +62,7 @@ const snapshot = { version: manifest.version, language: 'en' };
 const tokenSamplesByTable = {};
 function tokenSamples(value, path, found = new Map()) {
   if (typeof value === 'string') {
-    for (const match of value.matchAll(/\[[^\[\]\n]+\]/g))
+    for (const match of value.matchAll(/\[[^[\]\n]+\]/g))
       if (!found.has(match[0])) found.set(match[0], { token: match[0], path });
   } else if (value && typeof value === 'object') {
     for (const [key, child] of Object.entries(value))
