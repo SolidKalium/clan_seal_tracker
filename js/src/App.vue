@@ -433,7 +433,7 @@ onUnmounted(() => { window.removeEventListener('hashchange', changedHash); windo
       </template>
       <MembersPage v-if="isMembers" :players="Object.values(players)" :clan-name="roster?.name" :memberships="user => repository.memberships(user)" :entitlements="() => repository.memberEntitlements()" />
       <template v-else-if="isHome">
-        <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, find a fireteam, and make the next run count.</p></section>
+        <section class="page-heading"><p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p><h1>Your clan. Every triumph.</h1><p class="lede">See who’s close, plan you fireteam, and make the next run count.</p></section>
         <div class="overview-stats"><div><strong>{{ roster?.members.length ?? '—' }}</strong><span>Clan guardians</span></div><div><strong>{{ known.length }}</strong><span>Profiles with public data</span></div><div><strong>{{ seals.filter(s => s.page.sealNodeHash && !s.unavailable).length || '—' }}</strong><span>Seals to explore</span></div></div>
         <section v-for="group in catalogGroups" :key="group.name" class="catalog-section" :aria-label="group.title">
         <div class="section-title"><h2>{{ group.title }}</h2></div>

@@ -2,18 +2,11 @@
 
 ## TODO list
 
-**Main page:**
-- Remaining candidates from the original Other section
-  - Potentially: the unimplemented (or maybe partially implemented) milestones page (might or might not require being logged in, at least for some info)
-  - Potentially: other medals
-  - Seasonal challenges might look different now. Certainly, the old seasons have been removed. Challenges might exist in a "non-season" way now
-
 **Misc:**
-- Check for data not made visible by this site
-  - For instance, metrics
 - A seal overview page (would probably show player progress on all seals, which would be more calculations than at present). Split earnable and legacy.
 - Clan selection
 - Player login
+  - Friend list views instead of clan-based. Probably switch in the sidebar, then it can show the player's icon and name instead of the clan's.
 
 **Cleanup pass:**
 - Review page high-level structure
@@ -25,11 +18,11 @@
 
 ## Revisit list
 
+Deferred polish and interaction design; these are not for immediate implementation.
+
+- [ ] Group and prioritize items in this list
 - [ ] Consider distinct subtitles for overview sections when they add useful context.
 - [ ] Consider how to explain ordering and relationships within categories, including expansion releases, mid-year releases, and multiple seals from one expansion; avoid implying that each page is a separate expansion.
-
-Recorded 2026-10-30. Deferred polish and interaction design; these are not requests for immediate implementation.
-
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.
   - [ ] Page right-edge overscroll still uses a uniform browser canvas color rather than matching header/content bands. Oversized header/page paint extensions did not fix it and were reverted after a jitter report. Favor stable native scrolling over more paint/compositor workarounds.
   - [ ] Consider making the table rubberband shift the opposite edge into its margin? Might not be possible.
@@ -59,6 +52,13 @@ Recorded 2026-10-30. Deferred polish and interaction design; these are not reque
 - [ ] Something to "pull forward" all columns that someone is missing. Might need to break the top-level table headers
 - [ ] How to handle the members page. It might remain on a "hidden path" or require being logged in as someone in the clan (when that is supported), since it lists entitlements and similar things.
 - [ ] Any data for Event Homes?
+- [ ] Remaining candidates from the original Other section
+  - [ ] Potentially: the unimplemented (or maybe partially implemented) milestones page (might or might not require being logged in, at least for some info)
+  - [ ] Potentially: other medals
+  - [ ] Seasonal challenges might look different now. Certainly, the old seasons have been removed. Challenges might exist in a "non-season" way now
+- [ ] Check for data not made visible by this site
+  - [ ] For instance, metrics
+- [ ] Review the TODOs and notes in the PHP files for any ideas not carried forward
 
 ## Known quirks
 
