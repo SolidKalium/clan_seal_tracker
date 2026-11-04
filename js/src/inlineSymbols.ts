@@ -50,7 +50,7 @@ const symbols = new Map(
 // doesn't tell us a visitor's bindings, so show the action rather than a key.
 const actions = new Map([['back', 'Mission summary']]);
 // Known text-only tokens, names, and editorial text. Keep their brackets.
-export const literalTokens = new Set(
+const literalTokens = new Set(
   [
     'Finisher',
     'Insert Medal Here',

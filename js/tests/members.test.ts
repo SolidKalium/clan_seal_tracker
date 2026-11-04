@@ -19,7 +19,6 @@ const player: PlayerData = {
         userInfo: { membershipType: 2, membershipId: '2', displayName: 'PSN' },
         versionsOwned: 1025,
         seasonHashes: [10],
-        eventCardHashesOwned: [20],
       },
     },
   },

@@ -4995,7 +4995,6 @@ test('hidden members route shows tenure, linked platforms, ownership, and CSV ex
                   userInfo: member.destinyUserInfo,
                   versionsOwned: 1025,
                   seasonHashes: [10],
-                  eventCardHashesOwned: [3841872876],
                 },
               },
               profileRecords: { data: { records: {} } },

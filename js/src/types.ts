@@ -1,22 +1,22 @@
-export interface Color {
+interface Color {
   red: number;
   green: number;
   blue: number;
   alpha: number;
 }
-export interface GuardianRankDefinition {
+interface GuardianRankDefinition {
   hash: number;
   rankNumber: number;
   presentationNodeHash: number;
   displayProperties: Display;
 }
-export interface ChecklistDefinition {
+interface ChecklistDefinition {
   hash: number;
   scope: number;
   displayProperties: Display;
   entries: { hash: number; scope: number; displayProperties: Display }[];
 }
-export interface CommendationDefinition {
+interface CommendationDefinition {
   hash: number;
   displayProperties: Display;
   parentCommendationNodeHash?: number;
@@ -24,9 +24,8 @@ export interface CommendationDefinition {
   childCommendationNodeHashes?: number[];
   color?: Color;
   displayActivities?: Display[];
-  displayPriority?: number;
 }
-export interface Commendations {
+interface Commendations {
   totalScore?: number;
   scoreDetailValues?: number[];
   commendationNodeScoresByHash?: Record<string, number>;
@@ -103,7 +102,7 @@ export interface Definitions {
   records: Record<string, RecordDefinition>;
   objectives: Record<string, ObjectiveDefinition>;
 }
-export interface ObjectiveProgress {
+interface ObjectiveProgress {
   objectiveHash: number;
   progress: number;
   completionValue: number;
@@ -142,12 +141,11 @@ export interface Roster {
   emblem?: import('./clanBanner').ClanEmblemData;
   emblemChecked?: boolean;
 }
-export interface Character {
+interface Character {
   characterId?: string;
   classType: number;
   light?: number;
   dateLastPlayed?: string;
-  minutesPlayedTotal?: string;
 }
 export interface Profile {
   characters?: { data?: Record<string, Character>; privacy?: number };
@@ -184,7 +182,6 @@ export interface Profile {
       userInfo: UserInfo;
       versionsOwned?: number;
       seasonHashes?: number[];
-      eventCardHashesOwned?: number[];
       dateLastPlayed?: string;
       currentGuardianRank?: number;
       renewedGuardianRank?: number;
@@ -286,8 +283,7 @@ export interface Seal {
   headings: Heading[];
   unavailable?: string;
 }
-export type DataStatus =
-  'fresh' | 'cached' | 'stale' | 'private' | 'unavailable';
+type DataStatus = 'fresh' | 'cached' | 'stale' | 'private' | 'unavailable';
 export interface Cached<T> {
   key: string;
   value: T;
@@ -311,7 +307,7 @@ export interface PlayerData {
   fetchedAt?: number;
   error?: string;
 }
-export interface ObjectiveCell {
+interface ObjectiveCell {
   hash: string;
   name: string;
   progress: number;

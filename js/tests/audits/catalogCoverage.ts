@@ -1,9 +1,9 @@
-import { buildSeal, presentationTree, type PageMode } from './domain';
-import type { Definitions, PageConfig } from './types';
+import { buildSeal, presentationTree, type PageMode } from '../../src/domain';
+import type { Definitions, PageConfig } from '../../src/types';
 
 // Use the Triumphs branch, not its umbrella parent (which also contains Lore
 // and Medals). Include separate rank, crafting, and active/legacy seal trees.
-export const COVERAGE_ROOTS = {
+const COVERAGE_ROOTS = {
   triumphs: [
     '1866538467',
     '3215903653',

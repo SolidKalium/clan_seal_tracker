@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { expect, it } from 'vitest';
 import { compile, readJsonc } from '../../scripts/compile-data.mjs';
-import { catalogCoverage } from '../../src/catalogCoverage';
+import { catalogCoverage } from './catalogCoverage';
 import { auditManifestTokens } from './tokenAudit';
 import type { Definitions } from '../../src/types';
 

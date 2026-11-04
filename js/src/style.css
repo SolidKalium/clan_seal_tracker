@@ -8,7 +8,6 @@
   --ink: #173c32;
   --muted: #718079;
   --line: #dce3da;
-  --green: #2e664c;
 }
 * {
   box-sizing: border-box;
@@ -69,15 +68,6 @@ button {
   color: #c2d6a0;
   line-height: 1;
 }
-.version-tag {
-  font-size: 10px;
-  letter-spacing: 1.8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #becdc2;
-}
-.live-dot,
 .status-dot {
   display: inline-block;
   width: 7px;
@@ -151,9 +141,6 @@ button {
   font-weight: 600;
   border-radius: 5px;
 }
-.nav-label {
-  margin-top: 0;
-}
 .seal-nav {
   display: grid;
   gap: 3px;
@@ -203,16 +190,6 @@ main {
   min-width: 0;
   max-width: 1900px;
 }
-.utility-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 19px;
-}
-.utility-line .eyebrow {
-  margin: 0;
-}
 .refresh {
   border: 1px solid #cbd6c8;
   background: #fff;
@@ -244,12 +221,6 @@ main {
   background: #618665;
   width: 6px;
   height: 6px;
-}
-.status-dot.loading {
-  animation: pulse 1.2s infinite;
-}
-.warning-text {
-  color: #93611c;
 }
 .notice {
   background: #fff5dd;
@@ -555,13 +526,6 @@ tbody th {
   white-space: nowrap;
   font-size: 12px;
 }
-.player-meta {
-  display: block;
-  color: #849184;
-  font-size: 9px;
-  margin-top: 4px;
-  font-weight: 400;
-}
 .earned {
   color: #7e9751;
   margin-left: 4px;
@@ -670,11 +634,6 @@ td.progress-column small {
   font-size: 18px;
   font-weight: 500;
 }
-.detail-text {
-  white-space: pre-line;
-  font-size: 12px;
-  line-height: 1.7;
-}
 .detail-close {
   position: absolute;
   right: 14px;
@@ -741,9 +700,6 @@ footer {
     height: 62px;
     padding: 0 18px;
   }
-  .version-tag {
-    display: none;
-  }
   .shell {
     display: block;
   }
@@ -758,8 +714,7 @@ footer {
   .clan-emblem,
   .sidebar > .eyebrow,
   .sidebar > .small,
-  .sidebar-bottom,
-  .sidebar .nav-label {
+  .sidebar-bottom {
     display: none;
   }
   .sidebar h2 {
@@ -1894,10 +1849,6 @@ body {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
 }
-
-.seal-nav + .nav-label {
-  margin-top: 24px;
-}
 .catalog-section + .catalog-section {
   margin-top: 32px;
 }
@@ -1990,25 +1941,6 @@ body {
   color: #746c56;
 }
 
-.unscored-marker {
-  position: absolute;
-  right: 5px;
-  top: 5px;
-  width: 11px;
-  height: 11px;
-  color: #526e62;
-  pointer-events: none;
-}
-
-.scoring-marker {
-  display: inline-block;
-  width: 11px;
-  height: 11px;
-  margin-right: 5px;
-  vertical-align: -1px;
-  color: #526e62;
-}
-
 .legacy-label {
   display: inline-block;
   margin-left: 6px;
@@ -2064,15 +1996,6 @@ body {
     width: 12px;
     height: 12px;
   }
-}
-
-.page-modes .disabled-mode {
-  padding: 7px 15px;
-  border: 0;
-  border-radius: 5px;
-  background: none;
-  color: #89918a;
-  cursor: help;
 }
 .tooltip-note {
   margin: 0;

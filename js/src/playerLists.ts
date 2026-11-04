@@ -2,7 +2,7 @@ import type { BungieFriend } from './friends';
 import type { Member, UserInfo } from './types';
 import { eachLimited } from './repository';
 export type PlayerList = 'clan' | 'friends' | 'combined';
-export const memberIdentity = (member: Member) =>
+const memberIdentity = (member: Member) =>
   `${member.destinyUserInfo.membershipType}_${member.destinyUserInfo.membershipId}`;
 const sameSave = (a: Member, b: Member) =>
   memberIdentity(a) === memberIdentity(b) ||

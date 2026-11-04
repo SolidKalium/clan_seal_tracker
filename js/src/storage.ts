@@ -2,7 +2,7 @@ import Dexie, { type Table } from 'dexie';
 import type { Cached } from './types';
 import { DIAGNOSTIC_LIMIT, type RequestDiagnostic } from './diagnostics';
 
-export class TrackerDatabase extends Dexie {
+class TrackerDatabase extends Dexie {
   entries!: Table<Cached<unknown>, string>;
   preferences!: Table<{ key: string; value: unknown }, string>;
   constructor(name = 'clan-seal-tracker-v1') {

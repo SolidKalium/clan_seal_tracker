@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { catalogCoverage } from '../src/catalogCoverage';
+import { catalogCoverage } from './audits/catalogCoverage';
 import type { Definitions, PageConfig } from '../src/types';
 
 // Detector regressions use tiny synthetic definitions. Real manifest content

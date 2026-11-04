@@ -12,8 +12,8 @@ export interface ClanSelection {
   selected: ClanChoice;
   recent: RecentClan[];
 }
-export const RECENT_CLAN_LIMIT = 7;
-export const validClanId = (value: unknown): value is string =>
+const RECENT_CLAN_LIMIT = 7;
+const validClanId = (value: unknown): value is string =>
   typeof value === 'string' && /^[1-9]\d{0,19}$/.test(value);
 export function recentClans(
   recent: RecentClan[],
