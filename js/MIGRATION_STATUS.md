@@ -3,7 +3,6 @@
 ## TODO list
 
 **Code review pass:**
-- Review page high-level structure (e.g. split App.vue)
 - Remove dead code: unused exports, files, dependencies, styles, pages.json entries
   - Things that look like unused features, such as something in pages.json, should be flagged and not immediately deleted.
 - Types and consistency: `any`s/casts, duplicated helpers, error/empty states
@@ -23,6 +22,8 @@
   - Page responsiveness can be lower than ideal. For instance the "All lifetime" tab takes maybe 0.3-0.6s to load. It is about 200 columns wide. It's responsive once loaded.
   - During a refresh, the app can stop responding for a couple seconds. Updates have made this much less common because it now avoids unnecessary work when the data hasn't changed.
   - Bundle size check
+  - `rows` still rebuilds every player when one profile arrives. A per-player cache keyed on the profile object may help; measure first.
+  - `hasDuplicateTriumphs` builds a page's seal twice per call, and the sidebar calls it for many links. It could be worked out once per definitions load.
 
 **Misc:**
 - Keep account logged-in by auto-refreshing when appropriate.

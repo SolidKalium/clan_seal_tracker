@@ -166,11 +166,8 @@ export function useTooltip() {
       event.relatedTarget instanceof Element
         ? event.relatedTarget.closest<HTMLElement>('[data-record-tooltip]')
         : undefined;
-    if (
-      tooltip.value?.kind === 'record' &&
-      next?.dataset.recordTooltip === tooltip.value.groupKey
-    )
-      return;
+    // The next target replaces the tooltip itself; closing first would rerender the table.
+    if (tooltip.value?.kind === 'record' && next) return;
     closeTooltip();
   }
   return {

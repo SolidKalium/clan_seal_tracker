@@ -147,3 +147,22 @@ export function guardianPower(
   );
   return powers.length ? String(Math.max(...powers)) : '—';
 }
+export const nameOf = (p: PlayerData) =>
+  p.profile?.profile?.data?.userInfo.bungieGlobalDisplayName ||
+  p.member.destinyUserInfo.bungieGlobalDisplayName ||
+  p.member.destinyUserInfo.displayName;
+export const memberKey = (p: {
+  destinyUserInfo: { membershipType: number; membershipId: string };
+}) => `${p.destinyUserInfo.membershipType}_${p.destinyUserInfo.membershipId}`;
+export const statusLabel = (p: PlayerData) =>
+  p.status === 'private' && p.profile?.profileRecords?.data
+    ? 'Private · older data'
+    : p.status === 'private'
+      ? 'Private'
+      : p.status === 'unavailable'
+        ? 'Unavailable'
+        : p.status === 'loading'
+          ? 'Loading'
+          : p.status === 'stale'
+            ? 'Stale'
+            : 'Up to date';

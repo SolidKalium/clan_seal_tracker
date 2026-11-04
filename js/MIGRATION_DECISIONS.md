@@ -679,3 +679,11 @@ Use Prettier defaults plus `singleQuote`, pinned to an exact version because for
 Prettier treats a line break between inline elements as equal to a space, but Vue's compiler removes whitespace that contains a line break. A space that must render between two inline elements should be written as `{{ ' ' }}`.
 
 The rank in the guardian tooltip says "Clan Admin" only in the combined list, where friends are also shown. The clan-only list says "Admin".
+
+### App structure and shared state — 2026-11-04
+
+`App.vue` is a thin shell. Shared state and actions live in one store, `useTracker.ts`, created once with `provideTracker()` and read with `useTracker()` through provide/inject. Page-level components use the store (`AppHeader`, `AppSidebar`, `PageHeading`, `HomePage`, `SealPage`, `SealTable`, `TooltipLayer`). Leaf components that show config plus one profile keep plain props. `usePageView.ts` holds everything derived from the route and definitions before player data; `useTableRows.ts` builds rows.
+
+Rows build in two stages: per-player rows, then filter, sort, and the platform label. Search, filter, and sort changes reuse the built cells, and linked-platform lookups do not rebuild them.
+
+Keep large data in `shallowRef`. The table must not read `tooltip` directly: every cell would then rerender on each tooltip change. It reads computed IDs that change only when a tooltip opens or closes, and `leaveRecordTooltip` leaves the tooltip open when moving to another target, because Vue can flush between `mouseleave` and `mouseenter`. Measured across 4 cell moves: 6 table rerenders before, 0 after.
