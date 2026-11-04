@@ -6,7 +6,7 @@
   font-synthesis: none;
   font-size: 14px;
   --ink: #173c32;
-  --muted: #718079;
+  --muted: #606d67;
   --line: #dce3da;
 }
 * {
@@ -112,7 +112,7 @@ button {
   letter-spacing: 1.8px;
   text-transform: uppercase;
   margin: 0 0 12px;
-  color: #6a7e69;
+  color: #5d6f5c;
 }
 .sidebar h2 {
   font-family: 'Space Grotesk', system-ui, sans-serif;
@@ -254,7 +254,7 @@ h1 {
 }
 .lede {
   font-size: 14px;
-  color: #718075;
+  color: #667369;
   line-height: 1.65;
   margin: 0;
   max-width: 760px;
@@ -335,7 +335,7 @@ h1 {
 .card-top .eyebrow {
   font-size: 8px;
   margin: 0;
-  color: #849185;
+  color: #677368;
 }
 .card-icon {
   font-size: 30px;
@@ -370,7 +370,7 @@ h1 {
 .footnote {
   font-size: 11px;
   line-height: 1.7;
-  color: #79847b;
+  color: #69726b;
   max-width: 850px;
   margin: 19px 0 30px;
 }
@@ -452,7 +452,7 @@ h1 {
   align-items: center;
 }
 .legend-progress {
-  color: #bd9b46;
+  color: #a7883c;
 }
 .table-scroll {
   max-height: 65vh;
@@ -543,7 +543,7 @@ td.progress-column strong {
 }
 td.progress-column small {
   font-size: 10px;
-  color: #8c9989;
+  color: #6b7968;
 }
 .mini-progress {
   display: block;
@@ -568,7 +568,7 @@ td.progress-column small {
   width: 100%;
   height: 100%;
   padding: 8px;
-  color: #a3aca0;
+  color: #8a9586;
   font-size: 14px;
 }
 .cell-button:hover {
@@ -584,7 +584,7 @@ td.progress-column small {
   background: #fcf5e3;
 }
 .cell-progress .cell-button {
-  color: #98772d;
+  color: #886b28;
   font-size: 11px;
 }
 .cell-missing .cell-button {
@@ -608,7 +608,7 @@ td.progress-column small {
   padding: 5px 0 0;
 }
 .row-complete .player-name {
-  color: #688454;
+  color: #627c4f;
 }
 .empty-state {
   padding: 50px;
@@ -652,9 +652,25 @@ footer {
   display: flex;
   justify-content: space-between;
   gap: 15px;
-  color: #82907f;
+  color: #677364;
   font-size: 9px;
   letter-spacing: 0.5px;
+}
+.skip-link {
+  position: absolute;
+  z-index: 100;
+  left: 8px;
+  top: -100px;
+  padding: 8px 14px;
+  border-radius: 0 0 6px 6px;
+  background: #fffef9;
+  color: #152d29;
+}
+.skip-link:focus {
+  top: 0;
+}
+main:focus {
+  outline: none;
 }
 .sr-only {
   position: absolute;
@@ -925,7 +941,7 @@ footer {
   margin-bottom: 7px;
 }
 .record-description {
-  color: #748071;
+  color: #636d60;
   font-size: 12px;
   line-height: 1.6;
   margin: 0 0 14px;
@@ -958,13 +974,13 @@ footer {
 }
 .objective-target {
   font-size: 11px;
-  color: #85917f;
+  color: #636e5e;
   font-weight: 400;
 }
 .objective-state {
   grid-column: 1/-1;
   font-size: 10px;
-  color: #8c9786;
+  color: #636d5e;
   font-weight: 400;
 }
 .objective-done .objective-state {
@@ -992,7 +1008,7 @@ footer {
   background: none;
   padding: 7px 3px;
   font-size: 10px;
-  color: #63775c;
+  color: #5e7158;
   font-variant-numeric: tabular-nums;
 }
 .stage-button:hover {
@@ -1002,7 +1018,7 @@ footer {
   display: inline-block;
   min-width: 18px;
   margin-right: 5px;
-  color: #89977f;
+  color: #626e59;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
@@ -1102,7 +1118,7 @@ td.progress-column strong {
 }
 .guardian-freshness {
   font-size: 11px;
-  color: #73816c;
+  color: #6b7865;
   margin: 14px 0 5px;
 }
 .guardian-error {
@@ -1146,7 +1162,7 @@ td.progress-column strong {
   color: #536d49;
 }
 .clan-joined {
-  color: #87917f;
+  color: #6e7767;
   font-size: 10px;
 }
 
@@ -1171,12 +1187,12 @@ tbody tr:focus-within > td {
 
 .cell-missing .cell-button {
   font-size: 16px;
-  color: #8b9786;
+  color: #84907e;
 }
 
 .cell-zero .cell-button {
   font-size: 20px;
-  color: #8b9786;
+  color: #84907e;
   line-height: 1;
 }
 
@@ -1463,7 +1479,7 @@ tbody tr:focus-within > td {
 }
 .sync-legend p {
   font-size: 11px;
-  color: #7c8875;
+  color: #6d7766;
   line-height: 1.5;
   margin: 3px 0 0;
 }
@@ -1731,7 +1747,7 @@ body {
 }
 .record-details .item-type {
   margin: 0 0 10px;
-  color: #748071;
+  color: #636d60;
   font-size: 12px;
 }
 .item-perks {
@@ -1745,7 +1761,7 @@ body {
 }
 .item-perks p {
   margin: 3px 0 0;
-  color: #748071;
+  color: #636d60;
   white-space: pre-line;
 }
 
@@ -1946,11 +1962,11 @@ body {
   margin-left: 6px;
   font-size: 9px;
   font-weight: 400;
-  color: #748071;
+  color: #636d60;
 }
 .legacy-notice {
   margin: 0 0 16px;
-  color: #718075;
+  color: #667369;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -1969,7 +1985,7 @@ body {
   border: 0;
   background: none;
   text-align: left;
-  color: #6a7e69;
+  color: #5d6f5c;
 }
 .section-toggle:hover {
   color: var(--ink);
@@ -2107,7 +2123,7 @@ body {
   font-size: 20px;
   line-height: 10px;
   vertical-align: -1px;
-  color: #8b9786;
+  color: #84907e;
 }
 .armor-scoring-note {
   font-size: 11px;
@@ -2289,7 +2305,7 @@ body {
   color: color-mix(in srgb, var(--commendation-color) 40%, #17221e);
 }
 .commendation-section.cell-missing .cell-button {
-  color: #8b9786;
+  color: #84907e;
 }
 tbody tr:hover > td.commendation-section,
 tbody tr:focus-within > td.commendation-section {
@@ -2659,11 +2675,6 @@ tbody tr:focus-within > td.commendation-section {
 @keyframes refresh-spin {
   to {
     transform: rotate(360deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .is-refreshing > .refresh-icon {
-    animation: refresh-spin 3s linear infinite;
   }
 }
 

@@ -5582,17 +5582,18 @@ test('focus indicators stay inside shared controls across tables, tabs, and clan
   );
   await insetFocus(page.getByRole('link', { name: 'Seal', exact: true }));
   await insetFocus(page.locator('.summary-cell').first());
-  for (const control of [
-    page.getByLabel('Search guardians'),
-    page.getByLabel('Sort guardians'),
-  ]) {
+  const fieldRing = 'rgb(155, 185, 118) 0px 0px 0px 2px inset';
+  for (const [control, ring] of [
+    [page.getByLabel('Search guardians'), fieldRing],
+    [
+      page.getByLabel('Sort guardians'),
+      `rgb(94, 138, 60) 0px -2px 0px 0px inset, ${fieldRing}`,
+    ],
+  ] as const) {
     const before = await control.boundingBox();
     await control.focus();
     await expect(control).toHaveCSS('outline-style', 'none');
-    await expect(control.locator('..')).toHaveCSS(
-      'box-shadow',
-      'rgb(155, 185, 118) 0px 0px 0px 2px inset',
-    );
+    await expect(control.locator('..')).toHaveCSS('box-shadow', ring);
     const after = await control.boundingBox();
     expect(after?.width).toBe(before?.width);
     expect(after?.height).toBe(before?.height);
@@ -6433,5 +6434,125 @@ test('player retry and sync icons rotate without a wait cursor or disabled fade'
   await expect(page.locator('.refresh .refresh-icon')).toHaveCSS(
     'animation-name',
     'none',
+  );
+});
+
+test('the skip link moves focus to the page content without changing the route', async ({
+  page,
+}) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish');
+  await ready(page);
+  await page.keyboard.press('Tab');
+  const skip = page.getByRole('link', { name: 'Skip to content' });
+  await expect(skip).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('main')).toBeFocused();
+  expect(new URL(page.url()).hash).toBe('#/seal/last_wish');
+});
+
+test('only the hovered target is described by the tooltip', async ({
+  page,
+}) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish');
+  await ready(page);
+  const cells = page.locator('tbody .cell-button');
+  const described = page.locator('[aria-describedby="record-tooltip"]');
+  await cells.nth(0).hover();
+  await expect(page.getByRole('tooltip')).toBeVisible();
+  await expect(described).toHaveCount(1);
+  await expect(cells.nth(0)).toHaveAttribute(
+    'aria-describedby',
+    'record-tooltip',
+  );
+  await page.locator('tbody .guardian-button').first().hover();
+  await expect(described).toHaveCount(1);
+  await expect(cells.nth(0)).not.toHaveAttribute('aria-describedby');
+  await page.mouse.move(2, 400);
+  await expect(described).toHaveCount(0);
+});
+
+test('increased contrast strengthens quiet details', async ({ page }) => {
+  await page.emulateMedia({ contrast: 'more' });
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish');
+  await ready(page);
+  const search = page.getByLabel('Search guardians');
+  await search.focus();
+  await expect(search.locator('..')).toHaveCSS(
+    'box-shadow',
+    'rgb(94, 138, 60) 0px 0px 0px 2px inset',
+  );
+});
+
+test('the table is one Tab stop navigated with the arrow keys', async ({
+  page,
+}) => {
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish');
+  await ready(page);
+  await page.addStyleTag({
+    content:
+      '.table-scroll { width: 420px; max-height: 150px } table { width: 1000px; table-layout: fixed } .player-column, .progress-column { width: 120px }',
+  });
+  const stops = page.locator('table [tabindex="0"]');
+  await expect(stops).toHaveCount(1);
+  const guardians = page.locator('tbody .guardian-button');
+  await guardians.first().focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(guardians.nth(1)).toBeFocused();
+  await expect(stops).toHaveCount(1);
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('tbody .summary-cell').nth(1)).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  const cell = page.locator('tbody tr').nth(1).locator('.cell-button').first();
+  await expect(cell).toBeFocused();
+  await expect(page.getByRole('tooltip')).toBeVisible();
+  await page.keyboard.press('End');
+  const last = page.locator('tbody tr').nth(1).locator('.cell-button').last();
+  await expect(last).toBeFocused();
+  await expect
+    .poll(() =>
+      page.locator('.table-scroll').evaluate((element) => element.scrollLeft),
+    )
+    .toBeGreaterThan(0);
+  // Moving right scrolled the table, which must keep the cell clear of the
+  // sticky column and leave its tooltip open.
+  await expect(page.getByRole('tooltip')).toBeVisible();
+  const box = (await last.boundingBox())!;
+  const column = (await page
+    .locator('tbody .player-column')
+    .nth(1)
+    .boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(column.x + column.width - 1);
+  await page.keyboard.press('Home');
+  await expect(guardians.nth(1)).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(guardians.first()).toBeFocused();
+  // Spanning header cells line up with the columns beneath them.
+  await page
+    .locator('tbody tr')
+    .first()
+    .locator('.cell-button')
+    .first()
+    .focus();
+  await page.keyboard.press('ArrowUp');
+  await expect(page.locator('thead .stage-button').first()).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(
+    page.locator('thead .record-heading').first().locator('button'),
+  ).toBeFocused();
+  await page.keyboard.press('Control+End');
+  const end = page.locator('tbody tr').last().locator('.cell-button').last();
+  await expect(end).toBeFocused();
+  await expect
+    .poll(() =>
+      page.locator('.table-scroll').evaluate((element) => element.scrollTop),
+    )
+    .toBeGreaterThan(0);
+  const head = (await page.locator('thead').boundingBox())!;
+  expect((await end.boundingBox())!.y).toBeGreaterThanOrEqual(
+    head.y + head.height - 1,
   );
 });

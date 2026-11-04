@@ -34,6 +34,7 @@ export type TooltipContent =
   | { kind: 'sync' }
   | { kind: 'note'; text: string };
 
+const focusable = 'button, a[href], [tabindex]';
 const hiddenStyle = () => ({ left: '0px', top: '0px', visibility: 'hidden' });
 function enclosingRect(elements: HTMLElement[]) {
   const bounds = elements.map((element) => element.getBoundingClientRect());
@@ -55,7 +56,32 @@ export function useTooltip() {
   >();
   const tooltipElement = ref<HTMLElement>();
   let tooltipSerial = 0;
+  let described: HTMLElement | undefined;
+  // Set directly so that only the target changes, and the table does not rerender.
+  function describe(target: EventTarget | null) {
+    described?.removeAttribute('aria-describedby');
+    const element = target as HTMLElement;
+    described = element.matches(focusable)
+      ? element
+      : (element.querySelector<HTMLElement>(focusable) ?? element);
+    described.setAttribute('aria-describedby', 'record-tooltip');
+  }
+  // Keyboard moves in the table can scroll it, which must not close the new tooltip.
+  let scrollIsKeyboardMove = false;
+  function keepThroughScroll() {
+    scrollIsKeyboardMove = true;
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        scrollIsKeyboardMove = false;
+      }),
+    );
+  }
+  function closeOnScroll() {
+    if (!scrollIsKeyboardMove) closeTooltip();
+  }
   function closeTooltip() {
+    described?.removeAttribute('aria-describedby');
+    described = undefined;
     tooltip.value = undefined;
   }
   async function positionTooltip(id: number) {
@@ -83,6 +109,7 @@ export function useTooltip() {
     };
   }
   async function openTooltip(event: Event, content: TooltipContent) {
+    describe(event.currentTarget);
     const id = ++tooltipSerial;
     const anchor =
       content.kind === 'note' && event instanceof MouseEvent
@@ -102,6 +129,7 @@ export function useTooltip() {
       '[data-character-group]',
     )!;
     const groupKey = element.dataset.characterGroup!;
+    describe(event.currentTarget);
     if (
       tooltip.value?.kind === 'characters' &&
       tooltip.value.groupKey === groupKey
@@ -134,6 +162,7 @@ export function useTooltip() {
       '[data-record-tooltip]',
     );
     const groupKey = element?.dataset.recordTooltip;
+    describe(event.currentTarget);
     if (
       groupKey &&
       tooltip.value?.kind === 'record' &&
@@ -174,6 +203,8 @@ export function useTooltip() {
     tooltip,
     tooltipElement,
     closeTooltip,
+    closeOnScroll,
+    keepThroughScroll,
     positionTooltip,
     openTooltip,
     showCharacterTooltip,

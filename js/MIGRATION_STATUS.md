@@ -3,7 +3,6 @@
 ## TODO list
 
 **Code review pass:**
-- Accessibility: keyboard, focus, contrast, labels
 - Dependency updates and audit
 - Tests and docs touch-up
   - For the docs, flag issues so that the choice of docs vs code being right can be reviewed.

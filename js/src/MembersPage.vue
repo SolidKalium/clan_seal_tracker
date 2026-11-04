@@ -24,7 +24,6 @@ const props = defineProps<{
   combined?: boolean;
   clanEmblem?: ClanEmblemData;
   clanName?: string;
-  tooltipId?: string;
   memberships: (user: UserInfo) => Promise<UserInfo[]>;
   entitlements: () => Promise<MemberEntitlements>;
 }>();
@@ -252,6 +251,7 @@ function exportCsv() {
   <div class="table-frame">
     <div
       class="table-scroll members-scroll"
+      role="region"
       tabindex="0"
       aria-label="Scrollable clan members table"
       :style="{ '--group-header-height': `${headingHeight}px` }"
@@ -303,7 +303,6 @@ function exportCsv() {
             >
               <button
                 class="tooltip-only heading-button"
-                :aria-describedby="tooltipId"
                 @keydown.esc="emit('close-tooltip')"
               >
                 Guardians
@@ -335,7 +334,6 @@ function exportCsv() {
             >
               <button
                 class="tooltip-only heading-button"
-                :aria-describedby="tooltipId"
                 @keydown.esc="emit('close-tooltip')"
               >
                 {{ guardianClass.name }}
@@ -414,7 +412,6 @@ function exportCsv() {
               <button
                 class="tooltip-only cell-button"
                 :aria-label="`${memberName(player)}: ${guardianClass.name} guardians: ${guardianPower(player.profile, guardianClass.type)}`"
-                :aria-describedby="tooltipId"
                 @keydown.esc="emit('close-tooltip')"
               >
                 {{ guardianPower(player.profile, guardianClass.type) }}

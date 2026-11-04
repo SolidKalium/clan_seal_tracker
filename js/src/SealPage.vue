@@ -126,6 +126,7 @@ const badgeClasses = computed(
   </div>
   <SealTable :selected="selected" />
   <aside v-if="detail" class="detail-panel" aria-live="polite">
+    <h2 class="sr-only">Record details</h2>
     <button
       class="detail-close"
       aria-label="Close record details"

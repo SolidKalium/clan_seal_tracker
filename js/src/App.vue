@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
 import ClanPicker from './ClanPicker.vue';
@@ -29,7 +29,6 @@ const {
   rosterState,
   definitionsState,
   sidebarCollapsed,
-  tooltip,
   closeTooltip,
   showCharacterTooltip,
   showGuardianTooltip,
@@ -42,9 +41,9 @@ const {
   loadEntitlements,
   selectClan,
 } = provideTracker();
-const charactersTooltipId = computed(() =>
-  tooltip.value?.kind === 'characters' ? 'record-tooltip' : undefined,
-);
+const main = ref<HTMLElement>();
+// A plain #main link would change the hash route.
+const skipToContent = () => main.value?.focus();
 watch([selected, isMembers], ([seal, members]) => {
   document.title = members
     ? 'Members · Clan Seal Tracker'
@@ -55,10 +54,13 @@ watch([selected, isMembers], ([seal, members]) => {
 </script>
 
 <template>
+  <a class="skip-link" href="#main" @click.prevent="skipToContent"
+    >Skip to content</a
+  >
   <AppHeader />
   <div class="shell" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
     <AppSidebar />
-    <main id="main">
+    <main id="main" ref="main" tabindex="-1">
       <div v-if="issues.length || storageWarning" class="notice" role="alert">
         <p v-for="issue in issues" :key="issue">{{ issue }}</p>
         <p v-if="storageWarning">{{ storageWarning }}</p>
@@ -83,7 +85,6 @@ watch([selected, isMembers], ([seal, members]) => {
         :clan-name="roster?.name"
         :memberships="loadMemberships"
         :entitlements="loadEntitlements"
-        :tooltip-id="charactersTooltipId"
         @show-guardian="showGuardianTooltip"
         @show-characters="showCharacterTooltip"
         @close-tooltip="closeTooltip"

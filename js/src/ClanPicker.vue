@@ -333,9 +333,16 @@ async function search(more = false) {
 .clan-choice-id {
   flex-shrink: 0;
   font-size: 10px;
-  color: var(--muted);
+  /* Debug detail, intentionally quieter than the content around it. */
+  color: #718079;
   opacity: 0.8;
   white-space: nowrap;
+}
+@media (prefers-contrast: more) {
+  .clan-choice-id {
+    color: var(--muted);
+    opacity: 1;
+  }
 }
 .friends-status {
   font-size: 12px;

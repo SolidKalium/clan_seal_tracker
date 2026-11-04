@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import { useTracker } from './useTracker';
 
 const {
@@ -14,14 +14,10 @@ const {
   failedCount,
   staleCount,
   syncColor,
-  tooltip,
   openTooltip,
   closeTooltip,
   load,
 } = useTracker();
-const syncTooltipId = computed(() =>
-  tooltip.value?.kind === 'sync' ? 'record-tooltip' : undefined,
-);
 const topbar = ref<HTMLElement>();
 let topbarObserver: ResizeObserver | undefined;
 watch(topbar, (element) => {
@@ -46,12 +42,7 @@ onUnmounted(() => topbarObserver?.disconnect());
       ><span>CLAN <strong>SEAL TRACKER</strong></span></a
     >
     <div class="header-status">
-      <section
-        class="sync-strip"
-        :class="{ 'sync-busy': busy }"
-        role="status"
-        aria-live="polite"
-      >
+      <section class="sync-strip" :class="{ 'sync-busy': busy }">
         <div class="status-copy">
           <div
             class="tooltip-only status-primary"
@@ -62,13 +53,12 @@ onUnmounted(() => topbarObserver?.disconnect());
               class="tooltip-only sync-indicator"
               :class="[`sync-${syncColor}`, { 'is-updating': busy }]"
               aria-label="Record sync status"
-              :aria-describedby="syncTooltipId"
               @focus="openTooltip($event, { kind: 'sync' })"
               @blur="closeTooltip"
               @keydown.esc="closeTooltip"
             >
               <span class="status-dot" aria-hidden="true"></span></button
-            ><span class="status-heading">{{
+            ><span class="status-heading" role="status">{{
               busy
                 ? 'Syncing records'
                 : issues.length || failedCount

@@ -687,3 +687,18 @@ The rank in the guardian tooltip says "Clan Admin" only in the combined list, wh
 Rows build in two stages: per-player rows, then filter, sort, and the platform label. Search, filter, and sort changes reuse the built cells, and linked-platform lookups do not rebuild them.
 
 Keep large data in `shallowRef`. The table must not read `tooltip` directly: every cell would then rerender on each tooltip change. It reads computed IDs that change only when a tooltip opens or closes, and `leaveRecordTooltip` leaves the tooltip open when moving to another target, because Vue can flush between `mouseleave` and `mouseenter`. Measured across 4 cell moves: 6 table rerenders before, 0 after.
+
+### Accessibility pass — 2026-11-04
+
+Text meets 4.5:1 and single-symbol marks (`·`, `—`, `●`, `✦`) meet 3:1 on their darkest background, checked across the main pages, tooltips, detail panel, members page, and clan picker. Failing colors were darkened by the smallest step that passes, keeping their hue. Hover states were not scanned. The focus ring is `#5e8a3c`, at least 3.4:1 on the light page and the dark header.
+
+Text fields keep the lighter `#9bb976` ring, because the caret also shows focus. Selects have no caret, so they add a darker bottom edge. The clan ID in the picker is a deliberate exception at about 2.9:1: it is debug detail, not content. `prefers-contrast: more` strengthens both, so no in-app contrast setting is needed for now.
+
+`aria-describedby` is set directly on the tooltip's target rather than bound in templates. Only the real target is described, and the table no longer rerenders when a tooltip opens or closes.
+
+The skip link focuses `main` in a click handler, because a plain `#main` link would change the hash route. The live region covers the sync heading only, so screen readers are not told every profile count during a sync.
+
+The progress table is a `role="grid"` with one Tab stop: arrow keys, Home, and End move between cells, and Ctrl+Home/End go to the first and last cell (`useGridNavigation.ts`). Cell positions come from a grid map, so spanning headers line up. Moves scroll targets clear of the sticky header and player column, and keep the tooltip open while scrolling. Retry buttons stay in the Tab order. The members table is unchanged.
+
+Tooltip headings stay `h3`: they are transient and outside the page outline, so axe's heading-order and region notes for them are accepted.
+

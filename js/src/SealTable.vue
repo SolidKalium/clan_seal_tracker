@@ -7,6 +7,7 @@ import { displayObjectives } from './displayObjectives';
 import { statusLabel } from './members';
 import PlayerAffiliations from './PlayerAffiliations.vue';
 import type { Heading, Seal } from './types';
+import { useGridNavigation } from './useGridNavigation';
 import { useTracker } from './useTracker';
 
 const props = defineProps<{ selected: Seal }>();
@@ -21,22 +22,18 @@ const {
   routeMode,
   metricView,
   summaryLabel,
-  tooltip,
   openTooltip,
   closeTooltip,
+  closeOnScroll,
+  keepThroughScroll,
   showTooltip,
   leaveRecordTooltip,
   showGuardianTooltip,
   showDetail,
   retryPlayer,
 } = useTracker();
-// Cells read these rather than the tooltip, so moving between cells does not rerender the table.
-const tooltipId = computed(() =>
-  tooltip.value ? 'record-tooltip' : undefined,
-);
-const summaryTooltipId = computed(() =>
-  tooltip.value?.kind === 'summary' ? 'record-tooltip' : undefined,
-);
+const table = ref<HTMLTableElement>();
+const { onKeydown, onFocusin } = useGridNavigation(table, keepThroughScroll);
 const groupHeader = ref<HTMLElement>();
 const groupHeaderHeight = ref(64);
 const playerColumnWidth = ref(206);
@@ -133,6 +130,7 @@ onUnmounted(() => headerObserver?.disconnect());
   <div class="table-frame">
     <div
       class="table-scroll"
+      role="region"
       tabindex="0"
       :aria-label="`Scrollable ${routeMode} progress table`"
       :style="{
@@ -140,9 +138,15 @@ onUnmounted(() => headerObserver?.disconnect());
         '--category-header-height': hasColumnGroups ? '32px' : '0px',
         '--player-column-width': `${playerColumnWidth}px`,
       }"
-      @scroll="closeTooltip"
+      @scroll="closeOnScroll"
     >
-      <table>
+      <table
+        ref="table"
+        role="grid"
+        :aria-label="`${routeMode} progress`"
+        @keydown="onKeydown"
+        @focusin="onFocusin"
+      >
         <thead>
           <tr v-if="hasColumnGroups" class="category-header-row">
             <th scope="col" class="player-column" :rowspan="headerRows">
@@ -156,7 +160,7 @@ onUnmounted(() => headerObserver?.disconnect());
             >
               <button
                 class="tooltip-only heading-button summary-heading"
-                :aria-describedby="summaryTooltipId"
+                tabindex="-1"
                 @mouseenter="showSummary($event)"
                 @mouseleave="closeTooltip"
                 @focus="showSummary($event)"
@@ -198,7 +202,7 @@ onUnmounted(() => headerObserver?.disconnect());
             >
               <button
                 class="tooltip-only heading-button summary-heading"
-                :aria-describedby="summaryTooltipId"
+                tabindex="-1"
                 @mouseenter="showSummary($event)"
                 @mouseleave="closeTooltip"
                 @focus="showSummary($event)"
@@ -238,7 +242,7 @@ onUnmounted(() => headerObserver?.disconnect());
             >
               <button
                 class="tooltip-only heading-button"
-                :aria-describedby="tooltipId"
+                tabindex="-1"
                 @keydown.esc="closeTooltip"
               >
                 {{ heading.label
@@ -288,8 +292,8 @@ onUnmounted(() => headerObserver?.disconnect());
               >
                 <button
                   class="tooltip-only stage-button"
+                  tabindex="-1"
                   :aria-label="`Stage ${heading.objectives.indexOf(objective) + 1}: ${objective.progressDescription || objective.displayProperties?.description || heading.name}`"
-                  :aria-describedby="tooltipId"
                   @keydown.esc="closeTooltip"
                 >
                   {{ heading.objectives.indexOf(objective) + 1 }}
@@ -314,8 +318,8 @@ onUnmounted(() => headerObserver?.disconnect());
               <div class="guardian-row">
                 <button
                   class="tooltip-only guardian-button"
+                  tabindex="-1"
                   :aria-label="`Guardian details: ${row.name}`"
-                  :aria-describedby="tooltipId"
                   @mouseenter="showGuardianTooltip($event, row)"
                   @mouseleave="closeTooltip"
                   @focus="showGuardianTooltip($event, row)"
@@ -366,9 +370,8 @@ onUnmounted(() => headerObserver?.disconnect());
             <td
               v-if="!metricView"
               class="tooltip-only progress-column summary-cell"
-              tabindex="0"
+              tabindex="-1"
               :aria-label="`${row.name}: ${summaryLabel}`"
-              :aria-describedby="summaryTooltipId"
               @mouseenter="showSummary($event, row.name, row.counts)"
               @mouseleave="closeTooltip"
               @focus="showSummary($event, row.name, row.counts)"
@@ -408,8 +411,8 @@ onUnmounted(() => headerObserver?.disconnect());
               >
                 <button
                   class="cell-button armor-ownership"
+                  tabindex="-1"
                   :style="{ '--class-count': cell.variants.length }"
-                  :aria-describedby="tooltipId"
                   :aria-label="`${row.name}: ${row.headings[i]!.name}: ${
                     cell.variants.some((v) => v.complete)
                       ? 'collected for ' +
@@ -482,7 +485,7 @@ onUnmounted(() => headerObserver?.disconnect());
               >
                 <button
                   class="cell-button"
-                  :aria-describedby="tooltipId"
+                  tabindex="-1"
                   :aria-label="`${row.name}: ${row.headings[i]!.name}: ${row.headings[i]!.collectibleHashes || row.headings[i]!.checklist ? (cell.missing ? 'no collection data' : cell.complete ? 'collected' : 'not collected') : row.headings[i]!.metric ? cell.detail : cell.complete ? (cell.unclaimed ? 'complete, unclaimed' : 'complete') : cell.missing ? 'no record' : 'incomplete'}`"
                   @keydown.esc="closeTooltip"
                   @click="showDetail(row.name, row.headings[i]!, cell)"
@@ -539,7 +542,7 @@ onUnmounted(() => headerObserver?.disconnect());
                 >
                   <button
                     class="cell-button"
-                    :aria-describedby="tooltipId"
+                    tabindex="-1"
                     :aria-label="`${row.name}: ${row.headings[i]!.name}: ${objective.name}: ${objective.missing ? 'no record' : objective.complete ? 'complete' : `${objective.progress}/${objective.target}`}`"
                     @keydown.esc="closeTooltip"
                     @click="showDetail(row.name, row.headings[i]!, cell)"

@@ -149,6 +149,8 @@ function createTracker() {
     tooltip,
     tooltipElement,
     closeTooltip,
+    closeOnScroll,
+    keepThroughScroll,
     positionTooltip,
     openTooltip,
     showCharacterTooltip,
@@ -752,7 +754,7 @@ function createTracker() {
     window.addEventListener('focus', checkLoginExpiry);
     document.addEventListener('visibilitychange', checkLoginExpiry);
     window.addEventListener('resize', closeTooltip);
-    window.addEventListener('scroll', closeTooltip);
+    window.addEventListener('scroll', closeOnScroll);
     try {
       let signedInNow = false;
       try {
@@ -842,7 +844,7 @@ function createTracker() {
     document.removeEventListener('visibilitychange', checkLoginExpiry);
     window.removeEventListener('hashchange', changedHash);
     window.removeEventListener('resize', closeTooltip);
-    window.removeEventListener('scroll', closeTooltip);
+    window.removeEventListener('scroll', closeOnScroll);
     closeTooltip();
   });
   return {
@@ -884,6 +886,8 @@ function createTracker() {
     tooltip,
     tooltipElement,
     closeTooltip,
+    closeOnScroll,
+    keepThroughScroll,
     openTooltip,
     showCharacterTooltip,
     showTooltip,
