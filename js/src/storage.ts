@@ -36,6 +36,7 @@ export class CacheStore {
         this.failed();
       }
     }
+    return undefined;
   }
   async put<T>(entry: Cached<T>): Promise<void> {
     this.memory.set(entry.key, entry);

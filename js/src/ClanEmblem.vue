@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { ClanEmblemData } from './clanBanner';
+import { bungieUrl } from './format';
 defineProps<{ emblem?: ClanEmblemData; name: string }>();
 const layerStyle = (layer: ClanEmblemData['layers'][number]) => ({
   backgroundColor: layer.color,
-  maskImage: `url("https://www.bungie.net${layer.path}")`,
-  WebkitMaskImage: `url("https://www.bungie.net${layer.path}")`,
+  maskImage: `url("${bungieUrl(layer.path)}")`,
+  WebkitMaskImage: `url("${bungieUrl(layer.path)}")`,
 });
 </script>
 <template>

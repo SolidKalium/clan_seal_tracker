@@ -16,6 +16,7 @@ import {
   platformName,
   platforms,
   primarySave,
+  statusLabel,
   type MemberEntitlements,
 } from './members';
 const props = defineProps<{
@@ -174,16 +175,6 @@ const columns = computed(() =>
     })),
   ),
 );
-const profileStatus = (p: PlayerData) =>
-  p.status === 'loading'
-    ? 'Loading'
-    : p.status === 'private'
-      ? 'Private'
-      : p.status === 'unavailable'
-        ? 'Unavailable'
-        : p.status === 'stale'
-          ? 'Stale'
-          : 'Up to date';
 function exportCsv() {
   const header = [
     'Bungie name',
@@ -207,7 +198,7 @@ function exportCsv() {
     date(p.member.joinDate),
     p.member.isOnline ? 'Online' : date(lastSeen(p)),
     ...guardianClasses.map((c) => guardianPower(p.profile, c.type, 'all')),
-    profileStatus(p),
+    statusLabel(p),
     date(p.fetchedAt),
     ...columns.value.map((c) => {
       const owned = ownership(p, c.kind, c.id);
@@ -430,7 +421,7 @@ function exportCsv() {
               </button>
             </td>
             <td>
-              {{ profileStatus(player)
+              {{ statusLabel(player)
               }}<small
                 v-if="player.error || platformErrors[idOf(player)]"
                 class="member-error"

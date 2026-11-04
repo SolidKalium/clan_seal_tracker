@@ -322,7 +322,7 @@ export class PlayerLogin implements SelfAccess {
   }
   async clan(publicTransport: Transport): Promise<ClanChoice | undefined> {
     const user = this.account?.primary;
-    if (!user) return;
+    if (!user) return undefined;
     const result = await publicTransport.api<{
       results: {
         group: { groupId: string; name: string; memberCount?: number };
@@ -335,6 +335,7 @@ export class PlayerLogin implements SelfAccess {
         name: group.name,
         memberCount: group.memberCount,
       };
+    return undefined;
   }
   end(message = '') {
     this.token = undefined;

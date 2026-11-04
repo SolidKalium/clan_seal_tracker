@@ -3,7 +3,6 @@
 ## TODO list
 
 **Code review pass:**
-- Types and consistency: `any`s/casts, duplicated helpers, error/empty states
 - Accessibility: keyboard, focus, contrast, labels
 - Dependency updates and audit
 - Tests and docs touch-up
@@ -46,7 +45,6 @@ Deferred polish and interaction design; these are not for immediate implementati
 ### Planning Usability
 - [ ] Allow pinning guardians to the top?
 - [ ] Something to "pull forward" all columns that someone is missing. Might need to break the top-level table headers
-- [ ] Support a clan + friends view?
 
 ### General GUI
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.

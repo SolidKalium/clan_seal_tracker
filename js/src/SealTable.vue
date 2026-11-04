@@ -73,7 +73,7 @@ const hasStages = computed(() =>
 );
 const columnGroups = computed(() => {
   const groups: { name: string; columns: number; color?: string }[] = [];
-  for (const heading of props.selected.headings ?? []) {
+  for (const heading of props.selected.headings) {
     const name = heading.group ?? 'Triumphs';
     const last = groups.at(-1);
     if (last?.name === name) last.columns += objectiveColumns(heading);
@@ -95,8 +95,7 @@ const headerRows = computed(
 const tableColumns = computed(
   () =>
     (metricView.value ? 1 : 2) +
-    (props.selected.headings.reduce((sum, h) => sum + objectiveColumns(h), 0) ??
-      0),
+    props.selected.headings.reduce((sum, h) => sum + objectiveColumns(h), 0),
 );
 function showSummary(event: Event, player?: string, counts?: CompletionCounts) {
   void openTooltip(event, {

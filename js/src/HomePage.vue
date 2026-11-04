@@ -7,6 +7,7 @@ import { useTracker } from './useTracker';
 
 const {
   definitions,
+  playerList,
   roster,
   displayedPlayers,
   known,
@@ -38,13 +39,13 @@ function otherPageSummary(page: PageConfig): string {
     <p class="eyebrow">THE NEXT TITLE IS A TEAM EFFORT</p>
     <h1>Your clan. Every triumph.</h1>
     <p class="lede">
-      See who’s close, plan you fireteam, and make the next run count.
+      See who’s close, plan your fireteam, and make the next run count.
     </p>
   </section>
   <div class="overview-stats">
     <div>
       <strong>{{ roster?.members.length ?? '—' }}</strong
-      ><span>Clan guardians</span>
+      ><span>{{ playerList === 'clan' ? 'Clan guardians' : 'Guardians' }}</span>
     </div>
     <div>
       <strong>{{ known.length }}</strong

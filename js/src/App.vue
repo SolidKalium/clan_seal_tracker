@@ -62,11 +62,15 @@ watch([selected, isMembers], ([seal, members]) => {
       <div v-if="issues.length || storageWarning" class="notice" role="alert">
         <p v-for="issue in issues" :key="issue">{{ issue }}</p>
         <p v-if="storageWarning">{{ storageWarning }}</p>
-        <p v-if="definitions">
-          Showing the last complete definitions{{
-            definitionsState === 'stale' ? ' (stale)' : ''
-          }}.
-          {{ rosterState === 'stale' ? 'The clan roster is also stale.' : '' }}
+        <p v-if="definitions && definitionsState === 'stale'">
+          Showing the last complete definitions.
+        </p>
+        <p v-if="rosterState === 'stale'">
+          {{
+            playerList === 'friends'
+              ? 'The friends list is stale.'
+              : 'The clan roster is stale.'
+          }}
         </p>
       </div>
       <PageHeading v-if="!isHome && currentPage" />

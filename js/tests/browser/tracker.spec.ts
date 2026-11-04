@@ -486,6 +486,12 @@ test('warm reload needs no network, and failed roster refresh retains fresh inac
   await ready(page);
   await expect(page.locator('tbody tr')).toHaveCount(3);
   await expect(page.locator('.notice')).toContainText('Cannot reach Bungie');
+  await expect(page.locator('.notice')).toContainText(
+    'Showing the last complete definitions.',
+  );
+  await expect(page.locator('.notice')).toContainText(
+    'The clan roster is stale.',
+  );
   await page
     .getByRole('button', { name: 'Guardian details: Banshee', exact: true })
     .hover();
@@ -519,6 +525,7 @@ test('origin rejection is actionable and unknown content is recoverable', async 
   await expect(page.locator('.notice')).toContainText(
     `Register ${new URL(page.url()).origin}`,
   );
+  await expect(page.locator('.notice')).not.toContainText('definitions');
   await page.goto('#/seal/not-a-page');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Page not found',
@@ -4200,7 +4207,7 @@ test('Other collection pages use native groups, pattern objectives, and collecte
     ['exotic_weapons', 'Exotic weapons', 'Kinetic'],
     ['exotic_armor', 'Exotic armor', 'Titan'],
     ['mods', 'Mods', 'Head'],
-  ]) {
+  ] as const) {
     await page.goto(`#/triumphs/${id}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(name);
     await expect(page.locator('.category-header-row')).toContainText(group);

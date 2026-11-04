@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { badgeOwnership } from './domain';
+import { bungieUrl } from './format';
 import { useTracker } from './useTracker';
 import ViewTabs from './ViewTabs.vue';
 
@@ -44,7 +45,7 @@ const badgeOwnerCount = computed(() =>
         v-if="selected?.icon"
         class="heading-owner-icon"
         :class="`heading-${headingKind}-icon`"
-        :src="`https://www.bungie.net${selected.icon}`"
+        :src="bungieUrl(selected.icon)"
         alt=""
       />
       <div class="title-tally">
