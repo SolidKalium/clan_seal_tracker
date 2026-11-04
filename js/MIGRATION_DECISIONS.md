@@ -702,3 +702,9 @@ The progress table is a `role="grid"` with one Tab stop: arrow keys, Home, and E
 
 Tooltip headings stay `h3`: they are transient and outside the page outline, so axe's heading-order and region notes for them are accepted.
 
+### Dependency updates — 2026-11-04
+
+Updated to Vite 8, TypeScript 6, and `@types/node` 26. TypeScript 7 is on hold because `typescript-eslint` requires below 6.1 and `vue-tsc` depends on the TypeScript API. Revisit when both support it.
+
+`overrides` forces `minimatch` to 11 for the `GHSA-g3hv-75wg-m249` advisory, because ESLint and `typescript-eslint` still request 10. This is development-only. Remove the override once both request a fixed version.
+
