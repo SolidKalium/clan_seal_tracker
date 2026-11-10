@@ -6561,3 +6561,40 @@ test('the table is one Tab stop navigated with the arrow keys', async ({
     head.y + head.height - 1,
   );
 });
+
+test('the sidebar toggle stays reachable on phones', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 });
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('#/seal/last_wish');
+  await ready(page);
+  const toggle = page.getByRole('button', { name: 'Collapse side menu' });
+  await toggle.click();
+  await expect(
+    page.getByRole('button', { name: 'Expand side menu' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Expand side menu' }).click();
+  const box = (await toggle.boundingBox())!;
+  const select = (await page.getByLabel('Players to show').boundingBox())!;
+  expect(select.x + select.width).toBeLessThanOrEqual(box.x);
+});
+
+test('every sidebar section stays reachable partway down a long page', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await setup(page, { offline: false, calls: 0 });
+  await page.goto('');
+  await ready(page);
+  await page.mouse.wheel(0, 1500);
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(0);
+  const sidebar = page.locator('.sidebar');
+  await sidebar.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+  const clear = page.getByRole('button', { name: 'Clear API cache' });
+  const box = (await clear.boundingBox())!;
+  expect(box.y + box.height).toBeLessThanOrEqual(600);
+  expect(box.y).toBeGreaterThanOrEqual(0);
+});

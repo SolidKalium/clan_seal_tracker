@@ -3,8 +3,6 @@
 ## TODO list
 
 **Layout cleanup:**
-- Review top-level page layout/element-nesting to reduce any unneeded complexity
-  - See tall sidebar in MIGRATION_DECISIONS as an example.
 - Review other parts of the layout, such as the tables
 - CSS (after components settle)
 

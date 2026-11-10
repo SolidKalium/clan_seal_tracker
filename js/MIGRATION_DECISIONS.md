@@ -708,3 +708,11 @@ Updated to Vite 8, TypeScript 6, and `@types/node` 26. TypeScript 7 is on hold b
 
 `overrides` forces `minimatch` to 11 for the `GHSA-g3hv-75wg-m249` advisory, because ESLint and `typescript-eslint` still request 10. This is development-only. Remove the override once both request a fixed version.
 
+### App frame layout — 2026-11-10
+
+The header, shell, sidebar box, and `main` are styled in one "App frame" section of `style.css`, ordered by element and then breakpoint. It replaced about 95 rules spread over four earlier passes, several of which could never apply. A computed-style comparison of every frame element across five widths, both sidebar states, and the syncing header confirmed the consolidation changed nothing. The sidebar's own contents stay with their component rules.
+
+The sidebar is sticky and capped at the window height below the header, scrolling on its own, so every section is reachable partway down a long page. Its direct children do not shrink, so overflow scrolls instead of squeezing sections. The rail background stays on `.shell::before`. A tall sidebar also no longer stretches short pages.
+
+On phones the open sidebar's Players select leaves room for the collapse toggle, which the select previously covered.
+
