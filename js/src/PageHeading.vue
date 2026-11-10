@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { badgeOwnership } from './domain';
-import { bungieUrl } from './format';
+import { bungieUrl, plural } from './format';
 import { useTracker } from './useTracker';
 import ViewTabs from './ViewTabs.vue';
 
@@ -57,7 +57,9 @@ const badgeOwnerCount = computed(() =>
               : '—'
         }}</strong
         ><span>{{
-          headingKind === 'badge' ? 'badge owners' : 'title holders'
+          headingKind === 'badge'
+            ? plural('badge owner', badgeOwnerCount)
+            : plural('title holder', selected ? titleCount(selected) : 0)
         }}</span>
       </div>
     </div>

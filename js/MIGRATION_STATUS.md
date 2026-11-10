@@ -2,10 +2,6 @@
 
 ## TODO list
 
-**Code review pass:**
-- Tests and docs touch-up
-  - For the docs, flag issues so that the choice of docs vs code being right can be reviewed.
-
 **Layout cleanup:**
 - Review top-level page layout/element-nesting to reduce any unneeded complexity
   - See tall sidebar in MIGRATION_DECISIONS as an example.

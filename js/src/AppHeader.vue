@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onUnmounted, ref, watch } from 'vue';
+import { plural } from './format';
 import { useTracker } from './useTracker';
 
 const {
@@ -74,9 +75,9 @@ onUnmounted(() => topbarObserver?.disconnect());
               ></template
             ><template v-else
               >{{ resolved }} /
-              {{ roster?.members.length ?? '—' }} profiles<span
-                v-if="staleCount"
-              >
+              {{ roster?.members.length ?? '—' }}
+              {{ plural('profile', roster?.members.length ?? 0)
+              }}<span v-if="staleCount">
                 · {{ staleCount }} stale / private</span
               ><span v-if="failedCount">
                 · {{ failedCount }} unavailable</span

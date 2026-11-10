@@ -15,3 +15,6 @@ export const iconMask = (icon?: string) =>
   icon && /^\/common\/destiny2_content\/icons\/[\w./-]+$/.test(icon)
     ? `url("${bungieUrl(icon)}")`
     : undefined;
+/** The word for a count: plural('guardian', 1) is 'guardian'. */
+export const plural = (word: string, count: number, many = `${word}s`) =>
+  count === 1 ? word : many;

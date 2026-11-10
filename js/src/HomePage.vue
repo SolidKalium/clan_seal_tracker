@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { catalog, catalogGroups } from './catalog';
 import { badgeOwnership } from './domain';
+import { plural } from './format';
 import SealWatermark from './SealWatermark.vue';
 import type { PageConfig } from './types';
 import { useTracker } from './useTracker';
@@ -15,22 +16,32 @@ const {
   sealsById,
   titleCount,
 } = useTracker();
+function badgeOwners(page: PageConfig) {
+  const count = displayedPlayers.value.filter(
+    (p) =>
+      badgeOwnership(p.profile, sealsById.value[page.id]?.headings ?? [])
+        .completeClasses.length > 0,
+  ).length;
+  return `${count} ${plural('badge owner', count)}`;
+}
 function otherPageSummary(page: PageConfig): string {
-  if (page.id === 'checklists')
-    return `${1 + catalog.filter((p) => p.parentPageId === page.id).length} checklists`;
+  if (page.id === 'checklists') {
+    const count = 1 + catalog.filter((p) => p.parentPageId === page.id).length;
+    return `${count} ${plural('checklist', count)}`;
+  }
   if (page.id === 'guardian_ranks') return 'Ranks and commendations';
   const seal = sealsById.value[page.id];
   if (!seal) return 'Loading definitions…';
   const unit = seal.headings.some((h) => h.collectibleHashes)
-    ? 'items'
+    ? 'item'
     : page.kind === 'seals'
-      ? 'seals'
+      ? 'seal'
       : page.id === 'patterns'
-        ? 'patterns'
+        ? 'pattern'
         : page.id === 'catalysts'
-          ? 'catalysts'
-          : 'triumphs';
-  return `${seal.headings.length} ${unit}`;
+          ? 'catalyst'
+          : 'triumph';
+  return `${seal.headings.length} ${plural(unit, seal.headings.length)}`;
 }
 </script>
 
@@ -95,21 +106,19 @@ function otherPageSummary(page: PageConfig): string {
           <span v-if="sealsById[page.id]?.unavailable"
             >Unavailable in current manifest</span
           ><span v-else-if="definitions && page.sealNodeHash"
-            >{{ titleCount(sealsById[page.id]!) }} title holders</span
-          ><span v-else-if="definitions && page.category === 'Other badges'"
-            >{{
-              displayedPlayers.filter(
-                (p) =>
-                  badgeOwnership(p.profile, sealsById[page.id]?.headings ?? [])
-                    .completeClasses.length > 0,
-              ).length
-            }}
-            badge owners</span
+            >{{ titleCount(sealsById[page.id]!) }}
+            {{ plural('title holder', titleCount(sealsById[page.id]!)) }}</span
+          ><span v-else-if="definitions && page.category === 'Other badges'">{{
+            badgeOwners(page)
+          }}</span
           ><span v-else-if="page.category === 'Other'">{{
             otherPageSummary(page)
           }}</span
           ><span v-else-if="definitions"
-            >{{ sealsById[page.id]?.headings.length ?? 0 }} triumphs</span
+            >{{ sealsById[page.id]?.headings.length ?? 0 }}
+            {{
+              plural('triumph', sealsById[page.id]?.headings.length ?? 0)
+            }}</span
           ><span v-else>Loading definitions…</span
           ><span aria-hidden="true">↗</span>
         </div>

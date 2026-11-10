@@ -826,7 +826,7 @@ test('compact header status and persistent collapsible clan rail', async ({
   await expect(page.getByRole('tooltip').locator('.current')).toContainText(
     'Updating or needs attention',
   );
-  await expect(page.locator('.title-tally')).toContainText('title holders');
+  await expect(page.locator('.title-tally')).toHaveText('1title holder');
   await expect(page.locator('.title-tally')).not.toContainText('known');
   const width = await page
     .locator('main')
@@ -2238,7 +2238,7 @@ test('overview uses canonical seasons and removes repeated tile and section text
     await expect(label).toHaveText('EXPANSION');
   await expect(
     page.locator('.seal-card[href="#/seal/last_wish"] .card-bottom'),
-  ).toContainText('title holders');
+  ).toContainText(/1 title holder(?!s)/);
   await expect(
     page.locator('.seal-grid').filter({ hasText: /loaded/ }),
   ).toHaveCount(0);
@@ -3020,7 +3020,7 @@ test('destination and event navigation supports triumph-only and removed histori
       .locator('.seal-card'),
   ).toHaveCount(8);
   const nessus = destinations.getByRole('link', { name: /Nessus/ });
-  await expect(nessus).not.toContainText('title holders');
+  await expect(nessus).not.toContainText('title holder');
   await nessus.click();
   await expect(page).toHaveURL(/#\/triumphs\/nessus$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -3636,7 +3636,7 @@ test('activity headings distinguish seals, named badges, and current triumphs wi
     'Glorious seal',
   );
   await expect(page.locator('.heading-kind')).toHaveText('seal');
-  await expect(page.locator('.heading-tally')).toHaveText('1title holders');
+  await expect(page.locator('.heading-tally')).toHaveText('1title holder');
   await expect(page.locator('.heading-seal-icon')).toBeVisible();
   await expect(page.locator('.view-description')).toHaveText(
     'Earn the Glorious title.',
@@ -3667,7 +3667,7 @@ test('activity headings distinguish seals, named badges, and current triumphs wi
     'Crucible Arsenal badge',
   );
   await expect(page.locator('.active-triumphs-notice')).toHaveCount(0);
-  await expect(page.locator('.heading-tally')).toHaveText('1badge owners');
+  await expect(page.locator('.heading-tally')).toHaveText('1badge owner');
   await expect(page.locator('.heading-seal-icon')).toHaveCount(0);
   await expect(page.locator('.heading-badge-icon')).toBeVisible();
   await expect(page.locator('.heading-badge-icon')).toHaveAttribute(
@@ -4545,7 +4545,7 @@ test('miscellaneous badges and seals navigate correctly, and Moments editions sh
       .locator('a[href="#/seal/monument_of_triumph"]'),
   ).toHaveCount(1);
   const redWar = badges.locator('a[href="#/badge/destination_red_war_badge"]');
-  await expect(redWar).toContainText('1 badge owners');
+  await expect(redWar).toContainText(/1 badge owner(?!s)/);
   await redWar.click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Destinations: Red War badge',
@@ -4556,7 +4556,7 @@ test('miscellaneous badges and seals navigate correctly, and Moments editions sh
   await expect(
     page.getByRole('columnheader', { name: 'Collected', exact: true }),
   ).toBeVisible();
-  await expect(page.locator('.title-tally')).toContainText('badge owners');
+  await expect(page.locator('.title-tally')).toHaveText('1badge owner');
   await page.goto('#/seal/chronicler');
   await expect(page.locator('.page-heading .eyebrow')).toContainText(
     'Other seals / Chronicler',
@@ -5554,7 +5554,9 @@ test('switching clans during profile refresh ignores late results from the old c
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.locator('.status-counts')).toContainText('1 / 1 profiles');
+  await expect(page.locator('.status-counts')).toContainText(
+    /1 \/ 1 profile(?!s)/,
+  );
 });
 
 test('focus indicators stay inside shared controls across tables, tabs, and clan search', async ({

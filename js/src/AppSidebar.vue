@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import ClanEmblem from './ClanEmblem.vue';
 import { catalog, catalogGroups } from './catalog';
+import { plural } from './format';
 import FriendIcon from './FriendIcon.vue';
 import type { PlayerList } from './playerLists';
 import { useTracker } from './useTracker';
@@ -222,7 +223,7 @@ function toggleSection(category: string) {
       <p class="muted small">
         {{
           roster
-            ? `${guardianCount} guardians`
+            ? `${guardianCount} ${plural('guardian', guardianCount)}`
             : busy
               ? 'Connecting to Bungie'
               : 'Check the connection notice'

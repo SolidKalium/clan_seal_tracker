@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { plural } from './format';
 import RecordDetails from './RecordDetails.vue';
 import SealTable from './SealTable.vue';
 import type { Seal } from './types';
@@ -106,7 +107,7 @@ const badgeClasses = computed(
     >
   </div>
   <div class="table-caption">
-    <span>{{ rows.length }} guardians shown</span
+    <span>{{ rows.length }} {{ plural('guardian', rows.length) }} shown</span
     ><span v-if="!metricView" class="table-legend"
       ><span
         v-if="routeMode !== 'badge' && selected.page.sealNodeHash"
