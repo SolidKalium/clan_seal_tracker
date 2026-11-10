@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import config from './.generated/config.json' with { type: 'json' };
-import { httpsRedirect } from './scripts/https-redirect';
+import { httpsRedirect } from './scripts/https-redirect.ts';
 import vue from '@vitejs/plugin-vue';
 const redirectUri = (config as { oauthRedirectUri?: string }).oauthRedirectUri;
 export const devHttps = redirectUri?.startsWith('https:') ?? false;

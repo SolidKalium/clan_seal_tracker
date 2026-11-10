@@ -59,6 +59,7 @@ Deferred polish and interaction design; these are not for immediate implementati
 - [ ] Should seals with lower requirments than 100% of triumphs calculate differently or have a toggle for how that is handled?
 - [ ] Show score, rewards, or other details on triumph heading tooltips. Could show preview of armor or weapons.
   - [ ] Do any ghost mods still expire? Can show energy needed either way.
+- [ ] Fix tab order for header subcolumns to follow the parent column header?
 
 ### Possible Additional Pages
 - [ ] Double check for any signs of season-by-season guardian rank history. Game might only show immediate past season to the player themself. Or it could be a feature only for a logged-in player.

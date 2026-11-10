@@ -486,6 +486,9 @@ test('warm reload needs no network, and failed roster refresh retains fresh inac
   await ready(page);
   await expect(page.locator('tbody tr')).toHaveCount(3);
   await expect(page.locator('.notice')).toContainText('Cannot reach Bungie');
+  await expect(
+    page.locator('.notice p').filter({ hasText: 'Cannot reach Bungie' }),
+  ).toHaveCount(1);
   await expect(page.locator('.notice')).toContainText(
     'Showing the last complete definitions.',
   );

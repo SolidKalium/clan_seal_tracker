@@ -482,7 +482,10 @@ function createTracker() {
       }
       if (!current()) return;
       rosterState.value = r.status;
-      issues.value = [d.error, r.error].filter((v): v is string => !!v);
+      // Both requests fail with the same message when Bungie is unreachable.
+      issues.value = [
+        ...new Set([d.error, r.error].filter((v): v is string => !!v)),
+      ];
       if (r.entry) {
         void loadClanPlatforms(r.entry.value, generation, repo);
         // Friend and combined lists must not replace the visitor's selected clan.
