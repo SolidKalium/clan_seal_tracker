@@ -97,6 +97,7 @@ export class FriendDirectory {
   ): Promise<FriendSuggestions> {
     const friends = await this.friendList(force);
     const groups = new Map<string, FriendClan>();
+    const onlineNames = new Set<string>();
     let failed = 0;
     await eachLimited(friends, async (friend) => {
       if (generation !== this.generation) return;
@@ -150,13 +151,23 @@ export class FriendDirectory {
             friend.bungieNetUser?.displayName ||
             'Unnamed friend';
           entry.friends.push(name);
-          if (friend.onlineStatus === 1) entry.online++;
+          if (friend.onlineStatus === 1) {
+            entry.online++;
+            onlineNames.add(name);
+          }
           groups.set(clan.id, entry);
         }
       } catch {
         failed++;
       }
     });
+    // Lookups finish in any order, so sort names: online friends first, then by name.
+    for (const clan of groups.values())
+      clan.friends.sort(
+        (a, b) =>
+          Number(onlineNames.has(b)) - Number(onlineNames.has(a)) ||
+          a.localeCompare(b),
+      );
     return {
       friends,
       clans: [...groups.values()].sort(

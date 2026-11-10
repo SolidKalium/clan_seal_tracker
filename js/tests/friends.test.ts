@@ -120,3 +120,24 @@ it('clears private relationships and ignores cache writes from an older login', 
   expect((await directory.load()).friends).toEqual([]);
   expect(self.api).toHaveBeenCalledTimes(2);
 });
+it('orders friend names the same however lookups finish: online first, then by name', async () => {
+  const self = {
+    api: vi.fn().mockResolvedValue({
+      friends: [
+        friend('1', 'Ada'),
+        friend('2', 'Banshee'),
+        friend('3', 'Crow', 1),
+      ],
+    }),
+  };
+  // Earlier friends resolve last.
+  const publicApi = {
+    api: vi.fn().mockImplementation(async (path: string) => {
+      const id = Number(/\/3\/(\d+)\//.exec(path)![1]);
+      await new Promise((resolve) => setTimeout(resolve, (4 - id) * 5));
+      return { results: [group('10', 'Friend clan')] };
+    }),
+  };
+  const result = await new FriendDirectory(self, publicApi).load();
+  expect(result.clans[0]?.friends).toEqual(['Crow', 'Ada', 'Banshee']);
+});
