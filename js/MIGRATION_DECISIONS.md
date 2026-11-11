@@ -728,3 +728,9 @@ WebKit measures vertical text (`writing-mode: vertical-rl`) as 0 wide when a par
 
 The collapsed name has no height limit or ellipsis; a short window scrolls the rail instead.
 
+### Persistent logins with refresh tokens — 2026-11-10
+
+The Bungie application is now a Confidential client, as DIM's is, so logins receive a refresh token and renew without signing in again. Its client secret ships in the browser bundle (`oauth_client_secret` in `js/settings.json`), and the login record, including the refresh token, is kept in `localStorage`. The risk was accepted: the app requests no move/equip or other destructive scopes, the secret alone cannot obtain tokens, and shared or public computers are expected to clear site data between users. A small server holding the secret, with the refresh token in an HttpOnly cookie, remains the option if that changes.
+
+Expired access tokens are renewed lazily before the next authenticated request, sharing one request across callers and adopting another tab's renewal, because Bungie may rotate refresh tokens. Network failures keep the login; a rejected refresh ends it. Without a secret, the app still works as a Public client with session-only logins.
+

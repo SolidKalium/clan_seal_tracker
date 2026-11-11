@@ -58,6 +58,7 @@ function createTracker() {
     config as {
       apiKey: string;
       oauthClientId?: string;
+      oauthClientSecret?: string;
       oauthRedirectUri?: string;
     },
     undefined,

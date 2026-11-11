@@ -12,8 +12,10 @@ export function readJsonc(text, name) {
   return value;
 }
 export function compile(settings, pages) {
-  if (typeof settings.secret_key !== 'string' || !settings.secret_key.trim())
-    throw new Error('settings.json needs secret_key');
+  if (settings.secret_key !== undefined && settings.api_key === undefined)
+    throw new Error('settings.json: rename secret_key to api_key');
+  if (typeof settings.api_key !== 'string' || !settings.api_key.trim())
+    throw new Error('settings.json needs api_key');
   const clanId = String(settings.group_id ?? '');
   if (!/^\d+$/.test(clanId))
     throw new Error('settings.json needs a numeric group_id');
@@ -180,6 +182,11 @@ export function compile(settings, pages) {
     !/^\d+$/.test(String(settings.oauth_client_id))
   )
     throw new Error('oauth_client_id must be numeric');
+  if (
+    settings.oauth_client_secret !== undefined &&
+    typeof settings.oauth_client_secret !== 'string'
+  )
+    throw new Error('oauth_client_secret must be a string');
   if (settings.oauth_redirect_uri) {
     const redirect = new URL(settings.oauth_redirect_uri);
     if (
@@ -193,7 +200,7 @@ export function compile(settings, pages) {
   }
   return {
     config: {
-      apiKey: settings.secret_key,
+      apiKey: settings.api_key,
       clanId,
       language: 'en',
       ...(settings.oauth_client_id
@@ -201,6 +208,11 @@ export function compile(settings, pages) {
         : {}),
       ...(settings.oauth_redirect_uri
         ? { oauthRedirectUri: settings.oauth_redirect_uri }
+        : {}),
+      // Like the API key, a confidential client's secret ships to the browser
+      // (as DIM does); it is what lets logins renew with a refresh token.
+      ...(settings.oauth_client_secret?.trim()
+        ? { oauthClientSecret: settings.oauth_client_secret.trim() }
         : {}),
     },
     catalog,

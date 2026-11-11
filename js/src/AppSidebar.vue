@@ -30,7 +30,11 @@ const {
   signIn,
   signOut,
   clearCache,
+  openTooltip,
+  closeTooltip,
 } = useTracker();
+const switchHelp =
+  'To sign in here with a different account, sign out of Bungie.net first. Otherwise Bungie signs you back in as its current account without asking.';
 const guardianCount = computed(() => displayedPlayers.value.length);
 const openSections = ref<string[]>([]);
 watch(
@@ -178,26 +182,44 @@ function toggleSection(category: string) {
             ><span v-if="!railCollapsed">Sign out</span>
           </button></template
         >
-        <button
-          v-else
-          type="button"
-          aria-label="Sign in with Bungie"
-          :class="{ 'login-attention': loginNotice }"
-          :title="loginNotice || undefined"
-          :disabled="!preferencesReady"
-          @click="signIn"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.7"
-            aria-hidden="true"
+        <span v-else class="login-signin">
+          <button
+            type="button"
+            aria-label="Sign in with Bungie"
+            :class="{ 'login-attention': loginNotice }"
+            :title="loginNotice || undefined"
+            :disabled="!preferencesReady"
+            @click="signIn"
           >
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 22v-3a8 8 0 0 1 16 0v3" /></svg
-          ><span v-if="!railCollapsed">Sign in with Bungie</span>
-        </button>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 22v-3a8 8 0 0 1 16 0v3" /></svg
+            ><span v-if="!railCollapsed">Sign in with Bungie</span>
+          </button>
+          <!-- Bungie signs in its current account without asking, so explain
+               how to switch accounts. -->
+          <button
+            v-if="!railCollapsed"
+            type="button"
+            class="tooltip-only login-help"
+            aria-label="About signing in with a different account"
+            @mouseenter="
+              openTooltip($event, { kind: 'note', text: switchHelp })
+            "
+            @mouseleave="closeTooltip"
+            @focus="openTooltip($event, { kind: 'note', text: switchHelp })"
+            @blur="closeTooltip"
+            @keydown.esc="closeTooltip"
+          >
+            ?
+          </button>
+        </span>
       </div>
     </div>
     <p v-if="loginNotice && !railCollapsed" class="login-notice" role="status">

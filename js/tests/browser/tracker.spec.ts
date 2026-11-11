@@ -6417,11 +6417,17 @@ test('player list selector keeps selected clan, friends, and own clan plus frien
 test('player retry and sync icons rotate without a wait cursor or disabled fade', async ({
   page,
 }) => {
-  const state = { offline: false, calls: 0, delay: 0 };
+  const state: {
+    offline: boolean;
+    calls: number;
+    profileGate?: Promise<void>;
+  } = { offline: false, calls: 0 };
   await setup(page, state);
   await page.goto('#/seal/last_wish');
   await ready(page);
-  state.delay = 200;
+  // Hold the retry open until the spinning state has been checked.
+  let release!: () => void;
+  state.profileGate = new Promise((resolve) => (release = resolve));
   const retry = page.getByRole('button', {
     name: 'Retry profile: Crow',
     exact: true,
@@ -6438,6 +6444,8 @@ test('player retry and sync icons rotate without a wait cursor or disabled fade'
     'animation-name',
     'refresh-spin',
   );
+  state.profileGate = undefined;
+  release();
   await ready(page);
   await expect(retry).toHaveAttribute('aria-busy', 'false');
   await expect(retry.locator('.refresh-icon')).toHaveCSS(
@@ -6642,9 +6650,35 @@ test('an expired login turns the sign-in icon yellow and keeps the notice out of
   await expect(page.locator('.login-notice')).toHaveText(notice);
   await expect(signIn).toHaveAttribute('title', notice);
   await expect(signIn.locator('svg')).toHaveCSS('color', 'rgb(168, 123, 22)');
+  // Bungie signs in its current account silently, so explain how to switch.
+  const help = page.getByRole('button', {
+    name: 'About signing in with a different account',
+  });
+  // The small icon has a larger touch target that leaves the label alone.
+  const targets = await help.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const hit = (x: number, y: number) =>
+      document.elementFromPoint(x, y)?.closest('button')?.ariaLabel;
+    return {
+      right: hit(box.right + 10, box.top + box.height / 2),
+      below: hit(box.left + box.width / 2, box.bottom + 10),
+      label: hit(box.left - 7, box.top + box.height / 2),
+    };
+  });
+  expect(targets).toEqual({
+    right: 'About signing in with a different account',
+    below: 'About signing in with a different account',
+    label: 'Sign in with Bungie',
+  });
+  await help.hover();
+  await expect(page.getByRole('tooltip')).toContainText(
+    'sign out of Bungie.net first',
+  );
+  await page.mouse.move(900, 700);
   await page
     .getByRole('button', { name: 'Collapse side menu', exact: true })
     .click();
+  await expect(help).toHaveCount(0);
   await expect(page.locator('.login-notice')).toHaveCount(0);
   await expect(signIn.locator('svg')).toHaveCSS('color', 'rgb(168, 123, 22)');
   await expect(signIn).toHaveAttribute('title', notice);

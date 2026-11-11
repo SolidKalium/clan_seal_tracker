@@ -19,7 +19,8 @@ export class BungieTransport implements Transport {
   constructor(
     private key: string,
     private saveDiagnostic?: (diagnostic: RequestDiagnostic) => Promise<void>,
-    private authorization?: (path: string) => string,
+    // May renew an expired login before returning its token.
+    private authorization?: (path: string) => string | Promise<string>,
     private unauthorized?: () => void,
   ) {}
   private async failure(
@@ -83,7 +84,7 @@ export class BungieTransport implements Transport {
     return new ApiError(diagnostic.message, code, retrySeconds, diagnostic);
   }
   async api<T>(path: string, requestBody?: unknown): Promise<T> {
-    const token = this.authorization?.(path);
+    const token = await this.authorization?.(path);
     const url = `https://www.bungie.net/Platform${path}`;
     if (Date.now() < this.disabledUntil)
       throw await this.failure(
@@ -94,7 +95,7 @@ export class BungieTransport implements Transport {
       );
     if (token) {
       for (let attempt = 0; attempt < 2; attempt++) {
-        if (this.authorization?.(path) !== token)
+        if ((await this.authorization?.(path)) !== token)
           throw new ApiError('Login changed. Please retry.');
         let response: Response;
         try {

@@ -13,7 +13,7 @@ const defs: Definitions = JSON.parse(
   gunzipSync(readFileSync(snapshot)).toString('utf8'),
 );
 const catalog = compile(
-  { secret_key: 'coverage-test', group_id: 1 },
+  { api_key: 'coverage-test', group_id: 1 },
   readJsonc(
     readFileSync(new URL('../../pages.jsonc', import.meta.url), 'utf8'),
     'pages.jsonc',

@@ -9,14 +9,37 @@ const browserSession: SessionStorage = {
   setItem: (key, value) => window.sessionStorage.setItem(key, value),
   removeItem: (key) => window.sessionStorage.removeItem(key),
 };
+const browserLocal: SessionStorage = {
+  getItem: (key) => window.localStorage.getItem(key),
+  setItem: (key, value) => window.localStorage.setItem(key, value),
+  removeItem: (key) => window.localStorage.removeItem(key),
+};
 const SESSION_KEY = 'bungie-login:v1',
-  PENDING_KEY = 'bungie-login-pending:v1';
+  PENDING_KEY = 'bungie-login-pending:v1',
+  // Logins with a refresh token persist across tabs and restarts.
+  PERSISTENT_KEY = 'bungie-login-persistent:v1',
+  EXPIRED =
+    'Your login expired. Sign in again to access your private progression.';
 interface Token {
   accessToken: string;
   expiresAt: number;
   membershipId: string;
   clientId: string;
+  refreshToken?: string;
+  refreshExpiresAt?: number;
 }
+const validToken = (value: unknown): value is Token => {
+  const token = value as Token | null;
+  return (
+    !!token &&
+    typeof token.accessToken === 'string' &&
+    Number.isFinite(token.expiresAt) &&
+    /^\d+$/.test(token.membershipId) &&
+    (token.refreshToken === undefined ||
+      (typeof token.refreshToken === 'string' &&
+        Number.isFinite(token.refreshExpiresAt)))
+  );
+};
 interface Pending {
   state: string;
   createdAt: number;
@@ -45,26 +68,28 @@ export class PlayerLogin implements SelfAccess {
     private config: {
       apiKey: string;
       oauthClientId?: string;
+      oauthClientSecret?: string;
       oauthRedirectUri?: string;
     },
     private storage: SessionStorage = browserSession,
     private ended: (message: string) => void = () => {},
+    private persistent: SessionStorage = browserLocal,
   ) {
     this.transport = new BungieTransport(
       config.apiKey,
       undefined,
       (path) => this.authorization(path),
-      () =>
-        this.end(
-          'Your login expired. Sign in again to access your private progression.',
-        ),
+      () => this.end(EXPIRED),
     );
   }
   get configured() {
     return !!this.config.oauthClientId;
   }
+  /** When the login ends: the refresh token's expiry if there is one. */
   get expiresAt() {
-    return this.token?.expiresAt;
+    return this.token?.refreshToken
+      ? this.token.refreshExpiresAt
+      : this.token?.expiresAt;
   }
   private redirectUri() {
     return (
@@ -75,7 +100,7 @@ export class PlayerLogin implements SelfAccess {
   begin(): string {
     if (!this.config.oauthClientId)
       throw new Error(
-        'Login needs oauth_client_id in js/settings.json and a Public OAuth client registered with Bungie.',
+        'Login needs oauth_client_id in js/settings.json and an OAuth client registered with Bungie.',
       );
     const redirectUri = this.redirectUri();
     if (new URL(redirectUri).origin !== window.location.origin)
@@ -155,65 +180,32 @@ export class PlayerLogin implements SelfAccess {
       )
         throw new Error('Login configuration changed. Please sign in again.');
       this.end();
-      let response: Response;
       try {
-        response = await fetch(
-          'https://www.bungie.net/platform/app/oauth/token/',
-          {
-            method: 'POST',
-            cache: 'no-store',
-            credentials: 'omit',
-            signal: AbortSignal.timeout(25_000),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-              grant_type: 'authorization_code',
-              code,
-              client_id: this.config.oauthClientId,
-              redirect_uri: pending.redirectUri,
-            }),
-          },
+        this.save(
+          await this.requestToken({
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: pending.redirectUri,
+          }),
         );
-        const value = await response.json();
-        if (
-          !response.ok ||
-          typeof value.access_token !== 'string' ||
-          !value.access_token ||
-          !Number.isFinite(value.expires_in) ||
-          value.expires_in <= 0 ||
-          !/^\d+$/.test(value.membership_id) ||
-          value.token_type?.toLowerCase() !== 'bearer'
-        )
-          throw new Error();
-        this.token = {
-          accessToken: value.access_token,
-          expiresAt: Date.now() + value.expires_in * 1000,
-          membershipId: value.membership_id,
-          clientId: this.config.oauthClientId,
-        };
-        this.storage.setItem(SESSION_KEY, JSON.stringify(this.token));
       } catch {
         this.end();
         throw new Error(
-          'Bungie login could not finish. Check the Public client ID, redirect URL and browser origin, then sign in again.',
+          'Bungie login could not finish. Check the OAuth client ID, secret, redirect URL and browser origin, then sign in again.',
         );
       }
     } else {
-      try {
-        const saved = JSON.parse(
-          this.storage.getItem(SESSION_KEY) || 'null',
-        ) as Token | null;
-        if (
-          saved &&
-          saved.clientId === this.config.oauthClientId &&
-          typeof saved.accessToken === 'string' &&
-          /^\d+$/.test(saved.membershipId) &&
-          saved.expiresAt > Date.now()
-        )
-          this.token = saved;
-        else this.storage.removeItem(SESSION_KEY);
-      } catch {
-        this.end();
+      const saved = this.stored();
+      if (saved && saved.expiresAt > Date.now()) this.token = saved;
+      else if (
+        saved?.refreshToken &&
+        saved.refreshExpiresAt! > Date.now() &&
+        this.config.oauthClientSecret
+      ) {
+        this.token = saved;
+        if (!(await this.refresh())) this.token = undefined;
       }
+      if (!this.token) this.clearStored();
     }
     if (this.token) {
       try {
@@ -293,11 +285,12 @@ export class PlayerLogin implements SelfAccess {
             u.membershipId === user.membershipId,
         );
   }
-  private authorization(path: string): string {
+  private async authorization(path: string): Promise<string> {
+    if (this.token && this.token.expiresAt <= Date.now()) await this.refresh();
     if (!this.token || this.token.expiresAt <= Date.now()) {
-      this.end(
-        'Your login expired. Sign in again to access your private progression.',
-      );
+      if (this.token?.refreshToken && this.token.refreshExpiresAt! > Date.now())
+        throw new Error('Cannot reach Bungie to renew your login.');
+      this.end(EXPIRED);
       throw new Error('Login expired.');
     }
     const match =
@@ -340,12 +333,159 @@ export class PlayerLogin implements SelfAccess {
   end(message = '') {
     this.token = undefined;
     this.account = undefined;
-    try {
-      this.storage.removeItem(SESSION_KEY);
-    } catch {
-      /* Memory state still clears. */
-    }
+    this.clearStored();
     void this.store.clearCache();
     if (message) this.ended(message);
+  }
+  private clearStored() {
+    for (const [storage, key] of [
+      [this.storage, SESSION_KEY],
+      [this.persistent, PERSISTENT_KEY],
+    ] as const)
+      try {
+        storage.removeItem(key);
+      } catch {
+        /* Memory state still clears. */
+      }
+  }
+  /** The saved login for this client, from this tab or a persistent login. */
+  private stored(): Token | undefined {
+    for (const [storage, key] of [
+      [this.storage, SESSION_KEY],
+      [this.persistent, PERSISTENT_KEY],
+    ] as const)
+      try {
+        const value: unknown = JSON.parse(storage.getItem(key) || 'null');
+        if (validToken(value) && value.clientId === this.config.oauthClientId)
+          return value;
+      } catch {
+        /* Unreadable storage is ignored. */
+      }
+    return undefined;
+  }
+  private save(token: Token) {
+    this.token = token;
+    try {
+      if (token.refreshToken)
+        this.persistent.setItem(PERSISTENT_KEY, JSON.stringify(token));
+      else this.storage.setItem(SESSION_KEY, JSON.stringify(token));
+    } catch {
+      /* The login still works for this page. */
+    }
+  }
+  /** Exchanges a code or refresh token. Confidential clients send their secret. */
+  private async requestToken(
+    params: Record<string, string>,
+    previous?: Token,
+  ): Promise<Token> {
+    const clientId = this.config.oauthClientId!;
+    const response = await fetch(
+      'https://www.bungie.net/platform/app/oauth/token/',
+      {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'omit',
+        signal: AbortSignal.timeout(25_000),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          ...params,
+          client_id: clientId,
+          ...(this.config.oauthClientSecret
+            ? { client_secret: this.config.oauthClientSecret }
+            : {}),
+        }),
+      },
+    );
+    let value;
+    try {
+      value = await response.json();
+    } catch {
+      value = undefined;
+    }
+    if (
+      !response.ok ||
+      typeof value?.access_token !== 'string' ||
+      !value.access_token ||
+      !Number.isFinite(value.expires_in) ||
+      value.expires_in <= 0 ||
+      !/^\d+$/.test(value.membership_id) ||
+      value.token_type?.toLowerCase() !== 'bearer' ||
+      (previous && value.membership_id !== previous.membershipId)
+    )
+      throw new TokenRejected(response.status);
+    const refreshed =
+      typeof value.refresh_token === 'string' &&
+      value.refresh_token &&
+      Number.isFinite(value.refresh_expires_in) &&
+      value.refresh_expires_in > 0;
+    return {
+      accessToken: value.access_token,
+      expiresAt: Date.now() + value.expires_in * 1000,
+      membershipId: value.membership_id,
+      clientId,
+      // Keep the previous refresh token if Bungie does not rotate it.
+      ...(refreshed
+        ? {
+            refreshToken: value.refresh_token,
+            refreshExpiresAt: Date.now() + value.refresh_expires_in * 1000,
+          }
+        : previous?.refreshToken
+          ? {
+              refreshToken: previous.refreshToken,
+              refreshExpiresAt: previous.refreshExpiresAt,
+            }
+          : {}),
+    };
+  }
+  private refreshing?: Promise<boolean>;
+  /**
+   * Renews an expired access token. Concurrent callers share one request. A
+   * network failure keeps the login for a later retry; a rejection ends it.
+   */
+  refresh(): Promise<boolean> {
+    this.refreshing ??= this.renew().finally(() => {
+      this.refreshing = undefined;
+    });
+    return this.refreshing;
+  }
+  private async renew(): Promise<boolean> {
+    const token = this.token;
+    if (!token?.refreshToken || !this.config.oauthClientSecret) return false;
+    // Another tab may have renewed already and rotated the refresh token.
+    const latest = this.stored();
+    if (
+      latest &&
+      latest.membershipId === token.membershipId &&
+      latest.expiresAt > Date.now()
+    ) {
+      this.token = latest;
+      return true;
+    }
+    if (token.refreshExpiresAt! <= Date.now()) {
+      this.end(EXPIRED);
+      return false;
+    }
+    try {
+      const renewed = await this.requestToken(
+        {
+          grant_type: 'refresh_token',
+          refresh_token: (latest ?? token).refreshToken!,
+        },
+        latest ?? token,
+      );
+      if (this.token !== token) return false;
+      this.save(renewed);
+      return true;
+    } catch (error) {
+      if (this.token === token && error instanceof TokenRejected)
+        this.end(EXPIRED);
+      return false;
+    }
+  }
+}
+/** Bungie answered a token request, but refused it. */
+class TokenRejected extends Error {
+  constructor(readonly status: number) {
+    super('Bungie rejected the token request.');
   }
 }

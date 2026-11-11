@@ -28,7 +28,7 @@ it('compiles strict JSON with only intentionally public settings', () => {
   }));
   const result = compile(
     {
-      secret_key: 'browser-key',
+      api_key: 'browser-key',
       group_id: 123,
       private_note: 'never export',
       override_profile_triumph_progress: { x: 1 },
@@ -45,7 +45,7 @@ it('compiles strict JSON with only intentionally public settings', () => {
 });
 
 it('validates catalog IDs/hashes and allows only supported page and rule fields', () => {
-  const settings = { secret_key: 'browser-key', group_id: 1 };
+  const settings = { api_key: 'browser-key', group_id: 1 };
   const page = {
     id: 'new_raid',
     name: 'New raid',
@@ -78,7 +78,7 @@ it('loads ten raids from the independent browser catalog', () => {
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'js/pages.jsonc',
   );
-  const result = compile({ secret_key: 'browser-key', group_id: 1 }, pages);
+  const result = compile({ api_key: 'browser-key', group_id: 1 }, pages);
   expect(
     result.catalog.filter((p) => p.category === 'Raid seals' && p.sealNodeHash),
   ).toHaveLength(10);
@@ -111,10 +111,7 @@ it('includes expansion and seasonal pages through the newer manifest content', (
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'js/pages.jsonc',
   );
-  const { catalog } = compile(
-    { secret_key: 'browser-key', group_id: 1 },
-    pages,
-  );
+  const { catalog } = compile({ api_key: 'browser-key', group_id: 1 }, pages);
   expect(catalog.filter((p) => p.category === 'Expansions')).toHaveLength(9);
   expect(
     catalog.filter((p) => p.category === 'Seasons & Episodes'),
@@ -143,7 +140,7 @@ it('includes expansion and seasonal pages through the newer manifest content', (
 });
 
 it('preserves canonical season numbers independently of catalog position', () => {
-  const settings = { secret_key: 'browser-key', group_id: 1 };
+  const settings = { api_key: 'browser-key', group_id: 1 };
   const pages = readJsonc(
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'js/pages.jsonc',
@@ -169,7 +166,7 @@ it('groups standalone destinations and events without duplicating expansion dest
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   expect(catalog.filter((p) => p.category === 'Destinations')).toHaveLength(7);
   expect(
     catalog.filter((p) => p.category === 'Events' && !p.parentPageId),
@@ -182,7 +179,7 @@ it('groups standalone destinations and events without duplicating expansion dest
   expect(
     catalog.find((p) => p.id === 'festival_of_the_lost_2021').unavailableReason,
   ).toContain('removed');
-  const settings = { secret_key: 'key', group_id: 1 };
+  const settings = { api_key: 'key', group_id: 1 };
   expect(() =>
     compile(settings, [
       { id: 'test', name: 'Test', category: 'Expansions', records: {} },
@@ -206,7 +203,7 @@ it('keeps historical event editions attached to their event page', () => {
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   expect(
     catalog.find((p) => p.id === 'guardian_games_2022_medals'),
   ).toMatchObject({ parentPageId: 'guardian_games', tabLabel: '2022 medals' });
@@ -214,7 +211,7 @@ it('keeps historical event editions attached to their event page', () => {
     catalog.find((p) => p.id === 'festival_of_the_lost_2022').otherNodeHashes,
   ).toEqual(['2330977699']);
   expect(() =>
-    compile({ secret_key: 'key', group_id: 1 }, [
+    compile({ api_key: 'key', group_id: 1 }, [
       {
         id: 'orphan',
         name: 'Orphan',
@@ -231,7 +228,7 @@ it('groups historical activity seals and Leviathan content under their parent pa
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   expect(
     catalog.filter((p) => p.parentPageId === 'strikes').map((p) => p.id),
   ).toEqual(['conqueror_12', 'conqueror_11', 'conqueror_10', 'strikes_legacy']);
@@ -253,7 +250,7 @@ it('includes dungeon seals, newer collections, and exotic mission levels with th
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   expect(catalog.filter((p) => p.category === 'Dungeons')).toHaveLength(11);
   expect(
     catalog.filter((p) => p.category === 'Exotic missions' && !p.parentPageId),
@@ -276,7 +273,7 @@ it('includes dungeon seals, newer collections, and exotic mission levels with th
   );
   for (const category of ['Dungeons', 'Exotic missions']) {
     expect(
-      compile({ secret_key: 'key', group_id: 1 }, [
+      compile({ api_key: 'key', group_id: 1 }, [
         {
           id: 'test',
           name: 'Test',
@@ -294,7 +291,7 @@ it('groups ranks and chronological checklists alongside the other Other pages', 
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   const other = catalog.filter((p) => p.category === 'Other');
   expect(other.filter((p) => !p.parentPageId).map((p) => p.id)).toEqual([
     'lifetime',
@@ -329,7 +326,7 @@ it('uses current collection and pattern roots for the five additional Other page
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   const roots = {
     catalysts: ['2744330515'],
     patterns: ['127506319', '3289524180', '1464475380'],
@@ -344,7 +341,7 @@ it('uses current collection and pattern roots for the five additional Other page
       otherNodeHashes,
     });
   expect(() =>
-    compile({ secret_key: 'key', group_id: 1 }, [
+    compile({ api_key: 'key', group_id: 1 }, [
       { id: 'bad', name: 'Bad', category: 'Other', groupByNode: 'true' },
     ]),
   ).toThrow('node grouping');
@@ -355,7 +352,7 @@ it('groups all Moments editions under Other seals and puts miscellaneous badges 
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   expect(catalog.filter((p) => p.category === 'Other badges')).toHaveLength(7);
   expect(
     catalog
@@ -390,7 +387,7 @@ it('places Lifetime first in Other with the complete current tree and section ta
     readFileSync(new URL('../pages.jsonc', import.meta.url), 'utf8'),
     'catalog',
   );
-  const { catalog } = compile({ secret_key: 'key', group_id: 1 }, pages);
+  const { catalog } = compile({ api_key: 'key', group_id: 1 }, pages);
   expect(
     catalog.find((p) => p.category === 'Other' && !p.parentPageId),
   ).toMatchObject({
@@ -411,14 +408,14 @@ it('places Lifetime first in Other with the complete current tree and section ta
   ]);
 });
 
-it('exports only public OAuth configuration, never a client secret', () => {
+it('exports OAuth configuration, including a confidential client secret for token renewal', () => {
   const pages = [{ id: 'test', name: 'Test', sealNodeHash: 1 }];
   const settings = {
-    secret_key: 'key',
+    api_key: 'key',
     group_id: 1,
     oauth_client_id: 36319,
     oauth_redirect_uri: 'https://localhost:5173/js/',
-    oauth_client_secret: 'never-export',
+    oauth_client_secret: 'client-secret',
   };
   expect(compile(settings, pages).config).toEqual({
     apiKey: 'key',
@@ -426,13 +423,20 @@ it('exports only public OAuth configuration, never a client secret', () => {
     language: 'en',
     oauthClientId: '36319',
     oauthRedirectUri: 'https://localhost:5173/js/',
+    oauthClientSecret: 'client-secret',
   });
-  expect(JSON.stringify(compile(settings, pages))).not.toContain(
-    'never-export',
-  );
+  // An empty secret, as in settings.example.json, means a public client.
+  expect(
+    compile({ ...settings, oauth_client_secret: '' }, pages).config,
+  ).not.toHaveProperty('oauthClientSecret');
   expect(() =>
     compile({ ...settings, oauth_client_id: 'invalid' }, pages),
   ).toThrow('numeric');
+  // The API key setting was renamed from the PHP edition's secret_key.
+  const { api_key: key, ...old } = settings;
+  expect(() => compile({ ...old, secret_key: key }, pages)).toThrow(
+    'rename secret_key to api_key',
+  );
   expect(() =>
     compile(
       {

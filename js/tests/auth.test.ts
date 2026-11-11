@@ -278,3 +278,171 @@ it('clears private data when the access token expires', async () => {
   expect(login.account).toBeUndefined();
   expect(items.size).toBe(0);
 });
+
+// A confidential client also receives a refresh token and renews expired logins.
+const confidential = { ...config, oauthClientSecret: 'client-secret' };
+function persistentStore() {
+  const saved = new Map<string, string>();
+  return {
+    saved,
+    getItem: (key: string) => saved.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      saved.set(key, value);
+    },
+    removeItem: (key: string) => {
+      saved.delete(key);
+    },
+  };
+}
+function renewingFetcher(refresh: () => Response | Promise<Response>) {
+  const base = fetcher();
+  return vi.fn(async (url: string, options?: RequestInit) => {
+    if (url.endsWith('/oauth/token/')) {
+      const body = Object.fromEntries(options!.body as URLSearchParams);
+      if (body.grant_type === 'refresh_token') return refresh();
+      return new Response(
+        JSON.stringify({
+          access_token: 'first-token',
+          token_type: 'Bearer',
+          expires_in: 3600,
+          refresh_token: 'refresh-1',
+          refresh_expires_in: 7776000,
+          membership_id: '7',
+        }),
+      );
+    }
+    return base(url, options);
+  });
+}
+const renewed = () =>
+  new Response(
+    JSON.stringify({
+      access_token: 'renewed-token',
+      token_type: 'Bearer',
+      expires_in: 3600,
+      refresh_token: 'refresh-2',
+      refresh_expires_in: 7776000,
+      membership_id: '7',
+    }),
+  );
+async function confidentialLogin(
+  persistent: ReturnType<typeof persistentStore>,
+) {
+  const login = new PlayerLogin(confidential, storage, () => {}, persistent);
+  const url = new URL(login.begin());
+  location.href = `${config.oauthRedirectUri}?code=secret-code&state=${url.searchParams.get('state')}`;
+  await login.initialize();
+  return login;
+}
+const tokenRequests = (fetch: ReturnType<typeof vi.fn>) =>
+  fetch.mock.calls
+    .filter(([url]) => String(url).endsWith('/oauth/token/'))
+    .map(([, options]) =>
+      Object.fromEntries((options as RequestInit).body as URLSearchParams),
+    );
+
+it('sends the client secret and keeps a confidential login with its refresh token across sessions', async () => {
+  const fetch = renewingFetcher(renewed);
+  vi.stubGlobal('fetch', fetch);
+  const persistent = persistentStore();
+  const login = await confidentialLogin(persistent);
+  expect(login.account?.name).toBe('Player');
+  expect(tokenRequests(fetch)[0]).toMatchObject({
+    grant_type: 'authorization_code',
+    client_secret: 'client-secret',
+  });
+  const saved = JSON.parse(persistent.saved.get('bungie-login-persistent:v1')!);
+  expect(saved.refreshToken).toBe('refresh-1');
+  expect(items.has('bungie-login:v1')).toBe(false);
+  // The login ends with the refresh token, not the hour-long access token.
+  expect(login.expiresAt).toBe(saved.refreshExpiresAt);
+});
+
+it('renews an expired access token on restore and before a request, sharing one renewal', async () => {
+  const fetch = renewingFetcher(renewed);
+  vi.stubGlobal('fetch', fetch);
+  const persistent = persistentStore();
+  const first = await confidentialLogin(persistent);
+  const later = Date.now() + 2 * 3600_000;
+  vi.spyOn(Date, 'now').mockReturnValue(later);
+  // A new tab restores the persistent login and renews it first.
+  location.href = 'https://localhost:5173/js/#/members';
+  const restored = new PlayerLogin(confidential, storage, () => {}, persistent);
+  await restored.initialize();
+  expect(restored.account?.name).toBe('Player');
+  expect(tokenRequests(fetch).at(-1)).toEqual({
+    grant_type: 'refresh_token',
+    refresh_token: 'refresh-1',
+    client_id: '36319',
+    client_secret: 'client-secret',
+  });
+  expect(
+    JSON.parse(persistent.saved.get('bungie-login-persistent:v1')!)
+      .refreshToken,
+  ).toBe('refresh-2');
+  // The first tab adopts that renewal instead of reusing the rotated token.
+  const before = tokenRequests(fetch).length;
+  await Promise.all([
+    first.api('/Destiny2/3/Profile/123/?components=900'),
+    first.api('/Destiny2/3/Profile/123/?components=100'),
+  ]);
+  expect(tokenRequests(fetch).length).toBe(before);
+  const bearer = fetch.mock.calls
+    .map(
+      ([, options]) =>
+        (options?.headers as Record<string, string>)?.Authorization,
+    )
+    .filter(Boolean);
+  expect(bearer.at(-1)).toBe('Bearer renewed-token');
+});
+
+it('shares one renewal between simultaneous requests', async () => {
+  let release!: () => void;
+  const fetch = renewingFetcher(
+    () =>
+      new Promise<Response>((resolve) => (release = () => resolve(renewed()))),
+  );
+  vi.stubGlobal('fetch', fetch);
+  const login = await confidentialLogin(persistentStore());
+  vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 2 * 3600_000);
+  const requests = [
+    login.api('/Destiny2/3/Profile/123/?components=900'),
+    login.api('/Destiny2/3/Profile/123/?components=100'),
+  ];
+  await vi.waitFor(() => expect(release).toBeTypeOf('function'));
+  release();
+  await Promise.all(requests);
+  expect(
+    tokenRequests(fetch).filter((r) => r.grant_type === 'refresh_token'),
+  ).toHaveLength(1);
+});
+
+it('keeps the login through a network failure but ends it when Bungie rejects the renewal', async () => {
+  let offline = true;
+  const fetch = renewingFetcher(() => {
+    if (offline) throw new TypeError('Failed to fetch');
+    return new Response(JSON.stringify({ error: 'invalid_grant' }), {
+      status: 400,
+    });
+  });
+  vi.stubGlobal('fetch', fetch);
+  const persistent = persistentStore();
+  const ended = vi.fn();
+  const login = new PlayerLogin(confidential, storage, ended, persistent);
+  const url = new URL(login.begin());
+  location.href = `${config.oauthRedirectUri}?code=secret-code&state=${url.searchParams.get('state')}`;
+  await login.initialize();
+  vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 2 * 3600_000);
+  await expect(
+    login.api('/Destiny2/3/Profile/123/?components=900'),
+  ).rejects.toThrow('renew');
+  expect(login.account).toBeDefined();
+  expect(persistent.saved.size).toBe(1);
+  offline = false;
+  await expect(
+    login.api('/Destiny2/3/Profile/123/?components=900'),
+  ).rejects.toThrow('expired');
+  expect(ended).toHaveBeenCalledWith(expect.stringContaining('expired'));
+  expect(login.account).toBeUndefined();
+  expect(persistent.saved.size).toBe(0);
+});
