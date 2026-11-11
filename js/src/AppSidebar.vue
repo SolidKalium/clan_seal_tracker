@@ -83,8 +83,14 @@ function toggleSection(category: string) {
         v-if="railCollapsed && playerList === 'combined'"
         class="sidebar-identity-plus"
         aria-hidden="true"
-        >+</span
-      >
+        ><svg viewBox="0 0 18 18">
+          <path
+            d="M9 2.5v13M2.5 9h13"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          /></svg
+      ></span>
       <div class="sidebar-clan-identity">
         <ClanEmblem
           v-if="playerList !== 'friends'"
