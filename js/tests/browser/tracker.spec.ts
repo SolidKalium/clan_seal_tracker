@@ -861,36 +861,30 @@ test('compact header status and persistent collapsible clan rail', async ({
     page.getByRole('button', { name: 'Expand side menu', exact: true }),
   ).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
+  // Phones replace the rail with a drawer opened from the top bar.
+  await expect(page.locator('.sidebar')).toBeHidden();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
   await page.screenshot({
-    path: 'test-results/mobile-collapsed-sidebar.png',
+    path: 'test-results/mobile-closed-menu.png',
     fullPage: true,
   });
-  await page
-    .getByRole('button', { name: 'Expand side menu', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Open menu', exact: true }).click();
   await expect(page.locator('.seal-nav').first()).toBeVisible();
-  // Each category stays compact as new categories are added to the catalog.
-  for (const toggle of await page.locator('.section-toggle').all())
-    expect((await toggle.boundingBox())!.height).toBeLessThanOrEqual(24);
-  // The new player-list control has its own space; keep the navigation itself compact.
-  const listControlHeight = await page
-    .locator('.player-list-control')
-    .evaluate(
-      (e) =>
-        e.getBoundingClientRect().height +
-        parseFloat(getComputedStyle(e).marginTop) +
-        parseFloat(getComputedStyle(e).marginBottom),
-    );
-  expect(
-    (await page
-      .locator('.sidebar')
-      .evaluate((e) => e.getBoundingClientRect().height)) - listControlHeight,
-  ).toBeLessThan(page.viewportSize()!.height / 2);
+  await expect(page.locator('.menu-close')).toBeFocused();
+  // The drawer fits the window and scrolls on its own.
+  const drawer = (await page.locator('.sidebar').boundingBox())!;
+  expect(drawer.y).toBe(0);
+  expect(drawer.height).toBeLessThanOrEqual(844);
+  await page.screenshot({ path: 'test-results/mobile-open-menu.png' });
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.sidebar')).toBeHidden();
+  await expect(
+    page.getByRole('button', { name: 'Open menu', exact: true }),
+  ).toBeFocused();
 });
 
 test('status stays anchored during refresh and the collapsed clan name uses the rail', async ({
@@ -6175,36 +6169,39 @@ test('player list selector keeps selected clan, friends, and own clan plus frien
   );
   await page.goto('#/seal/last_wish');
   await ready(page);
-  await expect(
-    page.getByLabel('Players to show').locator('option[value="friends"]'),
-  ).toHaveJSProperty('disabled', true);
-  for (const label of [
-    'Players to show',
-    'Filter progress',
-    'Sort guardians',
-  ]) {
-    await expect(page.getByLabel(label)).toHaveCSS(
-      'border-right-width',
-      '10px',
-    );
-    expect(
-      await page
-        .getByLabel(label)
-        .evaluate(
-          (element) =>
-            element.getBoundingClientRect().width /
-            element.parentElement!.getBoundingClientRect().width,
-        ),
-    ).toBeGreaterThan(0.98);
-  }
-  await page
-    .locator('.player-list-control')
-    .screenshot({ path: 'test-results/player-list-caret.png' });
+  // Only one list exists while signed out, so the selector is not shown.
+  await expect(page.getByLabel('Players shown')).toHaveCount(0);
+  const caretCheck = async (labels: string[]) => {
+    for (const label of labels) {
+      await expect(page.getByLabel(label)).toHaveCSS(
+        'border-right-width',
+        '10px',
+      );
+      expect(
+        await page
+          .getByLabel(label)
+          .evaluate(
+            (element) =>
+              element.getBoundingClientRect().width /
+              element.parentElement!.getBoundingClientRect().width,
+          ),
+      ).toBeGreaterThan(0.98);
+    }
+  };
+  await caretCheck(['Filter progress', 'Sort guardians']);
   await page
     .locator('.table-tools')
     .screenshot({ path: 'test-results/table-select-carets.png' });
   await completeLogin(page);
   await ready(page);
+  await caretCheck(['Players shown']);
+  await page
+    .locator('.player-list-control')
+    .screenshot({ path: 'test-results/player-list-caret.png' });
+  // The selector follows the clan and login controls.
+  const login = (await page.locator('.login-controls').boundingBox())!;
+  const list = (await page.locator('.player-list-control').boundingBox())!;
+  expect(list.y).toBeGreaterThanOrEqual(login.y + login.height);
   await page.getByRole('button', { name: 'Choose clan' }).click();
   await page.getByLabel('Clan name or ID').fill('777');
   await page.getByRole('button', { name: 'Search', exact: true }).click();
@@ -6222,7 +6219,7 @@ test('player list selector keeps selected clan, friends, and own clan plus frien
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await ready(page);
-  await expect(page.getByLabel('Players to show')).toHaveValue('friends');
+  await expect(page.getByLabel('Players shown')).toHaveValue('friends');
   await expect(page.locator('tbody tr')).toHaveCount(2);
   await expect(page.locator('tbody')).toContainText('New Friend');
   await expect(page.locator('tbody')).not.toContainText('Outsider');
@@ -6279,8 +6276,8 @@ test('player list selector keeps selected clan, friends, and own clan plus frien
   );
   await page.reload();
   await ready(page);
-  await expect(page.getByLabel('Players to show')).toHaveValue('friends');
-  await page.getByLabel('Players to show').selectOption('combined');
+  await expect(page.getByLabel('Players shown')).toHaveValue('friends');
+  await page.getByLabel('Players shown').selectOption('combined');
   await ready(page);
   await expect(page.locator('tbody tr')).toHaveCount(4);
   await expect(page.locator('tbody')).toContainText('Banshee');
@@ -6391,19 +6388,16 @@ test('player list selector keeps selected clan, friends, and own clan plus frien
   await expect(page.getByRole('tooltip').locator('.clan-rank')).toHaveText(
     'Clan Admin',
   );
-  await page.getByLabel('Players to show').selectOption('clan');
+  await page.getByLabel('Players shown').selectOption('clan');
   await ready(page);
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await expect(page.locator('tbody')).toContainText('Outsider');
-  await page.getByLabel('Players to show').selectOption('friends');
+  await page.getByLabel('Players shown').selectOption('friends');
   await ready(page);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await ready(page);
-  await expect(page.getByLabel('Players to show')).toHaveValue('clan');
+  await expect(page.getByLabel('Players shown')).toHaveCount(0);
   await expect(page.locator('tbody')).toContainText('Outsider');
-  await expect(
-    page.getByLabel('Players to show').locator('option[value="combined"]'),
-  ).toHaveJSProperty('disabled', true);
 });
 
 test('player retry and sync icons rotate without a wait cursor or disabled fade', async ({
@@ -6562,20 +6556,35 @@ test('the table is one Tab stop navigated with the arrow keys', async ({
   );
 });
 
-test('the sidebar toggle stays reachable on phones', async ({ page }) => {
+test('the phone menu opens from the top bar or a floating button and closes on navigation', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 375, height: 700 });
   await setup(page, { offline: false, calls: 0 });
-  await page.goto('#/seal/last_wish');
+  await page.goto('');
   await ready(page);
-  const toggle = page.getByRole('button', { name: 'Collapse side menu' });
-  await toggle.click();
-  await expect(
-    page.getByRole('button', { name: 'Expand side menu' }),
-  ).toBeVisible();
-  await page.getByRole('button', { name: 'Expand side menu' }).click();
-  const box = (await toggle.boundingBox())!;
-  const select = (await page.getByLabel('Players to show').boundingBox())!;
-  expect(select.x + select.width).toBeLessThanOrEqual(box.x);
+  const sidebar = page.locator('.sidebar');
+  const open = page.getByRole('button', { name: 'Open menu', exact: true });
+  await expect(sidebar).toBeHidden();
+  await open.click();
+  await expect(sidebar).toBeVisible();
+  await expect(open).toHaveCount(0);
+  // The page behind the drawer is inert, and tapping it closes the drawer.
+  await page.locator('.menu-backdrop').click({ position: { x: 360, y: 400 } });
+  await expect(sidebar).toBeHidden();
+  await open.click();
+  await page.locator('.seal-nav a').first().click();
+  await expect(page).toHaveURL(/#\/(seal|raid|triumphs)\//);
+  await expect(sidebar).toBeHidden();
+  // Once the header scrolls away, a floating button opens the menu.
+  const floating = page.locator('.menu-toggle-floating');
+  await expect(floating).toBeHidden();
+  await page.goto('');
+  await ready(page);
+  await page.mouse.wheel(0, 900);
+  await expect(floating).toBeVisible();
+  await floating.click();
+  await expect(sidebar).toBeVisible();
 });
 
 test('every sidebar section stays reachable partway down a long page', async ({

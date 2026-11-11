@@ -716,3 +716,9 @@ The sidebar is sticky and capped at the window height below the header, scrollin
 
 On phones the open sidebar's Players select leaves room for the collapse toggle, which the select previously covered.
 
+### Menu button and phone drawer — 2026-11-10
+
+The sidebar toggle is a menu button at the start of the top bar. On wider screens it collapses the rail (a saved preference); at 700 px and below it opens the sidebar as a drawer instead, with no rail or stacked sidebar. The drawer closes on navigation, Esc, its close button, or a tap outside; the page behind it is inert, and focus moves into it and back to the menu button. When the header scrolls away, a floating copy of the button appears, straddling the rail's edge (or as a tab on the screen's left edge on phones), so no reveal-on-scroll header is needed.
+
+The sticky sidebar's height grows into the header's space as the header scrolls away (`--header-scrolled`), so no gap is left below it. The Players selector is labelled "Players shown", follows the clan and login controls, and is hidden while signed out, when only the selected clan can be shown.
+

@@ -66,6 +66,45 @@ body {
   background: #152d29;
   color: #f4f5eb;
 }
+.topbar-start {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+/* Collapses the rail on wider screens and opens the drawer on phones. A
+   floating copy appears once the header scrolls away. */
+.menu-toggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #456359;
+  border-radius: 6px;
+  background: #213f37;
+  color: #e8efe1;
+}
+.menu-toggle:hover {
+  background: #304f43;
+}
+.menu-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+/* Straddles the rail's edge, so it covers little of the page. */
+.menu-toggle-floating {
+  position: fixed;
+  z-index: 30;
+  top: 10px;
+  left: calc(var(--rail-width) - 17px);
+  box-shadow: 0 2px 8px rgb(21 45 41 / 25%);
+}
+/* The collapsed rail is narrow; keep the button clear of its emblem. */
+.sidebar-collapsed .menu-toggle-floating {
+  left: calc(var(--rail-width) - 6px);
+}
 .brand {
   display: flex;
   align-items: center;
@@ -195,8 +234,12 @@ body {
   display: flex;
   flex-direction: column;
   /* Sticky and never taller than the window, so every section stays reachable. */
-  min-height: calc(100vh - var(--header-height, 64px));
-  max-height: calc(100vh - var(--header-height, 64px));
+  min-height: calc(
+    100vh - var(--header-height, 64px) + var(--header-scrolled, 0px)
+  );
+  max-height: calc(
+    100vh - var(--header-height, 64px) + var(--header-scrolled, 0px)
+  );
   overflow-y: auto;
   scrollbar-width: thin;
   padding: 18px 24px 22px;
@@ -212,33 +255,6 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-}
-.sidebar-toggle {
-  display: grid;
-  place-items: center;
-  align-self: flex-end;
-  width: 26px;
-  height: 26px;
-  padding: 4px;
-  margin: 0 -5px 6px 0;
-  border: 1px solid #d2ddcb;
-  border-radius: 4px;
-  background: transparent;
-  color: #647b5d;
-}
-.sidebar-toggle:hover {
-  background: #dfe8d7;
-}
-.sidebar-toggle svg {
-  width: 16px;
-  height: 16px;
-}
-.sidebar-toggle .reversed {
-  transform: rotate(180deg);
-}
-.sidebar-collapsed .sidebar-toggle {
-  align-self: center;
-  margin: 0 0 18px;
 }
 main {
   min-width: 0;
@@ -328,52 +344,59 @@ main > .page-heading:first-child {
   .shell {
     display: block;
   }
-  .shell.sidebar-collapsed {
-    --rail-width: 58px;
-    display: grid;
-  }
   .shell::before {
     display: none;
   }
-  .shell.sidebar-collapsed::before {
-    display: block;
+  /* No rail on phones: a tab attached to the screen's left edge. */
+  .menu-toggle-floating {
+    left: 0;
+    width: 30px;
+    border-left: 0;
+    border-radius: 0 6px 6px 0;
   }
   .sidebar {
-    position: relative;
-    display: block;
+    position: fixed;
+    inset: 0 auto 0 0;
+    /* Undo the rail's start alignment, which also applies to fixed boxes. */
+    align-self: stretch;
+    z-index: 40;
+    width: min(300px, 86vw);
     min-height: 0;
     max-height: none;
-    overflow: visible;
-    padding: 18px 20px;
     background: #edf1e8;
-    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    box-shadow: 4px 0 18px rgb(21 45 41 / 18%);
+    overscroll-behavior: contain;
+    transform: translateX(-100%);
+    visibility: hidden;
+    /* Hide only after sliding out; show at once so focus can move in. */
+    transition:
+      transform 0.2s ease,
+      visibility 0s linear 0.2s;
   }
-  .sidebar-collapsed .sidebar {
-    position: sticky;
-    top: 0;
-    min-height: calc(100vh - var(--header-height, 64px));
-    padding: 12px 7px;
-    background: transparent;
+  .sidebar.is-open {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.2s ease;
   }
-  .sidebar-toggle {
-    position: absolute;
-    right: 17px;
-    top: 12px;
-    margin: 0;
+  .menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: rgb(21 45 41 / 35%);
   }
-  .sidebar-collapsed .sidebar-toggle {
-    position: static;
-    margin: 0 auto 16px;
-  }
-  .sidebar-content > .small {
-    display: none;
+  .menu-close {
+    align-self: flex-end;
+    width: 30px;
+    height: 30px;
+    margin: -6px -8px 4px 0;
+    border: 0;
+    background: none;
+    font-size: 24px;
+    line-height: 1;
   }
   main {
     padding: 12px 18px 0;
-  }
-  .sidebar-collapsed main {
-    padding-left: 12px;
-    padding-right: 12px;
   }
 }
 .status-dot {
@@ -974,39 +997,7 @@ footer {
   }
 }
 @media (max-width: 700px) {
-  .clan-emblem,
-  .sidebar > .eyebrow,
-  .sidebar > .small,
-  .sidebar-bottom {
-    display: none;
-  }
-  .sidebar h2 {
-    font-size: 18px;
-    margin: 0 0 12px;
-  }
-  .nav-home {
-    display: inline-block;
-    margin: 0 10px 10px 0;
-    padding: 6px 10px;
-    font-size: 12px;
-  }
-  .nav-home span {
-    display: none;
-  }
-  .seal-nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 5px;
-    margin: 0 -4px;
-    padding-bottom: 2px;
-  }
-  .seal-nav a {
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding: 9px;
-    font-size: 10px;
-  }
-  .seal-nav a > span:last-child {
+  .clan-emblem:not(.sidebar-clan-icon) {
     display: none;
   }
   .page-heading {
@@ -1471,20 +1462,6 @@ tbody tr:focus-within > td {
 .page-heading {
   padding-top: 20px;
 }
-@media (max-width: 700px) {
-  .sidebar-collapsed .clan-name {
-    margin: 22px auto 0;
-    font-size: 16px;
-  }
-  .sidebar-collapsed .clan-emblem {
-    width: 40px;
-    font-size: 52px;
-  }
-  .sidebar-collapsed .clan-emblem span {
-    left: 13px;
-    top: 15px;
-  }
-}
 
 .sync-legend {
   list-style: none;
@@ -1521,14 +1498,6 @@ tbody tr:focus-within > td {
 }
 .sidebar-collapsed .clan-name-short {
   font-size: 36px;
-}
-@media (max-width: 700px) {
-  .sidebar-collapsed .clan-name {
-    font-size: 23px;
-  }
-  .sidebar-collapsed .clan-name-short {
-    font-size: 29px;
-  }
 }
 
 /* Focus belongs inside the visible control, including its icon/caret padding. */
@@ -1887,21 +1856,6 @@ tbody tr:focus-within > td {
 }
 .section-toggle svg.expanded {
   transform: rotate(90deg);
-}
-@media (max-width: 700px) {
-  .sidebar-section + .sidebar-section {
-    margin-top: 0;
-  }
-  .section-toggle {
-    padding: 5px 0;
-    margin-bottom: 0;
-    font-size: 9px;
-    letter-spacing: 1.3px;
-  }
-  .section-toggle svg {
-    width: 12px;
-    height: 12px;
-  }
 }
 .tooltip-note {
   margin: 0;
@@ -2352,27 +2306,6 @@ tbody tr:focus-within > td.commendation-section {
 .sidebar-actions {
   display: contents;
 }
-@media (max-width: 700px) {
-  .shell:not(.sidebar-collapsed) .sidebar-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 4px 16px;
-    margin-bottom: 13px;
-  }
-  .shell:not(.sidebar-collapsed) .sidebar-actions .clan-picker-button,
-  .shell:not(.sidebar-collapsed) .sidebar-actions .login-controls {
-    margin: 0;
-  }
-  .shell:not(.sidebar-collapsed) .login-controls {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-  }
-  .shell:not(.sidebar-collapsed) .login-name {
-    max-width: 140px;
-  }
-}
 
 .login-name-code {
   font-size: 0.92em;
@@ -2510,27 +2443,6 @@ tbody tr:focus-within > td.commendation-section {
 }
 @media (max-width: 700px) {
   /* Leave room for the sidebar toggle, which sits in the top-right corner. */
-  .player-list-control {
-    margin-right: 38px;
-  }
-}
-@media (max-width: 700px) {
-  .shell:not(.sidebar-collapsed) .sidebar-identity-icons {
-    gap: 0;
-    margin-bottom: 8px;
-  }
-  .shell:not(.sidebar-collapsed) .sidebar-identity-name > .eyebrow {
-    display: none;
-  }
-  .shell:not(.sidebar-collapsed) .sidebar-clan-identity > .clan-emblem,
-  .shell:not(.sidebar-collapsed) .sidebar-identity-icons > .sidebar-friend-icon,
-  .shell:not(.sidebar-collapsed) .sidebar-identity-plus {
-    display: none;
-  }
-  .sidebar-collapsed .sidebar-friend-icon {
-    width: 40px;
-    height: 40px;
-  }
 }
 
 .sidebar-collapsed .friend-list-label {

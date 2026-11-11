@@ -37,6 +37,8 @@ Deferred polish and interaction design; these are not for immediate implementati
 ### Planning Usability
 - [ ] Allow pinning guardians to the top?
 - [ ] Something to "pull forward" all columns that someone is missing. Might need to break the top-level table headers
+- [ ] Indicate online players?
+- [ ] Indicate the player logged in to the app
 
 ### General GUI
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.

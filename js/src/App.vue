@@ -28,7 +28,11 @@ const {
   storageWarning,
   rosterState,
   definitionsState,
-  sidebarCollapsed,
+  railCollapsed,
+  isPhone,
+  menuOpen,
+  headerHidden,
+  toggleMenu,
   closeTooltip,
   showCharacterTooltip,
   showGuardianTooltip,
@@ -57,10 +61,32 @@ watch([selected, isMembers], ([seal, members]) => {
   <a class="skip-link" href="#main" @click.prevent="skipToContent"
     >Skip to content</a
   >
-  <AppHeader />
-  <div class="shell" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+  <AppHeader :inert="isPhone && menuOpen" />
+  <div class="shell" :class="{ 'sidebar-collapsed': railCollapsed }">
+    <button
+      v-show="headerHidden && !(isPhone && menuOpen)"
+      class="menu-toggle menu-toggle-floating"
+      tabindex="-1"
+      aria-hidden="true"
+      @click="toggleMenu"
+    >
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path
+          d="M3 5.5h14M3 10h14M3 14.5h14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
     <AppSidebar />
-    <main id="main" ref="main" tabindex="-1">
+    <div
+      v-if="isPhone && menuOpen"
+      class="menu-backdrop"
+      @click="menuOpen = false"
+    ></div>
+    <main id="main" ref="main" tabindex="-1" :inert="isPhone && menuOpen">
       <div v-if="issues.length || storageWarning" class="notice" role="alert">
         <p v-for="issue in issues" :key="issue">{{ issue }}</p>
         <p v-if="storageWarning">{{ storageWarning }}</p>

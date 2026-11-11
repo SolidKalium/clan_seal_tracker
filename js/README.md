@@ -29,7 +29,7 @@ Activity pages use `#/seal/<id>` and `#/triumphs/<id>`. Crucible, Gambit, and Tr
 
 ## Included
 
-- The default clan from `js/settings.json`, or one chosen by the visitor, with a local overview of the whole catalog. Each page offers the Seal, Badge, Full raid/dungeon, or Triumphs views its manifest content supports, and each category has its own overview section and navigation group. The sidebar can collapse to an emblem and vertical clan name; its state persists locally. Cache status and refresh live in the top bar, with an explanatory status-color tooltip.
+- The default clan from `js/settings.json`, or one chosen by the visitor, with a local overview of the whole catalog. Each page offers the Seal, Badge, Full raid/dungeon, or Triumphs views its manifest content supports, and each category has its own overview section and navigation group. A menu button in the top bar collapses the sidebar to an emblem and vertical clan name (persisted locally); on phones it opens the sidebar as a drawer instead. Cache status and refresh live in the top bar, with an explanatory status-color tooltip.
 - Collection badge items, with a best-whole-class default and Titan/Hunter/Warlock selection. Tooltips show each class’s ownership. Armor stays in five compact slot columns.
 - Column groups separate triumphs, weapons, patterns, armor, mods, and cosmetics. Collection tooltips show item types, mod perks, and contextual acquisition goals; redundant raid sources are omitted.
 - Full raid pages combine seal requirements, extra raid triumphs, configured patterns/mods/collectibles, and badge items. Elemental requirements normalize to Arc, Void, Solar, Stasis, Strand; seal scope follows the manifest, so extra Strand triumphs remain full-raid only. Day-one achievements appear in both triumph views, marked Not scored.
@@ -163,7 +163,7 @@ Clan rows retain the roster membership identity even when cross-save supplies an
 
 ## Player-list selector
 
-The sidebar’s Players selector supports **Selected clan**, **My friends**, and **My clan and friends**. The last two require login. Selected clan always refers to the visitor’s saved clan choice; the combined list uses the signed-in player’s own clan even when a different clan is selected for browsing. Choosing a clan returns to Selected clan. The selected list mode is a browser preference; signing out or expiry immediately returns to public clan browsing and clears the social list from memory.
+The sidebar’s Players shown selector, visible once signed in, supports **Selected clan**, **My friends**, and **My clan and friends**. The last two require login. Selected clan always refers to the visitor’s saved clan choice; the combined list uses the signed-in player’s own clan even when a different clan is selected for browsing. Choosing a clan returns to Selected clan. The selected list mode is a browser preference; signing out or expiry immediately returns to public clan browsing and clears the social list from memory.
 
 Accepted Bungie friends resolve through public, cached linked-membership lookups to their cross-save primary or last-used independent platform. Profile requests retain the existing self-only authentication rule. A friend already represented by the clan’s same save appears once with clan metadata preserved. Friends without a public Destiny membership remain visible as unavailable, without issuing invalid profile requests. Friend-only account tooltips omit clan ranks/join dates.
 

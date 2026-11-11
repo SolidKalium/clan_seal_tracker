@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import ClanEmblem from './ClanEmblem.vue';
 import { catalog, catalogGroups } from './catalog';
 import { plural } from './format';
@@ -18,7 +18,9 @@ const {
   displayedPlayers,
   busy,
   preferencesReady,
-  sidebarCollapsed,
+  railCollapsed,
+  isPhone,
+  menuOpen,
   isHome,
   routeId,
   groupedPage,
@@ -38,6 +40,12 @@ watch(
   },
   { immediate: true },
 );
+const closeButton = ref<HTMLButtonElement>();
+watch(menuOpen, async (open) => {
+  if (!open) return;
+  await nextTick();
+  closeButton.value?.focus();
+});
 function toggleSection(category: string) {
   openSections.value = openSections.value.includes(category)
     ? openSections.value.filter((value) => value !== category)
@@ -46,62 +54,33 @@ function toggleSection(category: string) {
 </script>
 
 <template>
-  <aside class="sidebar" aria-label="Clan navigation">
+  <aside
+    id="sidebar"
+    class="sidebar"
+    :class="{ 'is-open': menuOpen }"
+    aria-label="Clan navigation"
+    @keydown.esc="menuOpen = false"
+  >
     <button
-      class="sidebar-toggle"
-      :aria-label="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'"
-      :aria-expanded="!sidebarCollapsed"
-      aria-controls="clan-menu"
-      :title="sidebarCollapsed ? 'Expand side menu' : 'Collapse side menu'"
-      @click="sidebarCollapsed = !sidebarCollapsed"
+      v-if="isPhone"
+      ref="closeButton"
+      class="menu-close"
+      aria-label="Close menu"
+      @click="menuOpen = false"
     >
-      <svg
-        viewBox="0 0 20 20"
-        aria-hidden="true"
-        :class="{ reversed: sidebarCollapsed }"
-      >
-        <path
-          d="m12 4-6 6 6 6"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.7"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      ×
     </button>
-    <label
-      v-show="!sidebarCollapsed"
-      class="player-list-control select-control control-field"
-      ><span>Players</span
-      ><select
-        aria-label="Players to show"
-        :value="playerList"
-        :disabled="!preferencesReady"
-        @change="
-          changePlayerList(
-            ($event.target as HTMLSelectElement).value as PlayerList,
-          )
-        "
-      >
-        <option value="clan">Selected clan</option>
-        <option value="friends" :disabled="!account">My friends</option>
-        <option value="combined" :disabled="!account">
-          My clan and friends
-        </option>
-      </select></label
-    >
     <div
       class="sidebar-identity-icons"
       :class="{ 'is-combined': playerList === 'combined' }"
     >
       <FriendIcon
-        v-if="sidebarCollapsed && playerList !== 'clan'"
+        v-if="railCollapsed && playerList !== 'clan'"
         class="sidebar-friend-icon"
         aria-label="Friends"
       />
       <span
-        v-if="sidebarCollapsed && playerList === 'combined'"
+        v-if="railCollapsed && playerList === 'combined'"
         class="sidebar-identity-plus"
         aria-hidden="true"
         >+</span
@@ -114,7 +93,7 @@ function toggleSection(category: string) {
           :name="roster?.name ?? 'Clan'"
         />
         <div class="sidebar-identity-name">
-          <p v-if="!sidebarCollapsed" class="eyebrow identity-eyebrow">
+          <p v-if="!railCollapsed" class="eyebrow identity-eyebrow">
             <span v-if="playerList !== 'friends'">CLAN</span
             ><span v-if="playerList === 'combined'" class="identity-label-plus"
               >+</span
@@ -155,7 +134,7 @@ function toggleSection(category: string) {
       <button
         v-if="playerList !== 'friends'"
         class="clan-picker-button"
-        :class="{ 'clan-picker-collapsed': sidebarCollapsed }"
+        :class="{ 'clan-picker-collapsed': railCollapsed }"
         aria-label="Choose clan"
         :disabled="!preferencesReady"
         @click="clanPickerOpen = true"
@@ -169,15 +148,12 @@ function toggleSection(category: string) {
         >
           <circle cx="10.5" cy="10.5" r="6.5" />
           <path d="m15.5 15.5 5 5" /></svg
-        ><span v-if="!sidebarCollapsed">Choose clan</span>
+        ><span v-if="!railCollapsed">Choose clan</span>
       </button>
-      <div
-        class="login-controls"
-        :class="{ 'login-collapsed': sidebarCollapsed }"
-      >
+      <div class="login-controls" :class="{ 'login-collapsed': railCollapsed }">
         <template v-if="account"
           ><span
-            v-if="!sidebarCollapsed"
+            v-if="!railCollapsed"
             class="login-name"
             :data-bungie-membership-id="account.membershipId"
             :data-membership-id="account.primary?.membershipId"
@@ -187,13 +163,13 @@ function toggleSection(category: string) {
               >#{{ account.nameCode }}</span
             ></span
           ><button
-            v-if="!sidebarCollapsed"
+            v-if="!railCollapsed"
             type="button"
             aria-label="Sign out"
             @click="signOut()"
           >
             <span aria-hidden="true">↪</span
-            ><span v-if="!sidebarCollapsed">Sign out</span>
+            ><span v-if="!railCollapsed">Sign out</span>
           </button></template
         >
         <button
@@ -212,14 +188,36 @@ function toggleSection(category: string) {
           >
             <circle cx="12" cy="8" r="4" />
             <path d="M4 22v-3a8 8 0 0 1 16 0v3" /></svg
-          ><span v-if="!sidebarCollapsed">Sign in with Bungie</span>
+          ><span v-if="!railCollapsed">Sign in with Bungie</span>
         </button>
       </div>
     </div>
     <p v-if="loginNotice" class="login-notice" role="status">
       {{ loginNotice }}
     </p>
-    <div v-show="!sidebarCollapsed" id="clan-menu" class="sidebar-content">
+    <label
+      v-if="account"
+      v-show="!railCollapsed"
+      class="player-list-control select-control control-field"
+      ><span>Players shown</span
+      ><select
+        aria-label="Players shown"
+        :value="playerList"
+        :disabled="!preferencesReady"
+        @change="
+          changePlayerList(
+            ($event.target as HTMLSelectElement).value as PlayerList,
+          )
+        "
+      >
+        <option value="clan">Selected clan</option>
+        <option value="friends" :disabled="!account">My friends</option>
+        <option value="combined" :disabled="!account">
+          My clan and friends
+        </option>
+      </select></label
+    >
+    <div v-show="!railCollapsed" id="clan-menu" class="sidebar-content">
       <p class="muted small">
         {{
           roster

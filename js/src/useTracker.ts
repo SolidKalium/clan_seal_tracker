@@ -144,6 +144,23 @@ function createTracker() {
   const badgeClass = ref('best');
   const preferencesReady = ref(false);
   const sidebarCollapsed = ref(false);
+  // Phones show the sidebar as a drawer instead of a collapsible rail.
+  const phoneQuery = window.matchMedia('(max-width: 700px)');
+  const isPhone = ref(phoneQuery.matches);
+  const menuOpen = ref(false);
+  const headerHidden = ref(false);
+  const railCollapsed = computed(
+    () => sidebarCollapsed.value && !isPhone.value,
+  );
+  const onPhoneChange = (event: MediaQueryListEvent) => {
+    isPhone.value = event.matches;
+    menuOpen.value = false;
+  };
+  phoneQuery.addEventListener('change', onPhoneChange);
+  function toggleMenu() {
+    if (isPhone.value) menuOpen.value = !menuOpen.value;
+    else sidebarCollapsed.value = !sidebarCollapsed.value;
+  }
   const detail = shallowRef<{ player: string; heading: Heading; cell: Cell }>();
   const {
     tooltip,
@@ -241,6 +258,7 @@ function createTracker() {
   const changedHash = () => {
     hash.value = locationHash();
     detail.value = undefined;
+    menuOpen.value = false;
     closeTooltip();
   };
   function applyProfile(
@@ -846,6 +864,7 @@ function createTracker() {
     window.removeEventListener('focus', checkLoginExpiry);
     document.removeEventListener('visibilitychange', checkLoginExpiry);
     window.removeEventListener('hashchange', changedHash);
+    phoneQuery.removeEventListener('change', onPhoneChange);
     window.removeEventListener('resize', closeTooltip);
     window.removeEventListener('scroll', closeOnScroll);
     closeTooltip();
@@ -885,6 +904,11 @@ function createTracker() {
     badgeClass,
     preferencesReady,
     sidebarCollapsed,
+    isPhone,
+    menuOpen,
+    headerHidden,
+    railCollapsed,
+    toggleMenu,
     detail,
     tooltip,
     tooltipElement,
