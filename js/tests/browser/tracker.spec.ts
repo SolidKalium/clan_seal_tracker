@@ -842,6 +842,20 @@ test('compact header status and persistent collapsible clan rail', async ({
   ).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('.sidebar .clan-emblem')).toBeVisible();
   await expect(page.locator('.sidebar .clan-name')).toHaveText('Test Clan');
+  // The name's wrapper spans the rail instead of shrink-wrapping around the
+  // vertical name, which WebKit measures as 0 wide.
+  const [wrapper, identity, railName, rail] = await Promise.all(
+    [
+      '.sidebar-identity-name',
+      '.sidebar-clan-identity',
+      '.sidebar .clan-name',
+      '.sidebar',
+    ].map(async (selector) => (await page.locator(selector).boundingBox())!),
+  );
+  expect(wrapper!.width).toBe(identity!.width);
+  expect(
+    Math.abs(railName!.x + railName!.width / 2 - (rail!.x + rail!.width / 2)),
+  ).toBeLessThanOrEqual(1);
   expect(
     await page
       .locator('.sidebar .clan-name')
@@ -6606,4 +6620,32 @@ test('every sidebar section stays reachable partway down a long page', async ({
   const box = (await clear.boundingBox())!;
   expect(box.y + box.height).toBeLessThanOrEqual(600);
   expect(box.y).toBeGreaterThanOrEqual(0);
+});
+
+test('an expired login turns the sign-in icon yellow and keeps the notice out of the rail', async ({
+  page,
+}) => {
+  await page.clock.install();
+  await setupLogin(page);
+  await page.goto('#/seal/last_wish');
+  await ready(page);
+  await completeLogin(page);
+  await ready(page);
+  await page.clock.fastForward('01:01:00');
+  const signIn = page.getByRole('button', {
+    name: 'Sign in with Bungie',
+    exact: true,
+  });
+  await expect(signIn).toBeVisible();
+  const notice =
+    'Your login expired. Sign in again to access your private progression.';
+  await expect(page.locator('.login-notice')).toHaveText(notice);
+  await expect(signIn).toHaveAttribute('title', notice);
+  await expect(signIn.locator('svg')).toHaveCSS('color', 'rgb(168, 123, 22)');
+  await page
+    .getByRole('button', { name: 'Collapse side menu', exact: true })
+    .click();
+  await expect(page.locator('.login-notice')).toHaveCount(0);
+  await expect(signIn.locator('svg')).toHaveCSS('color', 'rgb(168, 123, 22)');
+  await expect(signIn).toHaveAttribute('title', notice);
 });

@@ -722,3 +722,9 @@ The sidebar toggle is a menu button at the start of the top bar. On wider screen
 
 The sticky sidebar's height grows into the header's space as the header scrolls away (`--header-scrolled`), so no gap is left below it. The Players selector is labelled "Players shown", follows the clan and login controls, and is hidden while signed out, when only the selected clan can be shown.
 
+### Collapsed rail name in Safari — 2026-11-10
+
+WebKit measures vertical text (`writing-mode: vertical-rl`) as 0 wide when a parent shrinks to fit it. The collapsed rail's identity block used to shrink-wrap (`margin: 0 auto`, `align-items: center`), so in Safari the name's wrapper collapsed to 0 px at the rail's center and the name overflowed to the right, where the scrolling sidebar clipped it. The identity block and the name's wrapper now span the rail's width, and the name centers itself. Do not reintroduce shrink-to-fit around the vertical name. `text-orientation: sideways` stays, so punctuation such as the apostrophe in "Crow’s friends" turns with the letters.
+
+The collapsed name has no height limit or ellipsis; a short window scrolls the rail instead.
+

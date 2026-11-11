@@ -182,6 +182,8 @@ function toggleSection(category: string) {
           v-else
           type="button"
           aria-label="Sign in with Bungie"
+          :class="{ 'login-attention': loginNotice }"
+          :title="loginNotice || undefined"
           :disabled="!preferencesReady"
           @click="signIn"
         >
@@ -198,7 +200,7 @@ function toggleSection(category: string) {
         </button>
       </div>
     </div>
-    <p v-if="loginNotice" class="login-notice" role="status">
+    <p v-if="loginNotice && !railCollapsed" class="login-notice" role="status">
       {{ loginNotice }}
     </p>
     <label

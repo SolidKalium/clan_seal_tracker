@@ -250,9 +250,6 @@ body {
 }
 .sidebar-collapsed .sidebar {
   padding: 18px 10px;
-  /* The rail's contents always fit, and WebKit mis-places vertical text in a
-     scroll container, so the collapsed rail does not scroll. */
-  overflow: visible;
 }
 .sidebar-content {
   display: flex;
@@ -1453,14 +1450,14 @@ tbody tr:focus-within > td {
   top: 16px;
 }
 .sidebar-collapsed .clan-name {
+  /* Reads bottom to top, with punctuation turned along with the letters. The
+     full name always shows; a short window scrolls the rail instead. */
   writing-mode: vertical-rl;
+  text-orientation: sideways;
   transform: rotate(180deg);
   white-space: nowrap;
-  font-size: 18px;
-  margin: 24px auto 0;
-  max-height: calc(100vh - 210px);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 28px;
+  cursor: default;
 }
 .page-heading {
   padding-top: 20px;
@@ -1494,10 +1491,6 @@ tbody tr:focus-within > td {
   color: #6d7766;
   line-height: 1.5;
   margin: 3px 0 0;
-}
-.sidebar-collapsed .clan-name {
-  font-size: 28px;
-  cursor: default;
 }
 .sidebar-collapsed .clan-name-short {
   font-size: 36px;
@@ -2294,6 +2287,11 @@ tbody tr:focus-within > td.commendation-section {
   align-self: center;
   padding: 5px;
 }
+/* A login problem turns the sign-in icon yellow; the collapsed rail shows only
+   this, with the notice as the button's tooltip. */
+.login-attention svg {
+  color: #a87b16;
+}
 .login-notice {
   font-size: 11px;
   line-height: 1.5;
@@ -2413,9 +2411,14 @@ tbody tr:focus-within > td.commendation-section {
 .friend-owner {
   white-space: nowrap;
 }
+/* The rail's identity spans the rail's width instead of shrinking to fit:
+   WebKit measures the vertical name's width as 0 when shrink-wrapping, which
+   pushed the name off-center. */
 .sidebar-collapsed .sidebar-identity-icons {
   align-items: center;
-  margin: 0 auto;
+}
+.sidebar-collapsed .sidebar-identity-name {
+  align-self: stretch;
 }
 .sidebar-collapsed .sidebar-clan-identity {
   flex-direction: column;
@@ -2424,14 +2427,10 @@ tbody tr:focus-within > td.commendation-section {
 }
 .sidebar-collapsed .sidebar-clan-identity .clan-name {
   margin: 0 auto;
-  text-orientation: sideways;
 }
 .sidebar-collapsed .sidebar-clan-icon,
 .sidebar-collapsed .sidebar-friend-icon {
   transform: rotate(-90deg);
-}
-.sidebar-collapsed .is-combined .clan-name {
-  max-height: calc(100vh - 290px);
 }
 /* The native select covers its floating label, so the whole focus area opens it. */
 .player-list-control {
