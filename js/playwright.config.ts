@@ -1,6 +1,6 @@
 import { devHttps } from './vite.config';
 import { defineConfig, devices } from '@playwright/test';
-const baseURL = `${devHttps ? 'https' : 'http'}://localhost:5173/js/`;
+const baseURL = `${devHttps ? 'https' : 'http'}://localhost:5173/`;
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: false,

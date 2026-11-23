@@ -48,6 +48,13 @@ const members = ['Ada', 'Banshee', 'Crow'].map((name, i) => ({
   ][i],
   memberType: [5, 3, 2][i],
 }));
+// The app narrows Safari's select caret inset (see main.ts and .safari rules).
+const caretInset = async (page: Page) =>
+  (await page.evaluate(() =>
+    document.documentElement.classList.contains('safari'),
+  ))
+    ? 4
+    : 10;
 const envelope = (Response: unknown) => ({
   ErrorCode: 1,
   ErrorStatus: 'Success',
@@ -631,7 +638,7 @@ test('objective stages, rich tooltips, and full-width controls stay aligned', as
       await page
         .getByLabel(name)
         .evaluate((e) => parseFloat(getComputedStyle(e).borderRightWidth)),
-    ).toBeGreaterThanOrEqual(10);
+    ).toBeGreaterThanOrEqual(await caretInset(page));
   }
   await page.screenshot({
     path: 'test-results/desktop-objective-stages.png',
@@ -4969,6 +4976,7 @@ test('objective tooltips render Destiny symbols, keep unknown tokens, and load t
 
 test('hidden members route shows tenure, linked platforms, ownership, and CSV export', async ({
   page,
+  browserName,
 }) => {
   await setup(page, { offline: false, calls: 0 });
   await page.route('**/Platform/Destiny2/Manifest/', (route) =>
@@ -5029,9 +5037,10 @@ test('hidden members route shows tenure, linked platforms, ownership, and CSV ex
     'cursor',
     'help',
   );
+  // WebKit reports links as cursor: auto, though Safari shows a hand.
   await expect(page.locator('.members-table tbody th a').first()).toHaveCSS(
     'cursor',
-    'pointer',
+    browserName === 'webkit' ? 'auto' : 'pointer',
   );
   await expect(page.locator('.members-table tbody tr')).toHaveCount(3);
   await expect(page.locator('.members-table tbody th')).toHaveText([
@@ -5641,7 +5650,7 @@ async function setupLogin(page: Page, state: { hold?: Promise<void> } = {}) {
   await page.route('**/.generated/config.json*', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `export default ${JSON.stringify({ apiKey: 'browser-test-key', clanId: '1', language: 'en', oauthClientId: '36319', oauthRedirectUri: `${new URL(test.info().project.use.baseURL!).origin}/js/` })}`,
+      body: `export default ${JSON.stringify({ apiKey: 'browser-test-key', clanId: '1', language: 'en', oauthClientId: '36319', oauthRedirectUri: `${new URL(test.info().project.use.baseURL!).origin}/` })}`,
     }),
   );
   await page.route('https://www.bungie.net/**', async (route) => {
@@ -5749,7 +5758,7 @@ test('player login selects their clan, isolates private progression, and signs o
     '4242',
   );
   await expect(page.locator('.sidebar .clan-name')).not.toContainText('4242');
-  expect(page.url()).toMatch(/\/js\/#\/seal\/last_wish$/);
+  expect(page.url()).toMatch(/:5173\/#\/seal\/last_wish$/);
   await expect(
     page.getByRole('button', { name: 'Retry profile: Crow' }),
   ).toHaveCount(0);
@@ -5827,12 +5836,10 @@ test('plain HTTP redirects to HTTPS on the same port and preserves the page and 
     'HTTPS is not configured',
   );
   await setup(page, { offline: false, calls: 0 });
-  await page.goto(
-    'http://localhost:5173/js/?example=one%20two#/seal/last_wish',
-  );
+  await page.goto('http://localhost:5173/?example=one%20two#/seal/last_wish');
   await ready(page);
   expect(page.url()).toBe(
-    'https://localhost:5173/js/?example=one%20two#/seal/last_wish',
+    'https://localhost:5173/?example=one%20two#/seal/last_wish',
   );
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Rivensbane seal',
@@ -6189,7 +6196,7 @@ test('player list selector keeps selected clan, friends, and own clan plus frien
     for (const label of labels) {
       await expect(page.getByLabel(label)).toHaveCSS(
         'border-right-width',
-        '10px',
+        `${await caretInset(page)}px`,
       );
       expect(
         await page

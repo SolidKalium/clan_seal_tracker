@@ -11,11 +11,11 @@ npm --prefix js ci
 npm --prefix js run dev
 ```
 
-Open **https://localhost:5173/js/** when OAuth is configured (otherwise **http://localhost:5173/js/**) through the dev container's forwarded port 5173. The server binds to `0.0.0.0` and requires port 5173 rather than silently selecting a different origin. If VS Code accepts connections but never forwards them, reload the VS Code window.
+Open **https://localhost:5173/** when OAuth is configured (otherwise **http://localhost:5173/**) through the dev container's forwarded port 5173. The server binds to `0.0.0.0` and requires port 5173 rather than silently selecting a different origin. If VS Code accepts connections but never forwards them, reload the VS Code window.
 
 Copy `js/settings.example.json` to the ignored `js/settings.json` and fill in `api_key` (the Bungie API key) and `group_id`. It is independent of `php/settings.json`. `predev` and `prebuild` compile those values, optional public OAuth configuration, the default language, and the page catalog from `js/pages.jsonc` into ignored `.generated/*.json`. Restart dev after changing source settings/content. No PHP settings or caches are read. No JSONC parser is shipped to the browser.
 
-**The Bungie API key is intentionally client-visible** in the dev app and built JavaScript. Keep `js/settings.json` limited to values that may ship to the browser. The optional OAuth client secret ships too (see Player login). Do not use this mechanism for other confidential credentials. A production host must serve only `dist/` under `/js/`, not the repository or generated/source directories.
+**The Bungie API key is intentionally client-visible** in the dev app and built JavaScript. Keep `js/settings.json` limited to values that may ship to the browser. The optional OAuth client secret ships too (see Player login). Do not use this mechanism for other confidential credentials. A production host must serve only `dist/` at the site root, not the repository or generated/source directories.
 
 Bungie must allow the browser's exact origin in the application registration. For OAuth-enabled local use that is `https://localhost:5173`; HTTP and `127.0.0.1` are different origins. If using a different forwarded address, register that origin instead. Manifest downloads can succeed even while clan/profile endpoints reject the origin. The app displays the registration error and current origin. There is no development proxy masking this requirement.
 
@@ -74,7 +74,7 @@ npx playwright install-deps chromium
 
 The second command may require root. Chromium is the automated target; real Safari remains a manual acceptance check. Live API access must also be checked separately, because mocked browser tests do not validate Bungie origin registration.
 
-`npm run build` writes an ignored static bundle to `js/dist/`, configured for `/js/`. `npm run preview` serves it locally on port 5173 when the dev server is stopped. No publication is performed.
+`npm run build` writes an ignored static bundle to `js/dist/`, served from the site root. `npm run preview` serves it locally on port 5173 when the dev server is stopped. `npm run build` itself publishes nothing; see Deploy.
 
 `npm run lint` runs ESLint. `npm run format` applies Prettier, and `npm run format:check` reports files that need it.
 
@@ -105,6 +105,28 @@ Failed Bungie requests log a `[Clan Seal Tracker] Request failed` warning and sa
 
 The latest 50 failures are saved as `diagnostic:…` entries, including failures without an older cached profile and failed attempts that later succeed. That bounded history survives retries and page reloads; a successful request clears the current cached `errorInfo`, while Clear API cache removes the diagnostic history as well. Storage-unavailable sessions retain only an in-memory history. No diagnostics are sent to a server. Logging does not depend on DevTools being open, but browser console retention is separate from this persistent history.
 
+## Deploy
+
+Pushes to `master` that touch `js/` (or the workflow) run [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml). It builds, lints and runs the unit tests, then deploys `dist/` to a Cloudflare Worker named `clan-seal-tracker` ([`wrangler.jsonc`](wrangler.jsonc)) as static assets, with no Worker script. The workflow can also be run by hand from the Actions tab.
+
+The job uses the GitHub `deploy` environment:
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | secret | Token with Workers Scripts: Edit, plus Zone: Workers Routes: Edit and DNS: Edit on the domain's zone |
+| `CLOUDFLARE_ACCOUNT_ID` | variable | Cloudflare account ID |
+| `CUSTOM_DOMAIN` | variable | Hostname, for example `seals.example.com`; attached as a Workers custom domain on deploy |
+| `BUNGIE_API_KEY` | secret | Bungie API key |
+| `BUNGIE_GROUP_ID` | variable | Default clan ID |
+| `BUNGIE_OAUTH_CLIENT_ID` | variable | Bungie OAuth client ID (optional; omit to disable login) |
+| `BUNGIE_OAUTH_CLIENT_SECRET` | secret | Bungie OAuth client secret (optional) |
+
+The workflow writes these into `settings.json`; the OAuth redirect is `https://<CUSTOM_DOMAIN>/`. The Bungie values ship in the browser bundle regardless; secrets only keep them out of logs. Register that redirect and the `https://<CUSTOM_DOMAIN>` origin with the Bungie application.
+
+Wrangler creates the custom domain's DNS record and certificate. A manually created DNS record for the same hostname blocks this, so delete it before the first deploy. Old `/js/…` URLs redirect to the root ([`public/_redirects`](public/_redirects)).
+
+To deploy from a local checkout instead, set `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the environment (or run `npx wrangler login`) and run `npm run deploy -- --domain <hostname>`. That uses the local `settings.json`.
+
 ## Inline Destiny symbols
 
 Record descriptions, perk descriptions, and objective tooltips replace recognized bracketed icon tokens with the bundled Destiny Symbols font. Icons have accessible text labels; unknown tokens and known literal bracketed names remain readable text. Champion tokens use the Anti-Barrier (`Shield-Piercing`), Overload (`Disruption`), and Unstoppable (`Stagger`) glyphs. `[Finisher]` remains plain text. The `Back` input prompt reads `Mission summary`, without assuming a visitor's key binding. Font provenance is in `src/assets/README.md`.
@@ -113,7 +135,7 @@ The separate manifest audit reports unknown bracketed tokens and their definitio
 
 ## Hidden members view
 
-Open `/js/#/members` (or `/js/members`) for the PHP-style clan members table. It is intentionally absent from the sidebar and overview. The view includes linked platform names, primary save and last platform, clan rank/join date/activity, profile freshness, guardian Power by class, and reported expansion and season/episode ownership. Search and sorting apply to both the table and CSV export; longest clan tenure is the default order.
+Open `/#/members` for the PHP-style clan members table. It is intentionally absent from the sidebar and overview. The view includes linked platform names, primary save and last platform, clan rank/join date/activity, profile freshness, guardian Power by class, and reported expansion and season/episode ownership. Search and sorting apply to both the table and CSV export; longest clan tenure is the default order.
 
 It reuses cached roster/profile data. Linked memberships and the additional season definitions are requested only when this view is opened and cached for 24 hours. Unknown ownership remains distinct from unowned; stale/private profiles can retain previous public values.
 
@@ -141,7 +163,7 @@ The progress table is a single Tab stop. Arrow keys, Home, and End move between 
 
 Sign in with Bungie in the sidebar uses the OAuth authorization-code flow. Login selects the signed-in player's primary-save clan; subsequent browsing can still select any clan. Your clan stays first in clan suggestions.
 
-Configure the same Bungie application's API key and `oauth_client_id` in the ignored `js/settings.json`. Set `oauth_redirect_uri` to the exact registered redirect, locally `https://localhost:5173/js/`. Register the browser origin as `https://localhost:5173` (without a path). Enable **ReadBasicUserProfile**, **ReadDestinyInventoryAndVault**, and **ReadUserData** (for friends); despite that permission's inventory-oriented name, Bungie uses it for private Destiny 2 progression too. No inventory components are requested. For logins that last, register the application as a **Confidential** client and set `oauth_client_secret`; without it, the app works as a Public client. See [Bungie's OAuth documentation](https://github.com/Bungie-net/api/wiki/OAuth-Documentation).
+Configure the same Bungie application's API key and `oauth_client_id` in the ignored `js/settings.json`. Set `oauth_redirect_uri` to the exact registered redirect, locally `https://localhost:5173/`. Register the browser origin as `https://localhost:5173` (without a path). Enable **ReadBasicUserProfile**, **ReadDestinyInventoryAndVault**, and **ReadUserData** (for friends); despite that permission's inventory-oriented name, Bungie uses it for private Destiny 2 progression too. No inventory components are requested. For logins that last, register the application as a **Confidential** client and set `oauth_client_secret`; without it, the app works as a Public client. See [Bungie's OAuth documentation](https://github.com/Bungie-net/api/wiki/OAuth-Documentation).
 
 An HTTPS redirect automatically enables Vite's basic SSL plugin for development and preview. Plain HTTP on the same port redirects to the configured HTTPS origin, preserving the path, query and browser fragment. Accept its self-signed local certificate once; in VS Code's Ports panel choose HTTPS for port 5173 if its generated link still uses HTTP. HTTP and HTTPS have separate browser storage, so switching to HTTPS starts a fresh cache and visitor preferences. Production should use its host's trusted HTTPS certificate.
 

@@ -1,0 +1,4 @@
+# Cloudflare Workers static-asset redirects (not served as a file there).
+# The site used to live under /js/.
+/js /  301
+/js/* /:splat 301

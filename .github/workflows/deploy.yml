@@ -1,0 +1,68 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "js/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: deploy
+      url: https://${{ vars.CUSTOM_DOMAIN }}/
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: js/package-lock.json
+
+      - run: npm ci
+
+      # settings.json is gitignored. These values ship in the browser bundle
+      # anyway; the key and secret are GitHub secrets only to keep them out of logs.
+      - name: Write settings.json
+        env:
+          API_KEY: ${{ secrets.BUNGIE_API_KEY }}
+          GROUP_ID: ${{ vars.BUNGIE_GROUP_ID }}
+          OAUTH_CLIENT_ID: ${{ vars.BUNGIE_OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.BUNGIE_OAUTH_CLIENT_SECRET }}
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+        run: |
+          test -n "$CUSTOM_DOMAIN" || { echo "::error::CUSTOM_DOMAIN is not set"; exit 1; }
+          jq -n \
+            --arg api_key "$API_KEY" \
+            --arg group_id "$GROUP_ID" \
+            --arg oauth_client_id "$OAUTH_CLIENT_ID" \
+            --arg oauth_client_secret "$OAUTH_CLIENT_SECRET" \
+            --arg oauth_redirect_uri "https://$CUSTOM_DOMAIN/" \
+            '{api_key: $api_key, group_id: $group_id, oauth_client_id: $oauth_client_id,
+              oauth_client_secret: $oauth_client_secret, oauth_redirect_uri: $oauth_redirect_uri}' \
+            > settings.json
+
+      - run: npm run build
+      - run: npm run lint
+      - run: npm test
+
+      - name: Deploy to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+        run: npx wrangler deploy --domain "$CUSTOM_DOMAIN"

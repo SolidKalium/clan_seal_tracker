@@ -18,7 +18,7 @@ let items: Map<string, string>,
 const config = {
   apiKey: 'test-key',
   oauthClientId: '36319',
-  oauthRedirectUri: 'https://localhost:5173/js/',
+  oauthRedirectUri: 'https://localhost:5173/',
 };
 beforeEach(() => {
   items = new Map();
@@ -37,7 +37,7 @@ beforeEach(() => {
     },
   };
   location = {
-    href: 'https://localhost:5173/js/#/members',
+    href: 'https://localhost:5173/#/members',
     origin: 'https://localhost:5173',
     hash: '#/members',
   };
@@ -94,7 +94,7 @@ it('uses a Public code exchange, verifies state, restores the view and does not 
   vi.stubGlobal('fetch', fetch);
   const login = await signedIn();
   expect(login.account?.name).toBe('Player');
-  expect(replace).toHaveBeenCalledWith(null, '', '/js/#/members');
+  expect(replace).toHaveBeenCalledWith(null, '', '/#/members');
   const request = fetch.mock.calls[0]![1]!;
   const body = request.body as URLSearchParams;
   expect(Object.fromEntries(body)).toEqual({
@@ -366,7 +366,7 @@ it('renews an expired access token on restore and before a request, sharing one 
   const later = Date.now() + 2 * 3600_000;
   vi.spyOn(Date, 'now').mockReturnValue(later);
   // A new tab restores the persistent login and renews it first.
-  location.href = 'https://localhost:5173/js/#/members';
+  location.href = 'https://localhost:5173/#/members';
   const restored = new PlayerLogin(confidential, storage, () => {}, persistent);
   await restored.initialize();
   expect(restored.account?.name).toBe('Player');

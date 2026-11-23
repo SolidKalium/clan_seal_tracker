@@ -414,7 +414,7 @@ it('exports OAuth configuration, including a confidential client secret for toke
     api_key: 'key',
     group_id: 1,
     oauth_client_id: 36319,
-    oauth_redirect_uri: 'https://localhost:5173/js/',
+    oauth_redirect_uri: 'https://localhost:5173/',
     oauth_client_secret: 'client-secret',
   };
   expect(compile(settings, pages).config).toEqual({
@@ -422,7 +422,7 @@ it('exports OAuth configuration, including a confidential client secret for toke
     clanId: '1',
     language: 'en',
     oauthClientId: '36319',
-    oauthRedirectUri: 'https://localhost:5173/js/',
+    oauthRedirectUri: 'https://localhost:5173/',
     oauthClientSecret: 'client-secret',
   });
   // An empty secret, as in settings.example.json, means a public client.
@@ -441,7 +441,7 @@ it('exports OAuth configuration, including a confidential client secret for toke
     compile(
       {
         ...settings,
-        oauth_redirect_uri: 'https://localhost:5173/js/#callback',
+        oauth_redirect_uri: 'https://localhost:5173/#callback',
       },
       pages,
     ),

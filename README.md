@@ -2,7 +2,7 @@
 
 Track Destiny 2 clan progress on seals, badges, and triumphs.
 
-- [`js/`](js/README.md) — the browser edition (Vue + TypeScript). Run `npm --prefix js ci` then `npm --prefix js run dev` and open `http://localhost:5173/js/`.
+- [`js/`](js/README.md) — the browser edition (Vue + TypeScript). Run `npm --prefix js ci` then `npm --prefix js run dev` and open `http://localhost:5173/`.
 - [`php/`](php/README.md) — the legacy PHP edition, kept for comparison until the browser edition reaches parity.
 
 The notes below on the Bungie API apply to both.

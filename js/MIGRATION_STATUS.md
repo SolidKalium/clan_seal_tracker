@@ -15,8 +15,15 @@
   - `rows` still rebuilds every player when one profile arrives. A per-player cache keyed on the profile object may help; measure first.
   - `hasDuplicateTriumphs` builds a page's seal twice per call, and the sidebar calls it for many links. It could be worked out once per definitions load.
 
-**Misc:**
-- Keep account logged-in by auto-refreshing when appropriate.
+**Verify:**
+- Persistent login: after signing out and in once (so the login has a refresh token), check it renews silently after an hour and still works the next day. Bungie's docs do not say whether refresh tokens rotate on use or whether 90 days is fixed; the code handles both.
+
+**Test infrastructure (after the container rebuild):**
+- Parallel browser runs work after the container rebuild (1 GB `/dev/shm`): `--fully-parallel --workers=2` runs the suite in about a minute, with over 3 GB of memory left. Try more workers only if needed.
+- Playwright's WebKit now runs here (WebKit 27.2, Linux build); add a temporary config with a `Desktop Safari` project to use it. It did not reproduce the Safari 26.5 clan-name bug, so it does not replace checking in Safari.
+  - One test still fails in WebKit: "seal summary columns have normal dividers and the table clips rounded corners". `elementFromPoint` just inside the table frame's rounded top-left corner finds an element, so WebKit's hit-testing may ignore the rounded clip. Check in Safari whether the corner looks clipped after scrolling the table slightly; if it does, make that assertion engine-aware.
+- Browser tests do not catch positional regressions: they passed while 7 unrelated `top` values were wrong. Add position checks for key frame elements, or keep the layout-snapshot comparison as a real test.
+- Split `tests/browser/tracker.spec.ts` (78 tests, ~6,600 lines) by area, which also lets parallel runs help.
 
 ## Revisit list
 
@@ -41,6 +48,8 @@ Deferred polish and interaction design; these are not for immediate implementati
 - [ ] Indicate the player logged in to the app
 
 ### General GUI
+- [ ] Tell keyboard users the progress table supports arrow keys, Home, and End (for example, in the table footnote).
+- [ ] Give the members table the same single-Tab-stop arrow-key navigation as the progress table.
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.
   - [ ] Page right-edge overscroll still uses a uniform browser canvas color rather than matching header/content bands. Oversized header/page paint extensions did not fix it and were reverted after a jitter report. Favor stable native scrolling over more paint/compositor workarounds.
   - [ ] Consider making the table rubberband shift the opposite edge into its margin? Might not be possible.

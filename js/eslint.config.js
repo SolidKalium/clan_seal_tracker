@@ -5,7 +5,15 @@ import globals from 'globals';
 import ts from 'typescript-eslint';
 
 export default ts.config(
-  { ignores: ['dist/', '.generated/', 'test-results/', 'playwright-report/'] },
+  {
+    ignores: [
+      'dist/',
+      '.generated/',
+      '.wrangler/',
+      'test-results/',
+      'playwright-report/',
+    ],
+  },
   js.configs.recommended,
   ts.configs.recommended,
   vue.configs['flat/recommended'],

@@ -1,0 +1,15 @@
+// Cloudflare Worker serving the built site (dist/) as static assets, with no
+// Worker script. The custom domain is not stored here: CI passes it with
+// --domain from the CUSTOM_DOMAIN deploy variable. See README "Deploy".
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "clan-seal-tracker",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+}

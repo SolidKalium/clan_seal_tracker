@@ -4,3 +4,4 @@ dist/
 playwright-report/
 test-results/
 settings.json
+.wrangler/
