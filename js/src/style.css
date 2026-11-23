@@ -918,6 +918,21 @@ td.progress-column small {
 .empty-state h1 {
   font-size: 28px;
 }
+.table-scroll .empty-state {
+  padding-inline: 0;
+  border-right: 0;
+}
+/* The message cell spans every column; keep its text centered in the visible
+   part of the scroller instead. 2px is the table's left and right border, and
+   the cell has no horizontal padding or border, so a table that fits the
+   scroller does not overflow it. */
+.empty-state-content {
+  position: sticky;
+  left: 0;
+  box-sizing: border-box;
+  width: calc(100cqi - 2px);
+  padding-inline: 16px;
+}
 .empty-state button {
   display: block;
   margin: 12px auto;
@@ -1265,6 +1280,8 @@ footer {
   pointer-events: none;
 }
 .table-scroll {
+  /* 100cqi in the table is the scroller's visible width (see .empty-state-content). */
+  container-type: inline-size;
   background: #f6f7f2;
   overscroll-behavior: contain;
   scrollbar-color: #c3cebc #f6f7f2;

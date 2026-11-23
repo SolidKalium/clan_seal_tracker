@@ -559,24 +559,26 @@ onUnmounted(() => headerObserver?.disconnect());
           </tr>
           <tr v-if="!rows.length">
             <td :colspan="tableColumns" class="empty-state">
-              {{
-                !roster
-                  ? busy
-                    ? 'Loading players…'
-                    : 'Player list is unavailable. See the connection notice above.'
-                  : busy
-                    ? 'Loading guardians…'
-                    : 'No guardians match this view.'
-              }}<button
-                v-if="search || filter !== 'all'"
-                class="text-button"
-                @click="
-                  search = '';
-                  filter = 'all';
-                "
-              >
-                Reset filters
-              </button>
+              <div class="empty-state-content">
+                {{
+                  !roster
+                    ? busy
+                      ? 'Loading players…'
+                      : 'Player list is unavailable. See the connection notice above.'
+                    : busy
+                      ? 'Loading guardians…'
+                      : 'No guardians match this view.'
+                }}<button
+                  v-if="search || filter !== 'all'"
+                  class="text-button"
+                  @click="
+                    search = '';
+                    filter = 'all';
+                  "
+                >
+                  Reset filters
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>

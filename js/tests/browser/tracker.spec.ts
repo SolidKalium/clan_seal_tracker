@@ -6690,3 +6690,52 @@ test('an expired login turns the sign-in icon yellow and keeps the notice out of
   await expect(signIn.locator('svg')).toHaveCSS('color', 'rgb(168, 123, 22)');
   await expect(signIn).toHaveAttribute('title', notice);
 });
+
+test('the empty-table message stays centered in the visible table area', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await setup(page, { offline: false, calls: 0, extended: true });
+  await page.goto('#/raid/last_wish');
+  await ready(page);
+  await page.getByLabel('Search guardians').fill('nobody matches this');
+  const message = page.locator('.empty-state-content');
+  await expect(message).toContainText('No guardians match this view.');
+  await expect(
+    message.getByRole('button', { name: 'Reset filters' }),
+  ).toBeVisible();
+  const scroll = page.locator('.table-scroll');
+  const offsets = (fraction: number) =>
+    scroll.evaluate((element, fraction) => {
+      element.scrollLeft =
+        (element.scrollWidth - element.clientWidth) * fraction;
+      const view = element.getBoundingClientRect();
+      const viewCenter =
+        view.left + element.clientLeft + element.clientWidth / 2;
+      const text = document.createRange();
+      const content = element.querySelector('.empty-state-content')!;
+      text.selectNodeContents(content.firstChild!);
+      const center = (box: DOMRect) => box.left + box.width / 2 - viewCenter;
+      return {
+        overflow: element.scrollWidth - element.clientWidth,
+        text: center(text.getBoundingClientRect()),
+        button: center(
+          content.querySelector('button')!.getBoundingClientRect(),
+        ),
+      };
+    }, fraction);
+  for (const fraction of [0, 0.5, 1]) {
+    const result = await offsets(fraction);
+    expect(result.overflow).toBeGreaterThan(200);
+    expect(Math.abs(result.text)).toBeLessThan(2);
+    expect(Math.abs(result.button)).toBeLessThan(2);
+  }
+  // Where the table fits, the message must not add horizontal overflow.
+  await page.setViewportSize({ width: 2400, height: 800 });
+  await page.goto('#/seal/last_wish');
+  await expect(message).toContainText('No guardians match this view.');
+  await expect
+    .poll(() => scroll.evaluate((e) => e.scrollWidth - e.clientWidth))
+    .toBe(0);
+  expect(Math.abs((await offsets(0)).text)).toBeLessThan(2);
+});
