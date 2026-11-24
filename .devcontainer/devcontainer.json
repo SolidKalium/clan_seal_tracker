@@ -1,3 +1,7 @@
+  // Personal setup: "local/devtools:2" is an image built on the maintainer's
+  // machine and is not published. To use this elsewhere, replace "image" with
+  // a public one such as "mcr.microsoft.com/devcontainers/typescript-node:24"
+  // (PHP is also needed for the PHP comparison test).
 {
   "name": "Seal Tracker",
   "image": "local/devtools:2",
