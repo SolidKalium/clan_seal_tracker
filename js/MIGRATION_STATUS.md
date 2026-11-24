@@ -48,6 +48,8 @@ Deferred polish and interaction design; these are not for immediate implementati
 - [ ] Indicate the player logged in to the app
 
 ### General GUI
+- [ ] Images popping in might change the homepage tile sizes or other things, just slightly.
+  - [ ] The clan icon should be all or nothing when it loads.
 - [ ] Tell keyboard users the progress table supports arrow keys, Home, and End (for example, in the table footnote).
 - [ ] Give the members table the same single-Tab-stop arrow-key navigation as the progress table.
 - [ ] Revisit table overscroll appearance, especially Safari's rubber-band effect. Moving the border onto the table substantially improved it; the current result is acceptable for now.
