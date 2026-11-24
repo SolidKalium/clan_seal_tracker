@@ -6,6 +6,12 @@ on:
     paths:
       - "js/**"
       - ".github/workflows/deploy.yml"
+      # Files that cannot change the build, the checks below, or the deploy.
+      - "!js/**/*.md"
+      - "!js/.gitignore"
+      - "!js/.prettierignore"
+      - "!js/tests/browser/**"
+      - "!js/playwright.config.ts"
   workflow_dispatch:
 
 concurrency:
