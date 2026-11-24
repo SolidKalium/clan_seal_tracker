@@ -104,6 +104,15 @@ Entries for "kinetic"
 
 -----
 
+## License and credits
+
+The code is under the [MIT License](LICENSE). That covers this project's own code and artwork only. Destiny, its game content, names, and glyphs are © Bungie, Inc.; this project is not affiliated with or endorsed by Bungie.
+
+- [Bungie.net API](https://github.com/Bungie-net/api) for clan, profile, and manifest data.
+- [Destiny Item Manager](https://github.com/DestinyItemManager/DIM) for the Destiny Symbols font (MIT; notice in [`js/src/assets/README.md`](js/src/assets/README.md)).
+
+-----
+
 ## INTERNAL NOTES
 
 ### Feature ideas

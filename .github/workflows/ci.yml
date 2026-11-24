@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Branch protection on master requires this job ("check").
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: js/package-lock.json
+
+      - run: npm ci
+
+      # Placeholder settings: the build and unit tests never call Bungie, and
+      # pull requests (including Dependabot's) cannot read deploy secrets.
+      - name: Write settings.json
+        run: |
+          printf '%s\n' '{"api_key": "ci-placeholder", "group_id": "1"}' > settings.json
+
+      - run: npm run build
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
