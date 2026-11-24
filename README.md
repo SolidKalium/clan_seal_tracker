@@ -90,10 +90,10 @@ A main area, like the EDZ. A location is more specific. I don't know what a bubb
 -----
 
 ## "Kinetic" concepts
-**DamageType** (7 enums): none, kinetic, arc, "thermal" (solar), void, "raid" (mechanic), stasis (these are actual enums, not flags that can be combined bitwise)
-**ItemCategory** (130 objects): pretty much any way to slice and dice character and inventory gear. Weapon, heavy weapon, sword, quest, clan banner, clan banners (no, I don't know the difference between singular and plural), "weapon mods: bowstring", repeatable bounties, ship mods, "ship mods: transmat effects", etc.
-**InventoryBucket** (59 objects): I think these are how things are grouped in various parts of the UI. For example, lists of mods, helmets, or ghosts
-**EquipmentSlot** (19 objects): These are essentially the singular form of buckets. The concept of a place where one thing can exist. These are all things that go directly on the player, with the exception of shaders and auras. Examples: finishers, gauntlets, emblems, subclass, vehicle (note that the use of singular vs plural is not consistent)
+- **DamageType** (7 enums): none, kinetic, arc, "thermal" (solar), void, "raid" (mechanic), stasis (these are actual enums, not flags that can be combined bitwise)
+- **ItemCategory** (130 objects): pretty much any way to slice and dice character and inventory gear. Weapon, heavy weapon, sword, quest, clan banner, clan banners (no, I don't know the difference between singular and plural), "weapon mods: bowstring", repeatable bounties, ship mods, "ship mods: transmat effects", etc.
+- **InventoryBucket** (59 objects): I think these are how things are grouped in various parts of the UI. For example, lists of mods, helmets, or ghosts
+- **EquipmentSlot** (19 objects): These are essentially the singular form of buckets. The concept of a place where one thing can exist. These are all things that go directly on the player, with the exception of shaders and auras. Examples: finishers, gauntlets, emblems, subclass, vehicle (note that the use of singular vs plural is not consistent)
 
 Entries for "kinetic"
 - https://bungie-net.github.io/multi/schema_Destiny-DamageType.html#schema_Destiny-DamageType
@@ -107,15 +107,15 @@ Entries for "kinetic"
 ## INTERNAL NOTES
 
 ### Feature ideas
-track historical triumph values?
-if automatically checking player data frequently, could add custom events to send to discord
-  For example, notify users of mods they are missing being on sale
-  Integration with Charlemagne LFG to show progress for the relevant activity and users that have joined (plus maybe those who have commented)
-some "clans" are made of multiple in-game clans
+- track historical triumph values?
+- if automatically checking player data frequently, could add custom events to send to discord
+  - For example, notify users of mods they are missing being on sale
+  - Integration with Charlemagne LFG to show progress for the relevant activity and users that have joined (plus maybe those who have commented)
+- some "clans" are made of multiple in-game clans
 
 ### Other project ideas
-Charlemagne calendar link?
-How does charlemagne get realtime D2 data?
+- Charlemagne calendar link?
+- How does charlemagne get realtime D2 data?
 
 ### Misc notes
 - Gilding count is a metric
